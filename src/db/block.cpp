@@ -31,16 +31,25 @@ std::unique_ptr<Block,std::function<void(void)>> create_block_by_raw_data(const 
 	p_block->write(p_data,data_size);	
 	
 	//TODO : check_sum_
-	
-	return std::move(std::unique_ptr<Block,std::function<void(void)>(p_block,deleter));
+	return std::unique_ptr<Block,std::function<void(void)>(p_block,deleter);
 }
 
 
 void Block::dump(const std::string filename){
-
+	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT | O_DIRECT ,666);
+	if(fd == -1){
+		printf("open file %s failed !", filename.c_str());
+		exit(-1);				
+	}			
+	int ret_code = write(fd,this,get_flexible_size_of_block());
+	if(ret_code = -1){
+		printf("write file %s failed !",filename.c_str());
+		exit(-1);	
+	}
+	close(fd);
 }
 
-void Block::load(const std::string filename){
+void Block::load(const std::string filename){	
 
 }
 

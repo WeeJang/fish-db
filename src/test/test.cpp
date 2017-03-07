@@ -1,5 +1,12 @@
 #include<iostream>
 #include<sdsl/bit_vectors.hpp>
+#include<memory>
+
+class Demo{
+	Demo(){ std::cout << "cons" << std::endl; }	
+	~Demo(){ std::cout << "dest" << std::endl; }
+};
+
 
 
 int main(int argc,char** argv){
@@ -7,6 +14,7 @@ int main(int argc,char** argv){
 	//for(size_t i = 0; i < b.size() ; i+=400321){
 	//	b[i] = 0;
 	//}
+	/**
 	sdsl::bit_vector b = {0,1,1,0,1,0,0,1,0,0,0,1,1,1};
 	std::cout << b.size() << std::endl;
 	std::cout << sdsl::size_in_bytes(b) << std::endl;
@@ -21,6 +29,12 @@ int main(int argc,char** argv){
 	for(size_t i = 1; i <= ones ; i ++){
 		std::cout << sdb_sel(i) << " ";
 	}
+	**/
+	
+	{
+		char* buf = (char*)malloc(sizeof(int) * 16);
+		
+	}	
 
 	return 0;
 }

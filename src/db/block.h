@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <cassert>
+#include <cstdio>
 
 namespace db{
 
@@ -54,6 +55,10 @@ public:
 	const uint64_t block_id() const { return block_header_.block_id_; }
 	const uint64_t row_start_index() const { return block_header_.row_start_index_; }	
 	const uint64_t row_count() const { return block_header_.row_count ;}
+
+	const size_t get_flexible_size_of_block() const {
+		return sizeof(Block) + (row_count() - 1) * sizeof(Block::row_data_offset[0]);
+	}
 
 private:
 	void block_id(uint64_t block_id){ block_header_.block_id_ = block_id; }
