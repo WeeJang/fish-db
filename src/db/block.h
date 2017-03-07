@@ -50,7 +50,6 @@ public:
 	Block():check_sum_(0) { strcpy(magic_num_,BLOCK_MAGIC_NUM);  };
 	
 	void dump(const std::string filename);
-	void load(const std::string filename);
 	
 	const uint64_t block_id() const { return block_header_.block_id_; }
 	const uint64_t row_start_index() const { return block_header_.row_start_index_; }	
@@ -75,8 +74,8 @@ private:
 
 
 //helper function
-std::unique<Block,std::function<void(void>)> create_block_by_raw_data(const char* p_data,size_t data_size);
-
+std::unique_ptr<Block,std::function<void(Block*)>> create_block_by_raw_data(const char* p_data,size_t data_size);
+std::unique_ptr<Blcok,std::function<void(Block*)>> load_from_disk_by_mmap(const std::string filename);
 }//namespace db
 
 

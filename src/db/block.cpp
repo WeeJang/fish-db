@@ -2,7 +2,25 @@
 
 namespace db{
 
-std::unique_ptr<Block,std::function<void(void)>> create_block_by_raw_data(const char* p_data,size_t data_size){
+
+void Block::dump(const std::string filename){
+	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT | O_DIRECT ,666);
+	if(fd == -1){
+		printf("open file %s failed !\n", filename.c_str());
+		exit(-1);				
+	}			
+	int ret_code = write(fd,this,get_flexible_size_of_block());
+	if(ret_code == -1){
+		printf("write file %s failed !\n",filename.c_str());
+		exit(-1);	
+	}
+	close(fd);
+}
+
+
+
+//----------------------helper function---------------------//
+std::unique_ptr<Block,std::function<void(Block*)>> create_block_by_raw_data(const char* p_data,size_t data_size){
 	assert(data_size <= BlockData::BLOCK_DATA_SIZE_LIMIT);
 	
 	size_t   cur_data_pos = 0;
@@ -22,7 +40,7 @@ std::unique_ptr<Block,std::function<void(void)>> create_block_by_raw_data(const 
 	size_t flexible_block_size = sizeof(Block) + (offset_list.size() - 1) * sizeof(Block::row_data_offset[0]);
 	char* buf = (char*)malloc(flexible_block_size); 
 	Block* p_block = new (buf) Block;
-	auto deleter = [p_block, buf](){ p_block->~Block(); free(buf); };	
+	auto deleter = [buf](Block* p_block){ p_block->~Block(); free(buf); };	
 	
 	for(int i = 0 ; i < offset_list.size() ; i ++){
 		p_block->row_data_offset[i] = offset_list[i];	
@@ -31,26 +49,33 @@ std::unique_ptr<Block,std::function<void(void)>> create_block_by_raw_data(const 
 	p_block->write(p_data,data_size);	
 	
 	//TODO : check_sum_
-	return std::unique_ptr<Block,std::function<void(void)>(p_block,deleter);
+	return std::unique_ptr<Block,std::function<void(Block*))>(p_block,deleter);
 }
 
-
-void Block::dump(const std::string filename){
-	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT | O_DIRECT ,666);
+std::unique_ptr<Block,std::function<void(Block*)> load_from_disk_by_mmap(const std::string filename){	
+	int fd = open(filename.c_str(),O_RDONLY,666);
 	if(fd == -1){
-		printf("open file %s failed !", filename.c_str());
-		exit(-1);				
-	}			
-	int ret_code = write(fd,this,get_flexible_size_of_block());
-	if(ret_code = -1){
-		printf("write file %s failed !",filename.c_str());
+		printf("open file %s failed !\n",filename.c_str());
+		exit(-1);
+	}
+	struct stat file_st;
+	int ret_code = fstat(fd,&file_st);
+	if(ret_code == -1){
+		printf("get file state of %s failed!\n",filename.c_str());
+		exit(-1);
+	}
+	auto len = file_st.st_size;
+	Block* p_block = mmap(nullptr,len,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+	if(p_block == nullptr || p_block == (void*) -1){
+		printf("mmap file  %s failed !\n",filename.c_str());
 		exit(-1);	
 	}
-	close(fd);
-}
 
-void Block::load(const std::string filename){	
-
+	auto deleter = [fd,len](Block* p_block){
+		munmap(p_block,len);
+		close(fd);
+	};
+	return std::unique_prt<Block,std::function<void(Block*)>>(p_block,deleter);	
 }
 
 
