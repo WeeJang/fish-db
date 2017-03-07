@@ -10,6 +10,11 @@ namespace db{
 // | LIST_SIZE | -- uint64
 // | DATA .....| -- uint64[LIST_SIZE]
 //-----------------
+struct RootTableSpec{
+	char magic_num_[8];
+	uint64_t list_size_;
+	uint64_t data_[1];	
+};//struct RootTableSpec
 
 
 class RootTable{

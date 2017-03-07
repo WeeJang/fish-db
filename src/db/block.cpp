@@ -59,8 +59,7 @@ std::unique_ptr<Block,std::function<void(Block*)> load_from_disk_by_mmap(const s
 		exit(-1);
 	}
 	struct stat file_st;
-	int ret_code = fstat(fd,&file_st);
-	if(ret_code == -1){
+	if(fstat(fd,&file_st) == -1){
 		printf("get file state of %s failed!\n",filename.c_str());
 		exit(-1);
 	}

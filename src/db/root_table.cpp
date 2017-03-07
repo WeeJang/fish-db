@@ -6,7 +6,7 @@
 namespace db{
 
 RootTable(const std::string& root_table_file){
-	
+		
 }
 			
 size_t RootTable::get_block_index_by_global_offset(uint64_t global_offset){
@@ -43,22 +43,57 @@ void RootTable::dump(const std::string& root_table_file = nullptr ){
 		root_table_file = table_name_;	
 	}
 	
-	int fd = open(root_table_file.c_str(),O_WRONLY | O_TRUNC,666);
+	int fd = open(root_table_file.c_str(),O_WRONLY|O_TRUNC|O_DIRECT,666);
 	if(-1 == fd){
 		printf("open root_table : %s  failed !\n",root_table_file.c_str());
 		exit(-1);
 	}
 	
-	if(write(fd,ROOT_MAGIC_NUM,sizeof(char) * 8) == -1){
-		printf("write root table: %s magic number failed !\n",root_table_file.c_str());
+	size_t prtable_spec_flexible_size = sizeof(RootTableSpec) + sizeof(uint64_t) * (block_offset_list_.size() - 1);
+	RootTableSpec* prtable_spec = (RootTableSpec*)malloc(prtable_spec_flexible_size);
+	strcpy(&(prtable_spec->magic_num_),RootTable::ROOT_MAGIC_NUM);
+	prtable_spec->list_size_ = block_offset_list_.size();
+	for(size_t i = 0; i < block_offset_list_.size();i ++){
+		prtable_spec->data_[i] = block_offset_list_[i];
+	}
+	
+	if(write(fd,prtable_spec,prtable_spec_flexible_size) == -1){
+		printf("write root table: %s failed !\n",root_table_file.c_str());
 		exit(-1);	
 	}	
 	
+	free(prtable_spec);	
+	close(fd);
 				
 }
 
-void RootTable::fast_init_by_dump_file(const std::string& root_table_file);
-
+void RootTable::fast_init_by_dump_file(const std::string& root_table_file){
+	int fd = open(root_table_file.c_str(),O_RDONLY,666);
+	if(-1 == fd){
+		printf("open file %s failed !\n",root_table_file.c_str());
+		exit(-1);
+	}
+	struct stat file_st;
+	if(fstat(fd,&file_st) == -1){
+		printf("get file state of %s failed !\n",filename.c_str());
+		exit(-1);
+	}
+	auto len = file_set.st_size;
+	RootTableSpec* prtable_spec = mmap(nullptr,len,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+	if(prtable_spec == nullptr || p_block == (void*)-1){
+		printf("mmap file %s failed !\n",root_table_file.c_str());
+		exit(-1);
+	}
+	
+	offset_list_.clear();
+	block_list_.clear();
+	for(size_t i = 0 ; i < prtable_spec->list_size_; i ++){
+		offset_list_.push_back(prtable_spec->data_[i]);	
+		block_list_.push_back(nullptr);//NOTE: lazy load?
+	}	
+	
+	
+}	
 
 }//namespace db
 
