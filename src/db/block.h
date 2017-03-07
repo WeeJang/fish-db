@@ -44,7 +44,7 @@ struct DataIndex{
 };//DataIndex
 
 class Block{
-	constexpr static BLOCK_MAGIC_NUM[8] = "CAYBACK1";
+	constexpr static BLOCK_MAGIC_NUM[8] = "CAYBACK";
 
 public:
 	Block():check_sum_(0) { strcpy(magic_num_,BLOCK_MAGIC_NUM);  };
@@ -76,6 +76,8 @@ private:
 //helper function
 std::unique_ptr<Block,std::function<void(Block*)>> create_block_by_raw_data(const char* p_data,size_t data_size);
 std::unique_ptr<Blcok,std::function<void(Block*)>> load_from_disk_by_mmap(const std::string filename);
+
+
 }//namespace db
 
 
