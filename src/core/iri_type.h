@@ -12,7 +12,6 @@ class IRITypeTrait{
 
 namespace IRIType{
 
-
 //当前用了128-md5中间的64bit,因此uint64可以支撑。以后变化了还需要改.
 class HashValue{
 	using value_type = uint64_t;
