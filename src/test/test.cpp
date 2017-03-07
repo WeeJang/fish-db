@@ -1,6 +1,7 @@
 #include<iostream>
 #include<sdsl/bit_vectors.hpp>
 #include<memory>
+#include<functional>
 
 class Demo{
 	Demo(){ std::cout << "cons" << std::endl; }	
@@ -32,9 +33,13 @@ int main(int argc,char** argv){
 	**/
 	
 	{
-		char* buf = (char*)malloc(sizeof(int) * 16);
-		
-	}	
+		int* p = new int(0);
+		int m = 4;
+		std::unique_ptr<int,std::function<void(int*)>> a(p,[m](int* D){ delete D ; std::cout << m << " hello world " << std::endl; } );	
+		std::cout << *a << std::endl;
+	}
+	std::cout << "fuck" << std::endl;
+
 
 	return 0;
 }
