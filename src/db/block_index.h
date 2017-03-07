@@ -8,10 +8,9 @@
 namespace db{
 
 class BlockIndex{
-	
 	using IndexType = decltype(Block::row_data_offset[0]);
 public:
-	explicit BlockIndex(Block&);
+	explicit BlockIndex(const Block&);
 	explicit BlockIndex(const string& blockfile_name);
 
 	const uint64_t block_id() const { return block_id_; }
