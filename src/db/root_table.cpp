@@ -36,6 +36,30 @@ size_t RootTable::get_block_index_by_global_offset(uint64_t global_offset){
 	return lower_pos;
 }
 
+
+
+void RootTable::dump(const std::string& root_table_file = nullptr ){
+	if(root_table_file == nullptr){
+		root_table_file = table_name_;	
+	}
+	
+	int fd = open(root_table_file.c_str(),O_WRONLY | O_TRUNC,666);
+	if(-1 == fd){
+		printf("open root_table : %s  failed !\n",root_table_file.c_str());
+		exit(-1);
+	}
+	
+	if(write(fd,ROOT_MAGIC_NUM,sizeof(char) * 8) == -1){
+		printf("write root table: %s magic number failed !\n",root_table_file.c_str());
+		exit(-1);	
+	}	
+	
+				
+}
+
+void RootTable::fast_init_by_dump_file(const std::string& root_table_file);
+
+
 }//namespace db
 
 

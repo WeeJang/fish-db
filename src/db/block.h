@@ -44,7 +44,7 @@ struct DataIndex{
 };//DataIndex
 
 class Block{
-	constexpr static BLOCK_MAGIC_NUM[8] = "CAYBACK";
+	constexpr static BLOCK_MAGIC_NUM[8] = "JWBLOCK";
 
 public:
 	Block():check_sum_(0) { strcpy(magic_num_,BLOCK_MAGIC_NUM);  };
