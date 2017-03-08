@@ -5,11 +5,24 @@ namespace db{
 constexpr char Block::BLOCK_MAGIC_NUM[8];
 
 void Block::dump(const std::string& filename){
+	strcpy(magic_num_,BLOCK_MAGIC_NUM);
 	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT ,0666);
 	if(fd == -1){
 		printf("open file %s failed !\n", filename.c_str());
 		exit(-1);				
-	}			
+	}	
+	std::cout << "alignof  : " << alignof(Block)  << std::endl;
+	std::cout << "BlockHeader size :" << sizeof(BlockHeader)  << std::endl;
+	std::cout << "BlockData size :" << sizeof(BlockData)  << std::endl;
+	std::cout << "magic_num_ size :" << sizeof(magic_num_)  << std::endl;
+	std::cout << "check_sum_ size :" << sizeof(check_sum_)  << std::endl;
+	std::cout << "row_data_off size :" << sizeof(row_data_offset_)  << std::endl;
+	std::cout << "row_data_offset_type size :" << sizeof(row_data_offset_type)  << std::endl;
+	std::cout << "Block size :" << sizeof(Block)  << std::endl;
+	std::cout << "dump size :" << get_flexible_size_of_block() << std::endl;
+	std::cout << "is pod : " << std::is_trivial<BlockHeader>::value << std::endl;
+	std::cout << "is pod : " << std::is_trivial<BlockData>::value << std::endl;
+	std::cout << "is pod : " << std::is_trivial<Block>::value << std::endl;
 	int ret_code = ::write(fd,this,get_flexible_size_of_block());
 	if(ret_code == -1){
 		printf("write file %s failed !\n",filename.c_str());

@@ -1,18 +1,20 @@
 #include "block_index.h"
 
+#include <iostream>
+
 namespace db{
 
 BlockIndex::BlockIndex(const Block& block){
-	block_id = block.block_id();
-	row_start_index = block.row_start_index();
-	row_count = block.row_count();
-	for(size_t i = 0 ; i < row_count ; i ++){
-		index_.push_back(row_data_offset[i]);
+	block_id_ = block.block_id();
+	row_start_index_ = block.row_start_index();
+	row_count_ = block.row_count();
+	for(size_t i = 0 ; i < row_count_ ; i ++){
+		index_.push_back(block.row_data_offset_[i]);
 	}
 }
 
-BlockIndex::BlockIndex(const string& filename)
-	int fd = open(filename.c_str(),O_RDONLY | O_DIRECT );
+BlockIndex::BlockIndex(const std::string& filename){
+	int fd = open(filename.c_str(),O_RDONLY); 
 	if(-1 == fd){
 		printf("block_index open file %s failed !\n",filename.c_str());
 		exit(-1);
@@ -29,26 +31,42 @@ BlockIndex::BlockIndex(const string& filename)
 	}
 
 	//TODO check check_sum
-	if(lseek(fd,sizeof(char),SEEK_CUR) == -1){
-		printf("file: %s lseek failed \n");
+	if(lseek(fd,8 * sizeof(char),SEEK_CUR) == -1){
+		printf("file:lseek failed \n");
 		exit(-1);
 	}
-	size_t bheader_size = sizeof(Block::BlockHeader);	
+	std::cout << "!!!!!!!!" << std::endl;
+	std::cout << lseek(fd,0,SEEK_CUR) << "seek !!!" << sizeof(char) << std::endl;	
+	std::cout << "!!!!!!!!" << std::endl;
+	
+	size_t bheader_size = sizeof(BlockHeader);	
 	BlockHeader* p_blockheader = (BlockHeader*)malloc(bheader_size);
 	if(read(fd,p_blockheader,bheader_size) == -1){
 		printf("read blockheader from %s failed !",filename.c_str());
 		exit(-1);
 	}
-	block_id = p_blockheader->block_id();
-	row_start_index = p_blockheader->row_start_index();
-	row_count = p_blockheader->row_count();
+	
+	
+	std::cout << bheader_size << "header_size" << std::endl;
+	block_id_ = p_blockheader->block_id_;
+	row_start_index_ = p_blockheader->row_start_index_;
+	row_count_ = p_blockheader->row_count_;
 	free(p_blockheader);
 	
-	if(lseek(fd,sizeof(Block::BlockData),SEEK_CUR) == -1){
+	std::cout << "===========" << std::endl;
+	std::cout << "bock_id " << block_id_ << std::endl;
+	std::cout << "row_start_index_ " << row_start_index_ << std::endl;
+	std::cout << "row_count_" << row_count_ << std::endl;
+	std::cout << "===========" << std::endl;
+
+	
+	if(lseek(fd,sizeof(BlockData),SEEK_CUR) == -1){
 		printf("file: %s lseek failed \n",filename.c_str());
 		exit(-1);
 	}
-	size_t bindex_size = sizeof(IndexType) * row_count ;
+	size_t bindex_size = sizeof(IndexType) * row_count_ ;
+	
+	std::cout << bindex_size << "bind_size" << std::endl;
 	IndexType* p_index = (IndexType*)malloc(bindex_size); 
 	if(read(fd,p_index,bindex_size) == -1){
 		printf("file : %s read index failed!\n",filename.c_str());	
@@ -59,9 +77,12 @@ BlockIndex::BlockIndex(const string& filename)
 		printf("file :%s check_eof failed!\n",filename.c_str());
 		exit(-1);
 	}
-	for(size_t i = 0; i < row_count ; i++){
+	for(size_t i = 0; i < row_count_ ; i++){
 		index_.push_back(*(p_index + i));
 	}
 	free(p_index);
 	close(fd);
+}
+
+
 }//namesapce db

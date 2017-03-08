@@ -1,20 +1,31 @@
 #ifndef DB_BLOCK_INDEX_H_
 #define DB_BLOCK_INDEX_H_
 
+#include "../utils/tiny_log.hpp"
+
 #include "block.h"
+
+#include <string>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
+namespace test{
+	class BlockIndexTest;
+}
+
 
 namespace db{
 
 class BlockIndex{
-	using IndexType = decltype(Block::row_data_offset[0]);
+	
+	friend class test::BlockIndexTest;
+
+	using IndexType = Block::row_data_offset_type;
 public:
 	explicit BlockIndex(const Block&);
-	explicit BlockIndex(const string& blockfile_name);
+	explicit BlockIndex(const std::string& blockfile_name);
 
 	const uint64_t block_id() const { return block_id_; }
 	const uint64_t row_start_index() const { return row_start_index_; }

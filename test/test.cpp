@@ -4,8 +4,13 @@
 #include<functional>
 
 class Demo{
-	Demo(){ std::cout << "cons" << std::endl; }	
-	~Demo(){ std::cout << "dest" << std::endl; }
+
+constexpr static int c = 4;
+constexpr static int c_a[5] = {1,1,1,1,1};
+
+public:
+	//Demo(){ int a = 4;};	
+
 private:
 //public:
 	int demo[3];	
@@ -50,6 +55,7 @@ int main(int argc,char** argv){
 		std::cout << "===========" << std::endl;
 		std::cout << sizeof(Demo)  << std::endl;
 		std::cout << sizeof(Demo::data_type) << std::endl;
+		std::cout << "is trival" << std::is_trivial<Demo>::value << std::endl;
 	}
 	std::cout << "fuck" << std::endl;
 
