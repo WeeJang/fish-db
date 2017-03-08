@@ -4,6 +4,7 @@
 #include "block_index.h"
 
 #include <vector>
+#include <iostream>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -45,6 +46,7 @@ class RootTable{
 
 	constexpr static char ROOT_MAGIC_NUM[8] = "JWROOTT";
 public:
+	RootTable(){}
 	RootTable(const std::string& root_table_file);
 			
 	uint64_t get_block_index_by_global_offset(uint64_t global_offset);	

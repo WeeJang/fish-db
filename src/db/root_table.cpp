@@ -54,14 +54,12 @@ void RootTable::dump(const std::string& root_table_file){
 		prtable_spec->data_[i] = block_offset_list_[i];
 	}
 	
-	if(write(fd,prtable_spec,prtable_spec_flexible_size) == -1){
+	if(::write(fd,prtable_spec,prtable_spec_flexible_size) == -1){
 		printf("write root table: %s failed !\n",root_table_file.c_str());
 		exit(-1);	
 	}	
-	
 	free(prtable_spec);	
 	close(fd);
-				
 }
 
 
