@@ -2,9 +2,7 @@
 
 namespace db{
 
-
 constexpr char Block::BLOCK_MAGIC_NUM[8];
-
 
 void Block::dump(const std::string& filename){
 	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT ,0666);
@@ -66,7 +64,10 @@ std::unique_ptr<Block,std::function<void(Block*)>> load_from_disk_by_mmap(const 
 		exit(-1);
 	}
 	auto len = file_st.st_size;
-	Block* p_block = (Block*)mmap(nullptr,len,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+	
+	LOG("file len %d",len);	
+	
+	Block* p_block = (Block*)mmap(nullptr,len,PROT_READ,MAP_SHARED,fd,0);
 	if(p_block == nullptr || p_block == (void*) -1){
 		printf("mmap file  %s failed !\n",filename.c_str());
 		exit(-1);	

@@ -1,6 +1,9 @@
 #ifndef DB_BLOCK_H_
 #define DB_BLOCK_H_
 
+#include "../utils/tiny_log.hpp"
+#include <iostream>
+
 #include <type_traits>
 #include <vector>
 #include <memory>
@@ -17,6 +20,8 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
+
+
 namespace db{
 
 struct BlockHeader{
@@ -67,7 +72,14 @@ public:
 	//TODO:ugly
 	void insert_row_data_offset(uint64_t index,uint32_t offset_value){ row_data_offset_[index] = offset_value ;}	
 
-	
+	//just for test,not use friend class
+	void output_offset(void) {
+		std::cout << "offset : [ " ;
+		for(size_t i = 0 ; i < block_header_.row_count_ ; i++){
+			std::cout << row_data_offset_[i] << " |";
+		}
+		std::cout << " ] " << std::endl;
+	}		
 
 //private:
 	void block_id(uint64_t block_id){ block_header_.block_id_ = block_id; }
