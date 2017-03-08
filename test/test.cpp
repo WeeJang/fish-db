@@ -6,6 +6,13 @@
 class Demo{
 	Demo(){ std::cout << "cons" << std::endl; }	
 	~Demo(){ std::cout << "dest" << std::endl; }
+private:
+//public:
+	int demo[3];	
+
+
+public:
+using data_type = std::remove_extent<decltype(demo)>::type;
 };
 
 
@@ -37,6 +44,12 @@ int main(int argc,char** argv){
 		int m = 4;
 		std::unique_ptr<int,std::function<void(int*)>> a(p,[m](int* D){ delete D ; std::cout << m << " hello world " << std::endl; } );	
 		std::cout << *a << std::endl;
+	}
+
+	{
+		std::cout << "===========" << std::endl;
+		std::cout << sizeof(Demo)  << std::endl;
+		std::cout << sizeof(Demo::data_type) << std::endl;
 	}
 	std::cout << "fuck" << std::endl;
 

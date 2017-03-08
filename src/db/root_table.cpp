@@ -1,4 +1,3 @@
-
 #include "root_table.h"
 
 	//std::vector<uint64_t> block_offset_list_;
@@ -6,7 +5,7 @@
 namespace db{
 
 RootTable(const std::string& root_table_file){
-		
+	table_name_ = root_table_file;				
 }
 			
 size_t RootTable::get_block_index_by_global_offset(uint64_t global_offset){
@@ -85,14 +84,12 @@ void RootTable::fast_init_by_dump_file(const std::string& root_table_file){
 		exit(-1);
 	}
 	
-	offset_list_.clear();
-	block_list_.clear();
+	block_offset_list_.clear();
+	block_index_list_.clear();
 	for(size_t i = 0 ; i < prtable_spec->list_size_; i ++){
 		offset_list_.push_back(prtable_spec->data_[i]);	
 		block_list_.push_back(nullptr);//NOTE: lazy load?
 	}	
-	
-	
 }	
 
 }//namespace db

@@ -1,9 +1,12 @@
 #ifndef DB_BLOCK_INDEX_H_
 #define DB_BLOCK_INDEX_H_
 
+#include "block.h"
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
 
 namespace db{
 

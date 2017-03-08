@@ -1,15 +1,18 @@
-#include "block.cpp"
+#include "block.h"
 
 namespace db{
 
 
-void Block::dump(const std::string filename){
-	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT | O_DIRECT ,666);
+constexpr char Block::BLOCK_MAGIC_NUM[8];
+
+
+void Block::dump(const std::string& filename){
+	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT ,0666);
 	if(fd == -1){
 		printf("open file %s failed !\n", filename.c_str());
 		exit(-1);				
 	}			
-	int ret_code = write(fd,this,get_flexible_size_of_block());
+	int ret_code = ::write(fd,this,get_flexible_size_of_block());
 	if(ret_code == -1){
 		printf("write file %s failed !\n",filename.c_str());
 		exit(-1);	
@@ -35,24 +38,23 @@ std::unique_ptr<Block,std::function<void(Block*)>> create_block_by_raw_data(cons
 		}	
 	}
 	
-	row_count(offset_list.size());
-
-	size_t flexible_block_size = sizeof(Block) + (offset_list.size() - 1) * sizeof(Block::row_data_offset[0]);
+	size_t flexible_block_size = sizeof(Block) + (offset_list.size() - 1) * sizeof(Block::row_data_offset_type);
 	char* buf = (char*)malloc(flexible_block_size); 
 	Block* p_block = new (buf) Block;
 	auto deleter = [buf](Block* p_block){ p_block->~Block(); free(buf); };	
+	p_block->row_count(offset_list.size());
 	
 	for(int i = 0 ; i < offset_list.size() ; i ++){
-		p_block->row_data_offset[i] = offset_list[i];	
+		p_block->insert_row_data_offset(i,offset_list[i]);
 	}
 	
 	p_block->write(p_data,data_size);	
 	
 	//TODO : check_sum_
-	return std::unique_ptr<Block,std::function<void(Block*))>(p_block,deleter);
+	return std::unique_ptr<Block,std::function<void(Block*)>>(p_block,deleter);
 }
 
-std::unique_ptr<Block,std::function<void(Block*)> load_from_disk_by_mmap(const std::string filename){	
+std::unique_ptr<Block,std::function<void(Block*)>> load_from_disk_by_mmap(const std::string filename){	
 	int fd = open(filename.c_str(),O_RDONLY,666);
 	if(fd == -1){
 		printf("open file %s failed !\n",filename.c_str());
@@ -64,7 +66,7 @@ std::unique_ptr<Block,std::function<void(Block*)> load_from_disk_by_mmap(const s
 		exit(-1);
 	}
 	auto len = file_st.st_size;
-	Block* p_block = mmap(nullptr,len,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
+	Block* p_block = (Block*)mmap(nullptr,len,PROT_READ|PROT_WRITE,MAP_SHARED,fd,0);
 	if(p_block == nullptr || p_block == (void*) -1){
 		printf("mmap file  %s failed !\n",filename.c_str());
 		exit(-1);	
@@ -74,7 +76,7 @@ std::unique_ptr<Block,std::function<void(Block*)> load_from_disk_by_mmap(const s
 		munmap(p_block,len);
 		close(fd);
 	};
-	return std::unique_prt<Block,std::function<void(Block*)>>(p_block,deleter);	
+	return std::unique_ptr<Block,std::function<void(Block*)>>(p_block,deleter);	
 }
 
 

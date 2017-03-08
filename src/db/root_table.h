@@ -29,9 +29,7 @@ public:
 private:
 	std::vector<uint64_t> block_offset_list_;
 	std::vector<std::shared_ptr<BlockIndex>> block_index_list_;	
-	
 	std::string table_name_; //block name : table_name.part_id
-	
 				
 };//class RootTable
 
