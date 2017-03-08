@@ -19,7 +19,7 @@ BlockIndex::BlockIndex(const std::string& filename){
 		printf("block_index open file %s failed !\n",filename.c_str());
 		exit(-1);
 	}
-	size_t magic_num_size = 8;
+	size_t magic_num_size = offsetof(Block,check_sum_);
 	char magic_num[magic_num_size];
 	if(read(fd,magic_num,magic_num_size) == -1){
 		printf("read %s failed!\n",filename.c_str());
@@ -31,7 +31,7 @@ BlockIndex::BlockIndex(const std::string& filename){
 	}
 
 	//TODO check check_sum
-	if(lseek(fd,8 * sizeof(char),SEEK_CUR) == -1){
+	if(lseek(fd,offsetof(Block,block_header_),SEEK_SET) == -1){
 		printf("file:lseek failed \n");
 		exit(-1);
 	}
@@ -46,7 +46,6 @@ BlockIndex::BlockIndex(const std::string& filename){
 		exit(-1);
 	}
 	
-	
 	std::cout << bheader_size << "header_size" << std::endl;
 	block_id_ = p_blockheader->block_id_;
 	row_start_index_ = p_blockheader->row_start_index_;
@@ -59,9 +58,8 @@ BlockIndex::BlockIndex(const std::string& filename){
 	std::cout << "row_count_" << row_count_ << std::endl;
 	std::cout << "===========" << std::endl;
 
-	
-	if(lseek(fd,sizeof(BlockData),SEEK_CUR) == -1){
-		printf("file: %s lseek failed \n",filename.c_str());
+	if(lseek(fd,offsetof(Block,row_data_offset_),SEEK_SET) == -1){
+		printf("file:lseek failed \n");
 		exit(-1);
 	}
 	size_t bindex_size = sizeof(IndexType) * row_count_ ;
