@@ -2,7 +2,7 @@ Apple LLVM version 8.0.0 (clang-800.0.42.1)
 Target: x86_64-apple-darwin16.4.0
 Thread model: posix
 InstalledDir: /Library/Developer/CommandLineTools/usr/bin
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block_test.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_test-f6d328.o -x c++ block_test.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name root_table_test.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/root_table_test-8332ac.o -x c++ root_table_test.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -16,7 +16,7 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block-491fff.o -x c++ ../src/db/block.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name root_table.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/root_table-5902c3.o -x c++ ../src/db/root_table.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -30,69 +30,5 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
-../src/db/block.cpp:78:20: warning: format specifies type 'int' but the argument has type 'long long' [-Wformat]
-        LOG("file len %d",len); 
-                      ~~  ^~~
-                      %lld
-../src/db/../utils/tiny_log.hpp:8:17: note: expanded from macro 'LOG'
-        fprintf(stderr,__VA_ARGS__); \
-                       ^~~~~~~~~~~
-1 warning generated.
- "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.12.0 -o block_test -L/Users/jiangwei/lib /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_test-f6d328.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block-491fff.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/lib/darwin/libclang_rt.osx.a
- "/Library/Developer/CommandLineTools/usr/bin/dsymutil" -o block_test.dSYM block_test
-Apple LLVM version 8.0.0 (clang-800.0.42.1)
-Target: x86_64-apple-darwin16.4.0
-Thread model: posix
-InstalledDir: /Library/Developer/CommandLineTools/usr/bin
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block_index_test.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_index_test-2cc61c.o -x c++ block_index_test.cpp
-clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
-ignoring nonexistent directory "/usr/include/c++/v1"
-#include "..." search starts here:
-#include <...> search starts here:
- /Users/jiangwei/include
- /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1
- /usr/local/include
- /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/include
- /Library/Developer/CommandLineTools/usr/include
- /usr/include
- /System/Library/Frameworks (framework directory)
- /Library/Frameworks (framework directory)
-End of search list.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block_index.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_index-447951.o -x c++ ../src/db/block_index.cpp
-clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
-ignoring nonexistent directory "/usr/include/c++/v1"
-#include "..." search starts here:
-#include <...> search starts here:
- /Users/jiangwei/include
- /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1
- /usr/local/include
- /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/include
- /Library/Developer/CommandLineTools/usr/include
- /usr/include
- /System/Library/Frameworks (framework directory)
- /Library/Frameworks (framework directory)
-End of search list.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block-8101d4.o -x c++ ../src/db/block.cpp
-clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
-ignoring nonexistent directory "/usr/include/c++/v1"
-#include "..." search starts here:
-#include <...> search starts here:
- /Users/jiangwei/include
- /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1
- /usr/local/include
- /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/include
- /Library/Developer/CommandLineTools/usr/include
- /usr/include
- /System/Library/Frameworks (framework directory)
- /Library/Frameworks (framework directory)
-End of search list.
-../src/db/block.cpp:78:20: warning: format specifies type 'int' but the argument has type 'long long' [-Wformat]
-        LOG("file len %d",len); 
-                      ~~  ^~~
-                      %lld
-../src/db/../utils/tiny_log.hpp:8:17: note: expanded from macro 'LOG'
-        fprintf(stderr,__VA_ARGS__); \
-                       ^~~~~~~~~~~
-1 warning generated.
- "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.12.0 -o block_index_test -L/Users/jiangwei/lib /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_index_test-2cc61c.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_index-447951.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block-8101d4.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/lib/darwin/libclang_rt.osx.a
- "/Library/Developer/CommandLineTools/usr/bin/dsymutil" -o block_index_test.dSYM block_index_test
+ "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.12.0 -o root_table_test -L/Users/jiangwei/lib /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/root_table_test-8332ac.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/root_table-5902c3.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/lib/darwin/libclang_rt.osx.a
+ "/Library/Developer/CommandLineTools/usr/bin/dsymutil" -o root_table_test.dSYM root_table_test
