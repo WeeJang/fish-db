@@ -12,6 +12,8 @@ public:
 	void pre(const std::string& pre) { pre_ = pre ; }
 	void obj(const std::string& obj) { obj_ = obj ; }
 
+	std::string to_string();
+
 private:
 	std::string sub_;
 	std::string pre_;

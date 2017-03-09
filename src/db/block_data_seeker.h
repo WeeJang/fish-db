@@ -2,7 +2,7 @@
 #define DB_BLOCK_DATA_SEERKER_
 
 #include "block.h"
-
+#include "../core/triple.h"
 
 #include <string>
 #include <memory>
@@ -15,10 +15,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+namespace test{
+	class BlockDataSeekerTest;	
+}//namespace test
+
+
 namespace core{
 	class TripleSpec; //forward-declartion
-}
-
+}//namesapce core
 
 namespace db{
 

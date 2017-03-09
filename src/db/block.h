@@ -54,6 +54,7 @@ class BlockIndex; //forward-declaration
 struct alignas(8) Block{
 
 	friend class BlockIndex;
+	friend class BlockDataSeeker;
 public:
 	//Block():check_sum_(0) { strcpy(magic_num_,BLOCK_MAGIC_NUM);  };
 	
