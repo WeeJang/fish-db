@@ -38,7 +38,6 @@ int BlockDataSeeker::get_triple_by_index(uint64_t row_index,std::shared_ptr<core
 			fprintf(stderr,"BlockDataSeeker read failed !\n");
 			exit(-1);
 		}
-		
 		if('\t' == read_c){
 			if(0 == triple_set_pos){
 				p_triple_spec->sub(elem_buffer);
@@ -53,6 +52,7 @@ int BlockDataSeeker::get_triple_by_index(uint64_t row_index,std::shared_ptr<core
 		}else if('\n' ==  read_c){
 			if(2 == triple_set_pos){
 				p_triple_spec->obj(elem_buffer);
+				triple_set_pos ++;
 				break;	
 			}else{
 				fprintf(stderr,"seek error! new_flag error \n");	
@@ -63,6 +63,10 @@ int BlockDataSeeker::get_triple_by_index(uint64_t row_index,std::shared_ptr<core
 		}
 		seek_pos ++;
 	}
+	if( 3 != triple_set_pos ){
+		fprintf(stderr,"get faild !\n");
+		return -1;
+	} 
 	return 0;
 }
 
