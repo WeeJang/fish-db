@@ -1,6 +1,7 @@
 #include<iostream>
 #include<sdsl/bit_vectors.hpp>
 #include<memory>
+#include<vector>
 #include<functional>
 
 class Demo{
@@ -19,6 +20,30 @@ private:
 public:
 using data_type = std::remove_extent<decltype(demo)>::type;
 };
+
+uint64_t get_block_index_by_global_offset(const std::vector<uint64_t> block_offset_list_,uint64_t global_offset){
+	size_t list_len = block_offset_list_.size();
+	size_t lower_pos = 0;
+	size_t upper_pos = list_len -1;
+	do{
+		if(upper_pos - lower_pos <= 3){
+			break;						
+		}
+		size_t mid_pos = (lower_pos + upper_pos) / 2;
+		if(global_offset <= block_offset_list_[mid_pos]){
+			upper_pos = mid_pos;
+		}else{
+			lower_pos = mid_pos;	
+		}
+
+	}while(true);
+	for(; lower_pos <= upper_pos ; lower_pos ++){
+		if(block_offset_list_[lower_pos] > global_offset){
+			break;
+		}	
+	}
+	return --lower_pos;
+}
 
 
 
@@ -42,7 +67,6 @@ int main(int argc,char** argv){
 	for(size_t i = 1; i <= ones ; i ++){
 		std::cout << sdb_sel(i) << " ";
 	}
-	**/
 	
 	{
 		int* p = new int(0);
@@ -59,7 +83,19 @@ int main(int argc,char** argv){
 	}
 	std::cout << "fuck" << std::endl;
 
-
+	**/
+	std::vector<uint64_t> vec = {0,5,8,15,39};
+	std::cout << 0 << get_block_index_by_global_offset(vec,0) << std::endl; 
+	std::cout << 0 << get_block_index_by_global_offset(vec,1) << std::endl; 
+	std::cout << 1 << get_block_index_by_global_offset(vec,5) << std::endl; 
+	std::cout << 1 << get_block_index_by_global_offset(vec,6) << std::endl; 
+	std::cout << 2 << get_block_index_by_global_offset(vec,8) << std::endl; 
+	std::cout << 2 << get_block_index_by_global_offset(vec,10) << std::endl; 
+	std::cout << 3 << get_block_index_by_global_offset(vec,15) << std::endl; 
+	std::cout << 3 << get_block_index_by_global_offset(vec,24) << std::endl; 
+	std::cout << 4 << get_block_index_by_global_offset(vec,39) << std::endl; 
+	std::cout << 4 <<get_block_index_by_global_offset(vec,46) << std::endl; 
+	
 	return 0;
 }
 

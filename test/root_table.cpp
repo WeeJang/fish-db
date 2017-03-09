@@ -25,14 +25,14 @@ uint64_t RootTable::get_block_index_by_global_offset(uint64_t global_offset){
 		}
 
 	}while(true);
-	
+
 	for(; lower_pos <= upper_pos ; lower_pos ++){
 		if(block_offset_list_[lower_pos] > global_offset){
+			lower_pos--;
 			break;
 		}	
 	}
-
-	return --lower_pos;
+	return lower_pos;
 }
 
 
