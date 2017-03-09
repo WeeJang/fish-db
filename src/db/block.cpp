@@ -4,6 +4,7 @@ namespace db{
 
 constexpr char Block::BLOCK_MAGIC_NUM[8];
 
+
 void Block::dump(const std::string& filename){
 	strcpy(magic_num_,BLOCK_MAGIC_NUM);
 	int fd = open(filename.c_str(),O_WRONLY | O_TRUNC | O_CREAT ,0666);
