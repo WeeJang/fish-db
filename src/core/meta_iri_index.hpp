@@ -8,7 +8,6 @@ namespace core{
 template<typename IRIType>
 class IRIIndex; //forward-declartion
 
-
 template<typename T>
 class MetaIRIIndex{
 	using MAP_KEY_T   = IRITypeTrait<T>::type;

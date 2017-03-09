@@ -68,7 +68,6 @@ std::unique_ptr<Block,std::function<void(Block*)>> load_from_disk_by_mmap(const 
 		exit(-1);
 	}
 	auto len = file_st.st_size;
-	LOG("file len %d",len);	
 	Block* p_block = (Block*)mmap(nullptr,len,PROT_READ,MAP_SHARED,fd,0);
 	if(p_block == nullptr || p_block == (void*) -1){
 		printf("mmap file  %s failed !\n",filename.c_str());

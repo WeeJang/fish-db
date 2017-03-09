@@ -12,6 +12,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+namespace test{  class BlockIndexTest; }
+
 namespace db{
 
 class BlockIndex{

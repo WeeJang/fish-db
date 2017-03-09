@@ -22,11 +22,16 @@
 #include <unistd.h>
 
 
+namespace test{ class BlockTest;/*forward-declaration*/ }//namespace test
+
 
 namespace db{
 
+class BlockIndex; //forward-declaration
+
 struct alignas(8) BlockHeader{
 	friend class Block;
+	friend class BlockIndex;
 private:
 	uint64_t block_id_; //block_id in group
 	uint64_t row_start_index_; //row start index of this block in global
@@ -58,7 +63,6 @@ public:
 	void write(const char* p_data,size_t size){ block_data_.write(p_data,size); }
 	//TODO:ugly
 	void insert_row_data_offset(uint64_t index,uint32_t offset_value){ row_data_offset_[index] = offset_value ;}	
-private:
 	void block_id(uint64_t block_id){ block_header_.block_id_ = block_id; }
 	void row_start_index(uint64_t row_start_index) { block_header_.row_start_index_ = row_start_index; }	
 	void row_count(uint64_t row_count) { block_header_.row_count_ = row_count; }		

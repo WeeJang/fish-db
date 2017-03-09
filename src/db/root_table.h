@@ -9,9 +9,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+namespace test{ class RootTableTest; /* forward-declaration */ } //
 
 namespace db{
-
 //-----------------
 // | MAGIC_NUM | -- char[8] 
 // | LIST_SIZE | -- uint64
