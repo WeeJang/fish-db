@@ -1,7 +1,5 @@
 #include "root_table.h"
 
-	//std::vector<uint64_t> block_offset_list_;
-	//std::vector<std::shared_ptr<BlockIndex>> block_index_list_;	
 namespace db{
 
 constexpr char RootTable::ROOT_MAGIC_NUM[8];
@@ -58,9 +56,6 @@ void RootTable::dump(const std::string& root_table_file){
 		printf("write root table: %s failed !\n",root_table_file.c_str());
 		exit(-1);	
 	}	
-	
-	fprintf(stderr,"size of RooTableSpec : %lu\n",sizeof(RootTableSpec));
-	fprintf(stderr,"size of flexi_RooTableSpec : %zu\n",prtable_spec_flexible_size);
 
 	free(prtable_spec);	
 	close(fd);
@@ -79,7 +74,6 @@ void RootTable::fast_init_by_dump_file(const std::string& root_table_file){
 		exit(-1);
 	}
 	auto len = file_st.st_size;
-	printf("mmap file len size  %lld !\n",len);
 	RootTableSpec* prtable_spec = (RootTableSpec*)mmap(nullptr,len,PROT_READ,MAP_SHARED,fd,0);
 	if(prtable_spec == nullptr || prtable_spec == (void*)-1){
 		printf("mmap file %s failed !\n",root_table_file.c_str());

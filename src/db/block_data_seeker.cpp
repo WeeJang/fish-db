@@ -1,12 +1,8 @@
-
 #include "block_data_seeker.h"
-
 
 namespace db{
 
-
 constexpr size_t BlockDataSeeker::start_offset_of_block_ = offsetof(Block,block_data_)  ;
-
 constexpr size_t BlockDataSeeker::end_offset_of_block_ = offsetof(Block,row_data_offset_);
 
 BlockDataSeeker::BlockDataSeeker(const std::string& block_file_name){	
@@ -15,7 +11,6 @@ BlockDataSeeker::BlockDataSeeker(const std::string& block_file_name){
 		fprintf(stderr,"BlockDataSeeker open file : %s failed !", block_file_name.c_str());
 		exit(-1);	
 	}
-	LOG("hello : %d",fd_);
 	is_file_open_ = true;		
 }
 
@@ -31,9 +26,6 @@ int BlockDataSeeker::get_triple_by_index(uint64_t row_index,std::shared_ptr<core
 	uint64_t seek_pos = row_index + start_offset_of_block_;
 	assert(seek_pos <  end_offset_of_block_);
 	
-	LOG("seek pos : %llu \n",seek_pos);
-	
-	LOG("result :fd : %d seek off : %lld\n ",fd_,lseek(fd_,seek_pos,SEEK_SET));
 	if(lseek(fd_,seek_pos,SEEK_SET) != seek_pos){
 		fprintf(stderr,"BlockDataSeeker seek_pos failed !\n");
 		exit(-1);			
@@ -47,8 +39,6 @@ int BlockDataSeeker::get_triple_by_index(uint64_t row_index,std::shared_ptr<core
 			exit(-1);
 		}
 		
-		LOG("======= got %c",read_c);
-	
 		if('\t' == read_c){
 			if(0 == triple_set_pos){
 				p_triple_spec->sub(elem_buffer);

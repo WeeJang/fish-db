@@ -35,9 +35,6 @@ BlockIndex::BlockIndex(const std::string& filename){
 		printf("file:lseek failed \n");
 		exit(-1);
 	}
-	std::cout << "!!!!!!!!" << std::endl;
-	std::cout << lseek(fd,0,SEEK_CUR) << "seek !!!" << sizeof(char) << std::endl;	
-	std::cout << "!!!!!!!!" << std::endl;
 	
 	size_t bheader_size = sizeof(BlockHeader);	
 	BlockHeader* p_blockheader = (BlockHeader*)malloc(bheader_size);
@@ -46,25 +43,17 @@ BlockIndex::BlockIndex(const std::string& filename){
 		exit(-1);
 	}
 	
-	std::cout << bheader_size << "header_size" << std::endl;
 	block_id_ = p_blockheader->block_id_;
 	row_start_index_ = p_blockheader->row_start_index_;
 	row_count_ = p_blockheader->row_count_;
 	free(p_blockheader);
 	
-	std::cout << "===========" << std::endl;
-	std::cout << "bock_id " << block_id_ << std::endl;
-	std::cout << "row_start_index_ " << row_start_index_ << std::endl;
-	std::cout << "row_count_" << row_count_ << std::endl;
-	std::cout << "===========" << std::endl;
-
 	if(lseek(fd,offsetof(Block,row_data_offset_),SEEK_SET) == -1){
 		printf("file:lseek failed \n");
 		exit(-1);
 	}
-	size_t bindex_size = sizeof(IndexType) * row_count_ ;
 	
-	std::cout << bindex_size << "bind_size" << std::endl;
+	size_t bindex_size = sizeof(IndexType) * row_count_ ;
 	IndexType* p_index = (IndexType*)malloc(bindex_size); 
 	if(read(fd,p_index,bindex_size) == -1){
 		printf("file : %s read index failed!\n",filename.c_str());	
