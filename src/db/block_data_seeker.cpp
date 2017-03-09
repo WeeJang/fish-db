@@ -47,7 +47,7 @@ int BlockDataSeeker::get_triple_by_index(uint64_t row_index,std::shared_ptr<core
 			if(0 == triple_set_pos){
 				p_triple_spec->sub(elem_buffer);
 			}else if(1 == triple_set_pos){
-				p_triple_spec->prd(elem_buffer);
+				p_triple_spec->pre(elem_buffer);
 			}else{
 				p_triple_spec->obj(elem_buffer);
 			}		
