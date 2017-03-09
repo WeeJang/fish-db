@@ -3,6 +3,8 @@
 
 #include "block.h"
 #include "../core/triple.h"
+#include "../utils/tiny_log.hpp"
+
 
 #include <string>
 #include <memory>
