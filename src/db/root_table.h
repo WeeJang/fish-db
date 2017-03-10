@@ -42,6 +42,12 @@ public:
 	void dump(const std::string& root_table_file);
 	void dump() { dump(table_name_); }
 	void fast_init_by_dump_file(const std::string& root_table_file);
+
+	void resize_offset_list(size_t new_size) {
+		block_offset_list_.resize(new_size);
+		block_index_list_.resize(new_size);
+	}
+
 private:
 	std::vector<uint64_t> block_offset_list_;
 	std::vector<std::shared_ptr<BlockIndex>> block_index_list_;	

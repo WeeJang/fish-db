@@ -32,18 +32,8 @@ public:
 				std::shared_ptr<std::vector<core::TripleSpec>> query_result);
 
 private:
-	void init(){
-		db_dir_path_ =std::string("/Users/jiangwei/Workspace/cayley-backend/data/");
-		db_dir_path_ += db_name_;
-		
-		db_block_dir_path_ = db_dir_path_;	
-		db_roottable_dir_path_ = db_dir_path_;
-		
-		db_block_dir_path_ += std::string("/block/");
-		db_roottable_path_ += std::string("/root");
-		db_iri_dir_path_   += std::string("/iri_index/");	
-	}
-	
+	void init(){}
+
 private:
 	std::string db_dir_path_;	
 	std::string db_roottable_path_;

@@ -3,10 +3,39 @@
 
 namespace fishdb{
 
+
+void FishDBImpl::init(){
+	db_dir_path_ =std::string("/Users/jiangwei/Workspace/cayley-backend/data/");
+	db_dir_path_ += db_name_;
+	
+	db_block_dir_path_ = db_dir_path_;	
+	db_roottable_dir_path_ = db_dir_path_;
+	
+	db_block_dir_path_ += std::string("/block/");
+	db_roottable_path_ += std::string("/root");
+	db_iri_dir_path_   += std::string("/iri_index/");	
+}
+
+
 int FishDBImpl::open_db(const std::string& db_name){
 	//初始化root_table
 	//载入iri 索引
-	//初始化block_index索引	
+	//初始化block_index索引
+	db_name_ = db_name;
+	init();
+	root_table_.fast_init_by_dump_file(db_roottable_path_);
+	hv_meta_iri_index_.load_from_files(db_iri_dir_path_);	
+	ss_meta_iri_index_.load_from_files(db_iri_dir_path_);	
+	
+	std::vector<std::string> block_file_list = utils::get_file_list(db_block_dir_path_);
+	root_table_.resize(block_file_list.size());	
+	for(auto& file_name : block_file_list){ 
+		std::string block_file_path(db_block_dir_path_);
+		block_file_path += file_name;
+		auto p_block_index = std::make_shared<db::BlockIndex>(file_name);
+		root_table_.modify_block_index_at(p_block_index->block_id(),p_bock_index->row_start_index(),p_block_index);
+	}	
+	return 0;
 }
 
 
@@ -18,9 +47,12 @@ int FishDBImpl::create_db(const std::string& db_name){
 		exit(-1);
 	}
 	root_table_ = db::RootTable(db_roottable_path_);
+	return 0;
 }
 
-int FishDBImpl::close_db() 
+int FishDBImpl::close_db(){
+	return 0;
+}
 	
 int FishDBImpl::load_data(const std::string& triple_file_path){
 	//buffer,size= ringbuffer 读入 < (1<<27)的行数据
@@ -107,7 +139,6 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 	//dump iri_index
 	hv_meta_iri_index_->save_to_files(db_iri_dir_path_);	
 	ss_meta_iri_index_->save_to_files(db_iri_dir_path_);	
-	
 }
 
 /**
