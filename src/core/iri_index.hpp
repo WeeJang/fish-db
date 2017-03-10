@@ -28,7 +28,21 @@ public:
 	const sdsl::bit_vector& obj_index() const {
 		return obj_index_;
 	}		
+
+	bool save_to_files(const std::string dict_path){
+		return (sdsl::save_to_file(sub_index_,dict_path + std::string("/sub.index"))) && \
+			(sdsl::save_to_file(pre_index_,dict_path + std::string("/pre.index")))&& \
+			(sdsl::save_to_file(obj_index_,dict_path + std::string("/obj.index")));
+	}
 	
+	bool load_from_files(const std::string dict_path){
+		return (sdsl::load_from_file(sub_index_,dict_path + std::string("/sub.index"))) && \
+			(sdsl::load_from_file(pre_index_,dict_path + std::string("/pre.index"))) && \
+			(sdsl::load_from_file(obj_index_,dict_path + std::string("/obj.index")));			
+	}
+
+
+
 private:
 	IRIType value_;
 	sdsl::bit_vector sub_index_;	

@@ -6,6 +6,9 @@
 
 class Demo{
 
+
+using STR = std::string("hello");
+
 constexpr static int c = 4;
 constexpr static int c_a[5] = {1,1,1,1,1};
 
@@ -95,6 +98,8 @@ int main(int argc,char** argv){
 	std::cout << 3 << get_block_index_by_global_offset(vec,24) << std::endl; 
 	std::cout << 4 << get_block_index_by_global_offset(vec,39) << std::endl; 
 	std::cout << 4 <<get_block_index_by_global_offset(vec,46) << std::endl; 
+
+	std::cout << Demo::STR;
 	
 	return 0;
 }
