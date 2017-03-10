@@ -141,6 +141,8 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 	ss_meta_iri_index_->save_to_files(db_iri_dir_path_);	
 }
 
+
+
 /**
 *	get_triple("df:96666","df:type.object.name","?",query_result);
 *	get_triple("?","df:type.object.name","?",query_result);
@@ -148,9 +150,9 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 int FishDbImpl::get_triple(const std::string& sub_str,\
 		const std::string& pre_str,\
 		const std::string& obj_str,\
-		std::shared_ptr<std::vector<core::TripleSpec>> query_result);
-
-};//class DB
+		std::shared_ptr<std::vector<core::TripleSpec>> query_result){
+					
+}
 
 }//namespace fishdb
 

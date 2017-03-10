@@ -21,6 +21,8 @@ private:
 
 };//TripleSpec
 
+//helper function
+TripleSpec make_triple_by_line(const std::string triple_line);
 
 }//namespace core
 
