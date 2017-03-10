@@ -1,7 +1,6 @@
 #ifndef FISHDB_H_
 #define FISHDB_H_
 
-
 namespace fishdb{
 
 int FishDBImpl::open_db(const std::string& db_name){
@@ -13,19 +12,15 @@ int FishDBImpl::open_db(const std::string& db_name){
 
 int FishDBImpl::create_db(const std::string& db_name){
 	db_name_ = db_name;
-	std::string db_data_dir_path("/Users/jiangwei/Workspace/cayley-backend/data/");
-	db_data_dir_path.append(db_name);
-	db_dir_path_ = db_data_dir_path;	
-	if(-1 == utils::mkdir(db_data_dir_path)){
+	init();
+	if(-1 == utils::mkdir(db_dir_path_)){
 		fprintf(stderr,"mkdir %s failed! Maybe exist alreday .",db_data_dir_path.c_str());	
 		exit(-1);
 	}
-	std::string root_table_path(db_dir_path_);
-	root_table_path.append(std::string("root"));	
-	root_table_ = db::RootTable(root_table_path);
+	root_table_ = db::RootTable(db_roottable_path_);
 }
 
-int FishDBImpl::close_db()  ;
+int FishDBImpl::close_db() 
 	
 int FishDBImpl::load_data(const std::string& triple_file_path){
 	//buffer,size= ringbuffer 读入 < (1<<27)的行数据
@@ -40,7 +35,8 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 		fprintf(stderr,"FishDBImpl open file %s failed !",triple_file_path.c_str());
 		exit(-1);				
 	}
-	
+
+	std::string 	
 	uint64_t row_offset_in_global = 0; //row-count in global
 	uint64_t last_block_start_offset = 0; //last block start_offset
 	uint64_t block_id_counter = -1; 
@@ -101,12 +97,17 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 		p_block->row_start_index(last_block_start_offset); //row 	
 		auto p_block_index = std::make_shared<db::BlockIndex>(p_block);		
 		root_table_.append(last_block_start_offset,p_block_index);				
-		p_block->dump();		
+		std::string block_path(db_block_dir_path_);
+		block_path += std::to_string(block_id_counter);
+		p_block->dump(block_path);		
 		//update	
 		last_block_start_offset = row_offset_in_global;
 	}
-	
 	free(buffer);			
+	//dump iri_index
+	hv_meta_iri_index_->save_to_files(db_iri_dir_path_);	
+	ss_meta_iri_index_->save_to_files(db_iri_dir_path_);	
+	
 }
 
 /**
