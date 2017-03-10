@@ -29,6 +29,25 @@ public:
 		return obj_index_;
 	}		
 
+	void add_index(const char triple_elem_pos,const size_t 1_pos){
+		switch(triple_elem_pos){
+		case 0:
+			sub_index_[1_pos] = 1;
+			break;
+		case 1:
+			pre_index_[1_pos] = 1;
+			break;
+		case 2:
+			obj_index_[1_pos] = 1;
+			break;
+		default:
+			fprintf(stderr,"IRIIndex add_index : %d error\n",triple_elem_pos);
+			exit(-1);
+		}			
+	}
+	
+
+
 	bool save_to_files(const std::string dict_path){
 		return (sdsl::save_to_file(sub_index_,dict_path + std::string("/sub.index"))) && \
 			(sdsl::save_to_file(pre_index_,dict_path + std::string("/pre.index")))&& \

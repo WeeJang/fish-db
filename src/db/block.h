@@ -40,6 +40,7 @@ private:
 
 struct alignas(8) BlockData{
 	friend class Block;
+public:
 	constexpr static uint32_t BLOCK_DATA_SIZE_LIMIT = 1 << 27; //128MB
 	void init() { memset(data_,0,sizeof(data_)); }
 	void write(const char* p_data,size_t data_size) ;
@@ -60,6 +61,11 @@ public:
 	const size_t get_flexible_size_of_block() const {
 		return sizeof(Block) + (row_count() - 1) * sizeof(Block::row_data_offset_[0]);
 	}
+
+	void block_id(uint64_t block_id) { block_header_.block_id_ = block_id ;}
+	void row_start_index(uint64_t index) { block_header_.row_start_index_ = index ; }
+	void row_count(uint64_t row_count) { block_header_.row_count_ = row_count ; }
+
 	void write(const char* p_data,size_t size){ block_data_.write(p_data,size); }
 	//TODO:ugly
 	void insert_row_data_offset(uint64_t index,uint32_t offset_value){ row_data_offset_[index] = offset_value ;}	

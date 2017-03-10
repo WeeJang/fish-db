@@ -24,6 +24,7 @@ std::vector<std::string> get_file_list_with_prefix(const std::string& dictionry_
 std::vector<std::string> get_dict_list(const std::string& dictionry_path);
 std::vector<std::string> get_dict_list_with_prefix(const std::string& dictionry_path,const std::string& prefix_str);
 
+
 }//namespace utils
 
 #endif

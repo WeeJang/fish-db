@@ -35,7 +35,8 @@ private:
 	std::string db_dir_path_;	
 	std::string db_name_;
 	db::RootTable root_table_;
-
+	core::MetaIRIIndex<HashValue> hv_meta_iri_index_;
+	core::MetaIRIIndex<ShortString> ss_meta_iri_index_;	
 };//class DB
 
 }//namespace fishdb

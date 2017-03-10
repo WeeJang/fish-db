@@ -25,6 +25,11 @@ public:
 			return got->second;
 		}
 	}
+
+	MAP_VALUE_T& operator[] (const MAP_KEY_T& key){
+		return meta_iri_map_[key];
+	}
+	
 	//insert	
 	void insert_IRI_index(T iri_value,MAP_VALUE_T shp_iri_index){
 		meta_iri_map_.insert(std::make_pair<MAP_KEY_T,MAP_VALUE_T>(iri_value.value(),shp_iri_index);
