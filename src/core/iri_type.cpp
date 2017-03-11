@@ -1,10 +1,11 @@
 #include "iri_type.h"
 
+namespace core{
 
 namespace IRIType{
 
-constexpr char const* HashValue::TYPE_STR;
-constexpr char const* ShortString::TYPE_STR;
+constexpr char HashValue::TYPE_STR[3];
+constexpr char ShortString::TYPE_STR[3];
 
 bool is_hashvalue(const char* p_str,size_t len){
 	if(len != 16){
@@ -26,4 +27,6 @@ bool is_hashvalue(const char* p_str,size_t len){
 }
 
 
-}
+}//IRIType
+
+}//core

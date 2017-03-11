@@ -19,7 +19,7 @@ namespace IRIType{
 class HashValue{
 public:
 	using value_type = uint64_t;
-	constexpr static char const* TYPE_STR = "HV";
+	constexpr static char TYPE_STR[3] = "HV";
 
 public:	
 	explicit HashValue(value_type value):value_(value){}
@@ -33,7 +33,7 @@ private:
 class ShortString{
 public:
 	using value_type = std::string;
-	constexpr static char const* TYPE_STR = "SS";
+	constexpr static char TYPE_STR[3] = "SS";
 public:
 	explicit ShortString(value_type value):value_(value){}
 	value_type value() { return value_; }	
