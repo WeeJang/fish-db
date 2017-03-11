@@ -68,10 +68,7 @@ public:
 
 	void write(const char* p_data,size_t size){ block_data_.write(p_data,size); }
 	//TODO:ugly
-	void insert_row_data_offset(uint64_t index,uint32_t offset_value){ row_data_offset_[index] = offset_value ;}	
-	void block_id(uint64_t block_id){ block_header_.block_id_ = block_id; }
-	void row_start_index(uint64_t row_start_index) { block_header_.row_start_index_ = row_start_index; }	
-	void row_count(uint64_t row_count) { block_header_.row_count_ = row_count; }		
+	void insert_row_data_offset(uint64_t index,uint32_t offset_value){ row_data_offset_[index] = offset_value ;}
 
 private:
 	char        magic_num_[8];

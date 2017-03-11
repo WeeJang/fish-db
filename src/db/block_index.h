@@ -21,6 +21,7 @@ class BlockIndex{
 	using IndexType = Block::row_data_offset_type;
 public:
 	explicit BlockIndex(const Block&);
+	explicit BlockIndex(Block*);
 	explicit BlockIndex(const std::string& blockfile_name);
 
 	const uint64_t block_id() const { return block_id_; }

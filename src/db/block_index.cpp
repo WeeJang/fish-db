@@ -13,6 +13,15 @@ BlockIndex::BlockIndex(const Block& block){
 	}
 }
 
+BlockIndex::BlockIndex(Block* p_block){
+	block_id_ = p_block->block_id();
+	row_start_index_ = p_block->row_start_index();
+	row_count_ = p_block->row_count();
+	for(size_t i = 0 ; i < row_count_ ; i ++){
+		index_.push_back(p_block->row_data_offset_[i]);
+	}
+}
+
 BlockIndex::BlockIndex(const std::string& filename){
 	int fd = open(filename.c_str(),O_RDONLY); 
 	if(-1 == fd){

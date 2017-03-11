@@ -91,13 +91,13 @@ void RootTable::fast_init_by_dump_file(const std::string& root_table_file){
 }	
 
 
-bool RootTable::modify_block_index_at(uint64_t block_id,uint64_t block_offset,std::shared_ptr<BlockIndex>> p_block_index){
+bool RootTable::modify_block_index_at(uint64_t block_id,uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index){
 	return false;
 }
 
-bool RootTable::append_block_index(uint64_t block_offset,std::shared_ptr<BLockIndex>> p_block_index){
+bool RootTable::append_block_index(uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index){
 	block_offset_list_.push_back(block_offset);	
-	p_block_index_.push_back(p_block_index);
+	block_index_list_.push_back(p_block_index);
 	return true;
 }
 

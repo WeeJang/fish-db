@@ -1,17 +1,22 @@
 #ifndef FISHDB_H_
 #define FISHDB_H_
 
+#include "iri_index.hpp"
+#include "meta_iri_index.hpp"
 #include "triple.h"
+#include "../db/root_table.h"
 #include "../utils/file_util.h"
 
 #include <string>
 #include <vector>
 #include <memory>
 
+namespace test{ class FishDBTest; }
+
 namespace fishdb{
 
-class FishDbImpl {
-
+class FishDBImpl {
+	friend class test::FishDBTest;
 public:
 	FishDBImpl() { }
 	virtual ~FishDBImpl() {}
@@ -32,7 +37,7 @@ public:
 				std::shared_ptr<std::vector<core::TripleSpec>> query_result);
 
 private:
-	void init(){}
+	void init();
 
 private:
 	std::string db_dir_path_;	
@@ -41,8 +46,8 @@ private:
 	std::string db_iri_dir_path_;
 	std::string db_name_;
 	db::RootTable root_table_;
-	core::MetaIRIIndex<HashValue> hv_meta_iri_index_;
-	core::MetaIRIIndex<ShortString> ss_meta_iri_index_;	
+	core::MetaIRIIndex<core::IRIType::HashValue> hv_meta_iri_index_;
+	core::MetaIRIIndex<core::IRIType::ShortString> ss_meta_iri_index_;	
 };//class DB
 
 }//namespace fishdb

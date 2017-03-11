@@ -1,5 +1,5 @@
-#ifndef FISHDB_H_
-#define FISHDB_H_
+#include "fish_db_impl.h"
+
 
 namespace fishdb{
 
@@ -9,7 +9,7 @@ void FishDBImpl::init(){
 	db_dir_path_ += db_name_;
 	
 	db_block_dir_path_ = db_dir_path_;	
-	db_roottable_dir_path_ = db_dir_path_;
+	db_roottable_path_ = db_dir_path_;
 	
 	db_block_dir_path_ += std::string("/block/");
 	db_roottable_path_ += std::string("/root");
@@ -28,12 +28,12 @@ int FishDBImpl::open_db(const std::string& db_name){
 	ss_meta_iri_index_.load_from_files(db_iri_dir_path_);	
 	
 	std::vector<std::string> block_file_list = utils::get_file_list(db_block_dir_path_);
-	root_table_.resize(block_file_list.size());	
+	root_table_.resize_offset_list(block_file_list.size());	
 	for(auto& file_name : block_file_list){ 
 		std::string block_file_path(db_block_dir_path_);
 		block_file_path += file_name;
 		auto p_block_index = std::make_shared<db::BlockIndex>(file_name);
-		root_table_.modify_block_index_at(p_block_index->block_id(),p_bock_index->row_start_index(),p_block_index);
+		root_table_.modify_block_index_at(p_block_index->block_id(),p_block_index->row_start_index(),p_block_index);
 	}	
 	return 0;
 }
@@ -43,7 +43,7 @@ int FishDBImpl::create_db(const std::string& db_name){
 	db_name_ = db_name;
 	init();
 	if(-1 == utils::mkdir(db_dir_path_)){
-		fprintf(stderr,"mkdir %s failed! Maybe exist alreday .",db_data_dir_path.c_str());	
+		fprintf(stderr,"mkdir %s failed! Maybe exist alreday .",db_dir_path_.c_str());	
 		exit(-1);
 	}
 	root_table_ = db::RootTable(db_roottable_path_);
@@ -55,20 +55,12 @@ int FishDBImpl::close_db(){
 }
 	
 int FishDBImpl::load_data(const std::string& triple_file_path){
-	//buffer,size= ringbuffer 读入 < (1<<27)的行数据
-	//block = create_block_by_row_data(buffer,size)
-	//构建iri 索引
-	//构建block_index索引
-	//添加到root_table
-	//block.dump
-	//release block
 	int fd = ::open(triple_file_path.c_str(),O_RDONLY);
 	if(-1 == fd){
 		fprintf(stderr,"FishDBImpl open file %s failed !",triple_file_path.c_str());
 		exit(-1);				
 	}
 
-	std::string 	
 	uint64_t row_offset_in_global = 0; //row-count in global
 	uint64_t last_block_start_offset = 0; //last block start_offset
 	uint64_t block_id_counter = -1; 
@@ -80,7 +72,7 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 	char triple_elem_pos = 0;
 
 	//not used ringbuffer
-	while((has_read_size = ::read(fd,buffer,block_size) != -1){
+	while((has_read_size = ::read(fd,buffer,block_size)) != -1){
 		block_id_counter ++;		
 		//find last '\n'	
 		size_t row_block_size = has_read_size;	
@@ -107,28 +99,29 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 
 			if(*(buffer + i) != '\t'){
 				sstream << *(buffer+i);
-				continue
+				continue;
 			}
 			auto elem_str = sstream.str();
 			sstream.str("");
 			//only sub/obj will be md5	
 			if( 0 == triple_elem_pos || 2 == triple_elem_pos){
-				if(IRIType::is_hashvalue(elem_str.c_str(),elem_str.size())){
+				if(core::IRIType::is_hashvalue(elem_str.c_str(),elem_str.size())){
 					auto elem_int = ::strtol(elem_str.c_str(),nullptr,16);
 					auto& iri_index =  hv_meta_iri_index_[elem_int];
-					iri_index.add_index(triple_elem_pos++,row_offset_in_global);
+					iri_index->add_index(triple_elem_pos++,row_offset_in_global);
 					continue;
 				}	
 			}
 			auto& iri_index =  ss_meta_iri_index_[elem_str];
-			iri_index.add_index(triple_elem_pos++,row_offset_in_global);		
+			iri_index->add_index(triple_elem_pos++,row_offset_in_global);		
 		}
 
-		auto p_block = db::create_block_by_row_data(buffer,row_block_size);
+		//ugly	
+		auto p_block = db::create_block_by_raw_data(buffer,row_block_size);
 		p_block->block_id(block_id_counter);
 		p_block->row_start_index(last_block_start_offset); //row 	
-		auto p_block_index = std::make_shared<db::BlockIndex>(p_block);		
-		root_table_.append(last_block_start_offset,p_block_index);				
+		auto p_block_index = std::make_shared<db::BlockIndex>(p_block.get());		
+		root_table_.append_block_index(last_block_start_offset,p_block_index);				
 		std::string block_path(db_block_dir_path_);
 		block_path += std::to_string(block_id_counter);
 		p_block->dump(block_path);		
@@ -137,8 +130,9 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 	}
 	free(buffer);			
 	//dump iri_index
-	hv_meta_iri_index_->save_to_files(db_iri_dir_path_);	
-	ss_meta_iri_index_->save_to_files(db_iri_dir_path_);	
+	hv_meta_iri_index_.save_to_files(db_iri_dir_path_);	
+	ss_meta_iri_index_.save_to_files(db_iri_dir_path_);
+	return 0;
 }
 
 
@@ -147,13 +141,12 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 *	get_triple("df:96666","df:type.object.name","?",query_result);
 *	get_triple("?","df:type.object.name","?",query_result);
 */	
-int FishDbImpl::get_triple(const std::string& sub_str,\
+int FishDBImpl::get_triple(const std::string& sub_str,\
 		const std::string& pre_str,\
 		const std::string& obj_str,\
 		std::shared_ptr<std::vector<core::TripleSpec>> query_result){
-					
+	return 0;				
 }
 
 }//namespace fishdb
 
-#endif // FISH_DB_H
