@@ -9,14 +9,13 @@ void FishDBImpl::init(){
 	db_dir_path_ += db_name_;
 	
 	db_block_dir_path_ = db_dir_path_;	
+	db_iri_dir_path_ = db_dir_path_;	
 	db_roottable_path_ = db_dir_path_;
 	
 	db_block_dir_path_ += std::string("/block/");
-	db_roottable_path_ += std::string("/root");
 	db_iri_dir_path_   += std::string("/iri_index/");	
+	db_roottable_path_ += std::string("/root");
 
-	//hv_meta_iri_index_ =
-	//ss_meta_iri_index_ = 
 }
 
 
@@ -49,6 +48,15 @@ int FishDBImpl::create_db(const std::string& db_name){
 		fprintf(stderr,"mkdir %s failed! Maybe exist alreday .",db_dir_path_.c_str());	
 		exit(-1);
 	}
+	if(-1 == utils::mkdir(db_block_dir_path_)){
+		fprintf(stderr,"mkdir %s failed! Maybe exist alreday .",db_block_dir_path_.c_str());	
+		exit(-1);
+	}
+	if(-1 == utils::mkdir(db_iri_dir_path_)){
+		fprintf(stderr,"mkdir %s failed! Maybe exist alreday .",db_iri_dir_path_.c_str());	
+		exit(-1);
+	}
+
 	root_table_ = db::RootTable(db_roottable_path_);
 	return 0;
 }
@@ -77,6 +85,11 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 	//not used ringbuffer
 	while((has_read_size = ::read(fd,buffer,block_size)) != -1){
 		LOG("has read size : %zu",has_read_size);
+		if( (1 == has_read_size) && ('\n' == *buffer) ){
+			LOG("read finish !");
+			break;	
+		}
+
 		block_id_counter ++;		
 		//find last '\n'	
 		size_t row_block_size = has_read_size;	
