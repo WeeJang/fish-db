@@ -1,3 +1,4 @@
+#include "../utils/tiny_log.hpp"
 
 #include <sdsl/bit_vectors.hpp>
 
@@ -30,6 +31,7 @@ public:
 	}		
 
 	void add_index(const char triple_elem_pos,const size_t pos){
+		LOG("tirple elem pos : %d, pos : %zu pos",triple_elem_pos,pos);
 		switch(triple_elem_pos){
 		case 0:
 			sub_index_[pos] = 1;

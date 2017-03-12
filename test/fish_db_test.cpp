@@ -9,7 +9,7 @@ public:
 	void test(){
 		fishdb::FishDBImpl db;
 		db.create_db("test_db");
-		db.load_data("no_exit");
+		db.load_data("/Users/jiangwei/Workspace/cayley-backend/test/data/test.spo");
 		db.close_db();
 	}
 

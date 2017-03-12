@@ -73,6 +73,7 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 
 	//not used ringbuffer
 	while((has_read_size = ::read(fd,buffer,block_size)) != -1){
+		LOG("has read size : %uz",has_read_size);
 		block_id_counter ++;		
 		//find last '\n'	
 		size_t row_block_size = has_read_size;	
@@ -103,6 +104,7 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 			}
 			auto elem_str = sstream.str();
 			sstream.str("");
+			LOG("elem str : %s",elem_str.c_str());
 			//only sub/obj will be md5	
 			if( 0 == triple_elem_pos || 2 == triple_elem_pos){
 				if(core::IRIType::is_hashvalue(elem_str.c_str(),elem_str.size())){

@@ -6,6 +6,7 @@
 #include "triple.h"
 #include "../db/root_table.h"
 #include "../utils/file_util.h"
+#include "../utils/tiny_log.hpp"
 
 #include <string>
 #include <vector>

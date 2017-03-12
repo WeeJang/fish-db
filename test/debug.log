@@ -2,7 +2,7 @@ Apple LLVM version 8.0.0 (clang-800.0.42.1)
 Target: x86_64-apple-darwin16.4.0
 Thread model: posix
 InstalledDir: /Library/Developer/CommandLineTools/usr/bin
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name fish_db_test.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/fish_db_test-e925f9.o -x c++ fish_db_test.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name fish_db_test.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/fish_db_test-2f018d.o -x c++ fish_db_test.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -16,17 +16,7 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
-In file included from fish_db_test.cpp:1:
-In file included from ./../src/core/fish_db_impl.h:5:
-In file included from ./../src/core/meta_iri_index.hpp:1:
-./../src/core/iri_type.h:22:38: error: initializer-string for char array is too long
-        constexpr static char TYPE_STR[2] = "HV";
-                                            ^~~~
-./../src/core/iri_type.h:36:38: error: initializer-string for char array is too long
-        constexpr static char TYPE_STR[2] = "SS";
-                                            ^~~~
-2 errors generated.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block-d4db6b.o -x c++ ../src/db/block.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block-0ad990.o -x c++ ../src/db/block.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -40,7 +30,7 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block_index.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_index-98c739.o -x c++ ../src/db/block_index.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block_index.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_index-4cc877.o -x c++ ../src/db/block_index.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -54,7 +44,7 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name root_table.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/root_table-5f2bf8.o -x c++ ../src/db/root_table.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name root_table.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/root_table-ab3723.o -x c++ ../src/db/root_table.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -68,7 +58,7 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name triple.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/triple-d61451.o -x c++ ../src/core/triple.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name block_data_seeker.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_data_seeker-403dc8.o -x c++ ../src/db/block_data_seeker.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -82,7 +72,7 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name fish_db_impl.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/fish_db_impl-023ebb.o -x c++ ../src/core/fish_db_impl.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name triple.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/triple-9c99f0.o -x c++ ../src/core/triple.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -96,17 +86,7 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
-In file included from ../src/core/fish_db_impl.cpp:1:
-In file included from ../src/core/fish_db_impl.h:5:
-In file included from ../src/core/meta_iri_index.hpp:1:
-../src/core/iri_type.h:22:38: error: initializer-string for char array is too long
-        constexpr static char TYPE_STR[2] = "HV";
-                                            ^~~~
-../src/core/iri_type.h:36:38: error: initializer-string for char array is too long
-        constexpr static char TYPE_STR[2] = "SS";
-                                            ^~~~
-2 errors generated.
- "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name iri_type.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/iri_type-35611b.o -x c++ ../src/core/iri_type.cpp
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name fish_db_impl.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/fish_db_impl-c8c5a3.o -x c++ ../src/core/fish_db_impl.cpp
 clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
 ignoring nonexistent directory "/usr/include/c++/v1"
 #include "..." search starts here:
@@ -120,31 +100,33 @@ ignoring nonexistent directory "/usr/include/c++/v1"
  /System/Library/Frameworks (framework directory)
  /Library/Frameworks (framework directory)
 End of search list.
-In file included from ../src/core/iri_type.cpp:1:
-../src/core/iri_type.h:22:38: error: initializer-string for char array is too long
-        constexpr static char TYPE_STR[2] = "HV";
-                                            ^~~~
-../src/core/iri_type.h:36:38: error: initializer-string for char array is too long
-        constexpr static char TYPE_STR[2] = "SS";
-                                            ^~~~
-../src/core/iri_type.cpp:6:16: error: use of undeclared identifier 'HashValue'; did you mean 'core::IRIType::HashValue'?
-constexpr char HashValue::TYPE_STR[2];
-               ^~~~~~~~~
-               core::IRIType::HashValue
-../src/core/iri_type.h:19:7: note: 'core::IRIType::HashValue' declared here
-class HashValue{
-      ^
-../src/core/iri_type.cpp:6:27: error: cannot define or redeclare 'TYPE_STR' here because namespace 'IRIType' does not enclose namespace 'HashValue'
-constexpr char HashValue::TYPE_STR[2];
-               ~~~~~~~~~~~^
-../src/core/iri_type.cpp:7:16: error: use of undeclared identifier 'ShortString'; did you mean 'core::IRIType::ShortString'?
-constexpr char ShortString::TYPE_STR[2];
-               ^~~~~~~~~~~
-               core::IRIType::ShortString
-../src/core/iri_type.h:33:7: note: 'core::IRIType::ShortString' declared here
-class ShortString{
-      ^
-../src/core/iri_type.cpp:7:29: error: cannot define or redeclare 'TYPE_STR' here because namespace 'IRIType' does not enclose namespace 'ShortString'
-constexpr char ShortString::TYPE_STR[2];
-               ~~~~~~~~~~~~~^
-6 errors generated.
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name iri_type.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/iri_type-330c2d.o -x c++ ../src/core/iri_type.cpp
+clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
+ignoring nonexistent directory "/usr/include/c++/v1"
+#include "..." search starts here:
+#include <...> search starts here:
+ /Users/jiangwei/include
+ /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1
+ /usr/local/include
+ /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/include
+ /Library/Developer/CommandLineTools/usr/include
+ /usr/include
+ /System/Library/Frameworks (framework directory)
+ /Library/Frameworks (framework directory)
+End of search list.
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name file_util.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D NDEBUG -I /Users/jiangwei/include -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/test -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/file_util-b8c810.o -x c++ ../src/utils/file_util.cpp
+clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
+ignoring nonexistent directory "/usr/include/c++/v1"
+#include "..." search starts here:
+#include <...> search starts here:
+ /Users/jiangwei/include
+ /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1
+ /usr/local/include
+ /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/include
+ /Library/Developer/CommandLineTools/usr/include
+ /usr/include
+ /System/Library/Frameworks (framework directory)
+ /Library/Frameworks (framework directory)
+End of search list.
+ "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.12.0 -o fish_db_test -L/Users/jiangwei/lib /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/fish_db_test-2f018d.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block-0ad990.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_index-4cc877.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/root_table-ab3723.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/block_data_seeker-403dc8.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/triple-9c99f0.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/fish_db_impl-c8c5a3.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/iri_type-330c2d.o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/file_util-b8c810.o -lsdsl -ldivsufsort -ldivsufsort64 -lc++ -lSystem /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/lib/darwin/libclang_rt.osx.a
+ "/Library/Developer/CommandLineTools/usr/bin/dsymutil" -o fish_db_test.dSYM fish_db_test

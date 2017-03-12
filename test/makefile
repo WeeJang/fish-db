@@ -5,4 +5,5 @@
 #g++ -v -std=c++11 -g -DNDEBUG -I ~/include -L ~/lib root_table_test.cpp ../src/db/root_table.cpp  -o root_table_test  
 #g++ -v -std=c++11 -g -DNDEBUG -I ~/include -L ~/lib block_data_seeker_test.cpp ../src/db/block.cpp ../src/core/triple.cpp  ../src/db/block_data_seeker.cpp -o block_data_seeker_test  
 #g++ -v -std=c++11 -g -DNDEBUG -I ~/include -L ~/lib file_util_test.cpp ../src/utils/file_util.cpp  -o file_util_test  
-g++ -v -std=c++11 -g -DNDEBUG -I ~/include -L ~/lib fish_db_test.cpp -o fish_db_test ../src/db/block.cpp ../src/db/block_index.cpp ../src/db/root_table.cpp ../src/core/triple.cpp ../src/core/fish_db_impl.cpp ../src/core/iri_type.cpp -lsdsl -ldivsufsort -ldivsufsort64
+g++ -v -std=c++11 -g -DNDEBUG -I ~/include -L ~/lib fish_db_test.cpp -o fish_db_test ../src/db/block.cpp ../src/db/block_index.cpp ../src/db/root_table.cpp ../src/db/block_data_seeker.cpp ../src/core/triple.cpp ../src/core/fish_db_impl.cpp ../src/core/iri_type.cpp ../src/utils/file_util.cpp -lsdsl -ldivsufsort -ldivsufsort64
+#g++ -v -std=c++11 -DNDEBUG -I ~/include -L ~/lib iri_index_test.cpp -o iri_index_test  -lsdsl -ldivsufsort -ldivsufsort64
