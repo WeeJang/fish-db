@@ -6,7 +6,7 @@ namespace core{
 
 template<typename IRIType>
 class IRIIndex{
-	constexpr static int NUM_LIMIT = 1024 ; //TODO: extend !
+	constexpr static int NUM_LIMIT = 65536 ; //TODO: extend !
 
 public:
 	IRIIndex(){ LOG("iri_index init ..."); }

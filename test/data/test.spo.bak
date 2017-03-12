@@ -1260,6 +1260,7 @@ b6603581df4e855d	business.stock_ticker_symbol.market_type	"主板市场"@zh
 4ce12b8740ae06a4	business.stock_ticker_symbol.market_type	"深证a股"@zh
 01b9fb94ddb9565c	business.stock_ticker_symbol.listing_date	"2012-01-13"^^xsd:dateTime
 business.stock_ticker_symbol	type.type.instance	04638e02432b8fb2
+b5bb44dd13289b9a	business.stock_ticker_symbol.ticker_symbol	"300294"@zh
 466c7262f0ba34ba	business.stock_ticker_symbol.market_type	"主板市场"@zh
 1a309c7eac181683	business.stock_ticker_symbol.ticker_symbol	"000030"@zh
 23b4c8d818c1fdab	type.object.type	business.stock_ticker_symbol

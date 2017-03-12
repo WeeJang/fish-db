@@ -5,6 +5,7 @@
 #include <memory>
 #include <unordered_map>
 #include <sstream>
+#include <iostream>  //TODO: remove
 
 namespace core{
 
@@ -30,12 +31,15 @@ public:
 	}
 
 	MAP_VALUE_T operator[] (const MAP_KEY_T& key){
+		std::cout << "find " << key << std::endl;	
 		auto got = meta_iri_map_.find(key);
 		if(got == meta_iri_map_.end()){
+			std::cout << "new !!! " << key << std::endl;	
 			auto new_elem = std::make_shared<IRIIndex<T>>(T(key));
 			meta_iri_map_[key] = new_elem;
 			return new_elem;
 		}else{
+			std::cout << "exit !!! " << key << std::endl;	
 			return got->second;	
 		}
 	}
