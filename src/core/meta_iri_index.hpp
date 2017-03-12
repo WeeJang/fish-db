@@ -62,7 +62,7 @@ public:
 				fprintf(stderr,"MetaIRIIndex save to file mkdir %s failed !\n",cur_dir.c_str());
 				exit(-1);
 			}
-			if(!(it->second->save_to_files(cur_dir))){
+			if(!(it->second->dump_to_files(cur_dir))){
 				fprintf(stderr,"MetaIRIIndex save to %s failed !\n",cur_dir.c_str());
 				exit(-1);
 			}	

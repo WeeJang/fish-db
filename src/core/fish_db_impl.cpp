@@ -1,6 +1,5 @@
 #include "fish_db_impl.h"
 
-
 namespace fishdb{
 
 
