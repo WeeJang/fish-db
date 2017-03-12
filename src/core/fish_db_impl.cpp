@@ -14,6 +14,9 @@ void FishDBImpl::init(){
 	db_block_dir_path_ += std::string("/block/");
 	db_roottable_path_ += std::string("/root");
 	db_iri_dir_path_   += std::string("/iri_index/");	
+
+	//hv_meta_iri_index_ =
+	//ss_meta_iri_index_ = 
 }
 
 
@@ -73,7 +76,7 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 
 	//not used ringbuffer
 	while((has_read_size = ::read(fd,buffer,block_size)) != -1){
-		LOG("has read size : %uz",has_read_size);
+		LOG("has read size : %zu",has_read_size);
 		block_id_counter ++;		
 		//find last '\n'	
 		size_t row_block_size = has_read_size;	
@@ -89,33 +92,39 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 		}
 	
 		for(size_t i = 0; i < row_block_size ; i++){
+			triple_elem_pos %= 3;
 			if(*(buffer + i) == '\n'){
-				if(triple_elem_pos != 3){
+				if(triple_elem_pos != 2){
 					fprintf(stderr,"FishDBImpl Error,meet illegal newline flag\n");
 					exit(-1);
 				}	
 				row_offset_in_global ++;
-				triple_elem_pos = 0;
-			}
-
-			if(*(buffer + i) != '\t'){
+			}else if(*(buffer + i) != '\t'){
 				sstream << *(buffer+i);
 				continue;
+			}else{
 			}
+
 			auto elem_str = sstream.str();
 			sstream.str("");
 			LOG("elem str : %s",elem_str.c_str());
 			//only sub/obj will be md5	
 			if( 0 == triple_elem_pos || 2 == triple_elem_pos){
 				if(core::IRIType::is_hashvalue(elem_str.c_str(),elem_str.size())){
+					LOG("elem is hv");
 					auto elem_int = ::strtol(elem_str.c_str(),nullptr,16);
-					auto& iri_index =  hv_meta_iri_index_[elem_int];
+					auto iri_index =  hv_meta_iri_index_[elem_int];
 					iri_index->add_index(triple_elem_pos++,row_offset_in_global);
 					continue;
 				}	
 			}
-			auto& iri_index =  ss_meta_iri_index_[elem_str];
+			LOG("elem is ss");
+			auto iri_index =  ss_meta_iri_index_[elem_str];
+			if(iri_index.get() == nullptr){
+				LOG("nullptr !");
+			}
 			iri_index->add_index(triple_elem_pos++,row_offset_in_global);		
+			LOG("add result triple_pos : %hhd, row_offset_in_global : %llu",triple_elem_pos,row_offset_in_global);
 		}
 
 		//ugly	

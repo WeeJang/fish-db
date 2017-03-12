@@ -1,5 +1,6 @@
 #include "iri_type.h"
 #include "../utils/file_util.h"
+#include "../utils/tiny_log.hpp"
 
 #include <memory>
 #include <unordered_map>
@@ -17,20 +18,31 @@ public:
 	using MAP_VALUE_T = typename std::shared_ptr<IRIIndex<T>>;
 	using Map_Type 	  = typename std::unordered_map<MAP_KEY_T,MAP_VALUE_T>;
 public:
+	MetaIRIIndex(){ LOG("MetaIRIIndex init"); }
 	//get
 	MAP_VALUE_T get_IRI_index(T iri_value){
 		auto got = meta_iri_map_.find(iri_value.value());
 		if(got == meta_iri_map_.end()){
-			return nullptr;
+			return {};
 		}else{
 			return got->second;
 		}
 	}
 
-	MAP_VALUE_T& operator[] (const MAP_KEY_T& key){
-		return meta_iri_map_[key];
+	MAP_VALUE_T operator[] (const MAP_KEY_T& key){
+		auto got = meta_iri_map_.find(key);
+		if(got == meta_iri_map_.end()){
+			auto new_elem = std::make_shared<IRIIndex<T>>(T(key));
+			meta_iri_map_[key] = new_elem;
+			return new_elem;
+		}else{
+			return got->second;	
+		}
 	}
 	
+	MAP_VALUE_T operator[] (const T& key){
+		return  operator[](key.value());	
+	}
 	//insert	
 	void insert_IRI_index(T iri_value,MAP_VALUE_T shp_iri_index){
 		meta_iri_map_.insert(std::make_pair<MAP_KEY_T,MAP_VALUE_T>(iri_value.value(),shp_iri_index));

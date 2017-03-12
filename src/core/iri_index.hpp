@@ -9,6 +9,7 @@ class IRIIndex{
 	constexpr static int NUM_LIMIT = 1024 ; //TODO: extend !
 
 public:
+	IRIIndex(){ LOG("iri_index init ..."); }
 	explicit IRIIndex(IRIType value):value_(value),\
 				sub_index_(NUM_LIMIT,0),\
 				pre_index_(NUM_LIMIT,0),\
@@ -19,7 +20,9 @@ public:
 	IRIIndex(IRIIndex&&) = delete;
 	IRIIndex& operator = (const IRIIndex&)  = delete;
 	IRIIndex& operator = (IRIIndex&&) = delete;
-	
+
+	void value(IRIType value){ value_ = value; }
+		
 	const sdsl::bit_vector& sub_index() const {
 		return sub_index_; 
 	}
