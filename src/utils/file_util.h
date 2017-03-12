@@ -14,6 +14,8 @@
 #include <dirent.h>
 #include <unistd.h>
 
+#include "tiny_log.hpp"
+
 namespace utils{
 
 

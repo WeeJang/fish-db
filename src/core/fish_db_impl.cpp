@@ -155,6 +155,8 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 	//dump iri_index
 	hv_meta_iri_index_.save_to_files(db_iri_dir_path_);	
 	ss_meta_iri_index_.save_to_files(db_iri_dir_path_);
+	//root_table dump
+	root_table_.dump(db_roottable_path_);
 	return 0;
 }
 

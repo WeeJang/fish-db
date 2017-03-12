@@ -11,7 +11,8 @@ template<typename IRIType>
 class IRIIndex{
 public:
 	constexpr static int NUM_LIMIT = 65536 ; //TODO: extend !
-	using BitMap_T = Roaring64Map;
+	//using BitMap_T = Roaring64Map;
+	using BitMap_T = Roaring;
 public:
 	IRIIndex(){ LOG("iri_index init ..."); }
 	explicit IRIIndex(IRIType value):value_(value){}
@@ -58,6 +59,7 @@ public:
 	}	
 
 	bool dump_to_files(const std::string dict_path){
+		//run_optimize();
 		return (dump_to_file(sub_index_,dict_path + std::string("/sub.index"))) && \
 			(dump_to_file(pre_index_,dict_path + std::string("/pre.index")))&& \
 			(dump_to_file(obj_index_,dict_path + std::string("/obj.index")));
@@ -74,7 +76,8 @@ private:
 	bool dump_to_file(BitMap_T& bit_map,std::string dump_file_path){
 		auto expected_size = bit_map.getSizeInBytes();
 		char* serialized_bytes = new char[expected_size];
-		bit_map.write(serialized_bytes);
+		auto write_ret = bit_map.write(serialized_bytes);
+		LOG("expected_size : %llu, write_re : %llu",expected_size,write_ret);
 		bool result = false;
 		if(!utils::write_to_file(dump_file_path,serialized_bytes,expected_size)){
 			fprintf(stderr,"dump bit map to file :%s failed !\n",dump_file_path.c_str());
@@ -82,7 +85,7 @@ private:
 		}else{
 			result = true;
 		}
-		delete [] serialized_bytes;
+		delete[] serialized_bytes;
 		return result;	
 	}
 
@@ -94,8 +97,9 @@ private:
 			is.seekg(0,is.beg);	
 			char* serialized_bytes = new char[length];
 			is.read(serialized_bytes,length);
-			bit_map = Roaring64Map::read(serialized_bytes);	
+			bit_map = BitMap_T::read(serialized_bytes);	
 			delete [] serialized_bytes;
+			is.close();
 			return true;
 		}else{
 			fprintf(stderr,"open load file %s failed !",load_file_path.c_str());	

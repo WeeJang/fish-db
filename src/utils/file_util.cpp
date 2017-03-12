@@ -1,5 +1,6 @@
 #include "file_util.h"
 
+
 namespace utils{
 
 int mkdir(const std::string& path){
@@ -82,15 +83,19 @@ std::vector<std::string> get_dict_list_with_prefix(const std::string& dictionary
 
 bool write_to_file(const std::string& dump_file_path,char* serialized_bytes,size_t expected_size){
 	int fd = -1;
-	if((fd = ::open(dump_file_path.c_str(),O_CREAT | O_RDWR ,0666) == -1)){
+	LOG("dump file path : %s , serialized_bytes : %c size_t :%zu ",dump_file_path.c_str(),serialized_bytes,expected_size);
+	if((fd = ::open(dump_file_path.c_str(),O_CREAT | O_RDWR ,0666)) == -1){
 		fprintf(stderr,"open file : %s failed !",dump_file_path.c_str());
 		return false;
 	}
+	LOG("dump file fd  : %d ",fd);
 	if( -1 == ::write(fd,serialized_bytes,expected_size)){
 		fprintf(stderr,"write  to file : %s failed !",dump_file_path.c_str());
 		return false;
 	}
-	return false;		
+	LOG("wirte to file :%s , size %zu",dump_file_path.c_str(),expected_size);
+	close(fd);
+	return true;		
 }
 
 
