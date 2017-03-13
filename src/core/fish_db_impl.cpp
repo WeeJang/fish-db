@@ -33,6 +33,7 @@ int FishDBImpl::open_db(const std::string& db_name){
 		std::string block_file_path(db_block_dir_path_);
 		block_file_path += file_name;
 		auto p_block_index = std::make_shared<db::BlockIndex>(block_file_path);
+		LOG("when const  the p_loock_index : %p",p_block_index.get());
 		root_table_.modify_block_index_at(p_block_index->block_id(),p_block_index->row_start_index(),p_block_index);
 	}	
 	return 0;
@@ -176,11 +177,13 @@ int FishDBImpl::get_triple_by_row_index(uint64_t row_index,std::shared_ptr<core:
 	uint32_t block_id;
 	uint64_t block_offset;
 				
+	LOG("row index : %d",row_index);	
 	if(-1 == root_table_.get_seek_pos_by_row_index(row_index,block_id,block_offset)){
 		fprintf(stderr,"fish_db_imple get_seek_pos failed\n");
 		return -1;	
 	}
-	
+
+	LOG("block_id : %d, block_offset : %d",block_id,block_offset);	
 	auto p_block_seeker = get_block_data_seeker(block_id);
 	
 	if(-1 == p_block_seeker->get_triple_by_index(block_offset,p_triple_spec)){

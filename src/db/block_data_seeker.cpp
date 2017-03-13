@@ -25,7 +25,8 @@ BlockDataSeeker::~BlockDataSeeker(){
 int BlockDataSeeker::get_triple_by_index(uint64_t row_index,std::shared_ptr<core::TripleSpec> p_triple_spec){
 	uint64_t seek_pos = row_index + start_offset_of_block_;
 	assert(seek_pos <  end_offset_of_block_);
-	
+
+	LOG("get triple by index  %llu",seek_pos);	
 	if(lseek(fd_,seek_pos,SEEK_SET) != seek_pos){
 		fprintf(stderr,"BlockDataSeeker seek_pos failed !\n");
 		exit(-1);			

@@ -76,7 +76,6 @@ std::vector<std::string> get_dict_list(const std::string& dictionary_path){
 std::vector<std::string> get_dict_list_with_prefix(const std::string& dictionary_path,\
 							const std::string& prefix){
 	std::vector<std::string> all_files = get_dict_list(dictionary_path);
-	LOG("get dict : %d",all_files.size());	
 	std::vector<std::string> ret_files(all_files.size());
 	
 	auto iter_end = std::copy_if(all_files.begin(),all_files.end(),ret_files.begin(),\

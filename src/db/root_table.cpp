@@ -91,8 +91,10 @@ void RootTable::fast_init_by_dump_file(const std::string& root_table_file){
 }	
 
 
-bool RootTable::modify_block_index_at(uint64_t block_id,uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index){
-	return false;
+void RootTable::modify_block_index_at(uint64_t block_id,uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index){
+	block_offset_list_[block_id] = block_offset;
+	block_index_list_[block_id] = p_block_index;	
+
 }
 
 bool RootTable::append_block_index(uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index){
@@ -104,9 +106,15 @@ bool RootTable::append_block_index(uint64_t block_offset,std::shared_ptr<BlockIn
 	
 
 int RootTable::get_seek_pos_by_row_index(uint64_t row_index,uint32_t& ret_block_id,uint64_t& ret_block_offset){
-	ret_block_id = get_block_index_by_global_offset(row_index);	
+	ret_block_id = get_block_index_by_global_offset(row_index);
+	LOG("get ret_block_id : %d, block_index_list_ size : %d",ret_block_id,block_index_list_.size());
 	auto p_block_index = block_index_list_[ret_block_id];
-	ret_block_offset = p_block_index->at(row_index - p_block_index->row_start_index());
+	LOG("p_block_index : %p",p_block_index.get());
+	LOG("get row_start_index : %llu",p_block_index->row_start_index());
+	auto row_index_in_this_block = row_index - p_block_index->row_start_index();
+	LOG("row_index in this block : %d",row_index_in_this_block);
+	ret_block_offset = p_block_index->at(row_index_in_this_block);
+	LOG("get ret_block_offset : %d",ret_block_offset);
 	return 0;					
 }
 

@@ -39,7 +39,7 @@ public:
 	RootTable(const std::string& root_table_file);
 			
 	uint64_t get_block_index_by_global_offset(uint64_t global_offset);	
-	bool modify_block_index_at(uint64_t block_id,uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index);	
+	void modify_block_index_at(uint64_t block_id,uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index);	
 	bool append_block_index(uint64_t block_offset,std::shared_ptr<BlockIndex> p_block_index);	
 	void dump(const std::string& root_table_file);
 	void dump() { dump(table_name_); }

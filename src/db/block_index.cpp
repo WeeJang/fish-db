@@ -13,6 +13,7 @@ BlockIndex::BlockIndex(const Block& block){
 	}
 }
 
+
 BlockIndex::BlockIndex(Block* p_block){
 	block_id_ = p_block->block_id();
 	row_start_index_ = p_block->row_start_index();
@@ -79,6 +80,8 @@ BlockIndex::BlockIndex(const std::string& filename){
 	}
 	free(p_index);
 	close(fd);
+	LOG("block index open successfully");
+	LOG("block_id : %d, row_start_index_ : %d,row_count_ : %d",block_id_,row_start_index_,row_count_);
 }
 
 
