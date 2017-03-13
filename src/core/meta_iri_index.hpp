@@ -80,6 +80,8 @@ private:
 	load_from_files_(const std::string& meta_iri_path){
 		//TODO: ugly !
 		std::vector<std::string> dict_list = utils::get_dict_list_with_prefix(meta_iri_path,IRIType::HashValue::TYPE_STR);
+		LOG("hash value load from file : %s, prefix : %s",meta_iri_path.c_str(),IRIType::HashValue::TYPE_STR);	
+		LOG("hash value load from file : %zu",dict_list.size());	
 		for(auto& iri_name : dict_list){
 			auto hex_value_str = iri_name.substr(3);
 			MAP_KEY_T iri_int = ::strtol(hex_value_str.c_str(),nullptr,16);
@@ -98,6 +100,8 @@ private:
 	load_from_files_(const std::string& meta_iri_path){
 		//TODO: ugly !
 		std::vector<std::string> dict_list = utils::get_dict_list_with_prefix(meta_iri_path,IRIType::ShortString::TYPE_STR);
+		LOG("hash value load from file : %s, prefix : %s",meta_iri_path.c_str(),IRIType::ShortString::TYPE_STR);	
+		LOG("shortstring load from file : %zu",dict_list.size());	
 		for(auto& iri_name : dict_list){
 			auto ss_value_str = iri_name.substr(3);
 			auto iri_index = std::make_shared<IRIIndex<IRIType::ShortString>>(IRIType::ShortString(ss_value_str));

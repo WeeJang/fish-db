@@ -14,7 +14,6 @@ void FishDBImpl::init(){
 	db_block_dir_path_ += std::string("/block/");
 	db_iri_dir_path_   += std::string("/iri_index/");	
 	db_roottable_path_ += std::string("/root");
-
 }
 
 
@@ -33,7 +32,7 @@ int FishDBImpl::open_db(const std::string& db_name){
 	for(auto& file_name : block_file_list){ 
 		std::string block_file_path(db_block_dir_path_);
 		block_file_path += file_name;
-		auto p_block_index = std::make_shared<db::BlockIndex>(file_name);
+		auto p_block_index = std::make_shared<db::BlockIndex>(block_file_path);
 		root_table_.modify_block_index_at(p_block_index->block_id(),p_block_index->row_start_index(),p_block_index);
 	}	
 	return 0;

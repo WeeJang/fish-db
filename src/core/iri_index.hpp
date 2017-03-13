@@ -11,8 +11,8 @@ template<typename IRIType>
 class IRIIndex{
 public:
 	constexpr static int NUM_LIMIT = 65536 ; //TODO: extend !
-	//using BitMap_T = Roaring64Map;
-	using BitMap_T = Roaring;
+	using BitMap_T = Roaring64Map;
+	//using BitMap_T = Roaring;
 public:
 	IRIIndex(){ LOG("iri_index init ..."); }
 	explicit IRIIndex(IRIType value):value_(value){}
@@ -74,7 +74,7 @@ public:
 
 private:
 	bool dump_to_file(BitMap_T& bit_map,std::string dump_file_path){
-		auto expected_size = bit_map.getSizeInBytes();
+		auto expected_size = bit_map.getSizeInBytes() + 4;
 		char* serialized_bytes = new char[expected_size];
 		auto write_ret = bit_map.write(serialized_bytes);
 		LOG("expected_size : %llu, write_re : %llu",expected_size,write_ret);
@@ -92,6 +92,7 @@ private:
 	bool load_from_file(BitMap_T& bit_map,std::string load_file_path){
 		std::ifstream is(load_file_path,std::ifstream::binary);
 		if(is){
+			LOG("load from file : %s",load_file_path.c_str());
 			is.seekg(0,is.end);
 			auto length = is.tellg();
 			is.seekg(0,is.beg);	
@@ -100,6 +101,7 @@ private:
 			bit_map = BitMap_T::read(serialized_bytes);	
 			delete [] serialized_bytes;
 			is.close();
+			LOG("load from file : %s success !",load_file_path.c_str());
 			return true;
 		}else{
 			fprintf(stderr,"open load file %s failed !",load_file_path.c_str());	

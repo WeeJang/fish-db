@@ -23,6 +23,7 @@ BlockIndex::BlockIndex(Block* p_block){
 }
 
 BlockIndex::BlockIndex(const std::string& filename){
+	LOG("block index open : %s",filename.c_str());
 	int fd = open(filename.c_str(),O_RDONLY); 
 	if(-1 == fd){
 		printf("block_index open file %s failed !\n",filename.c_str());

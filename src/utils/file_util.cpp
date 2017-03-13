@@ -2,7 +2,6 @@
 
 
 namespace utils{
-
 int mkdir(const std::string& path){
 	return ::mkdir(path.c_str(),S_IRWXU|S_IRWXG|S_IROTH|S_IXOTH);
 }
@@ -22,7 +21,10 @@ std::vector<std::string> get_file_list(const std::string& dictionary_path){
 		if(strncmp(p_dirent->d_name,&dot_c,1) == 0){
 			continue;	
 		}
-		::stat(p_dirent->d_name,&st);
+		std::string cur_path(dictionary_path);
+		cur_path.push_back('/');
+		cur_path.append(p_dirent->d_name);
+		::stat(cur_path.c_str(),&st);
 		if(S_ISDIR(st.st_mode)){
 			continue;
 		}
@@ -58,7 +60,10 @@ std::vector<std::string> get_dict_list(const std::string& dictionary_path){
 		if(strncmp(p_dirent->d_name,&dot_c,1) == 0){
 			continue;	
 		}
-		::stat(p_dirent->d_name,&st);
+		std::string cur_path(dictionary_path);
+		cur_path.push_back('/');
+		cur_path.append(p_dirent->d_name);
+		::stat(cur_path.c_str(),&st);
 		if(!S_ISDIR(st.st_mode)){
 			continue;
 		}
@@ -71,6 +76,7 @@ std::vector<std::string> get_dict_list(const std::string& dictionary_path){
 std::vector<std::string> get_dict_list_with_prefix(const std::string& dictionary_path,\
 							const std::string& prefix){
 	std::vector<std::string> all_files = get_dict_list(dictionary_path);
+	LOG("get dict : %d",all_files.size());	
 	std::vector<std::string> ret_files(all_files.size());
 	
 	auto iter_end = std::copy_if(all_files.begin(),all_files.end(),ret_files.begin(),\
