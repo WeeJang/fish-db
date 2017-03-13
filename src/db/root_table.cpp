@@ -101,6 +101,14 @@ bool RootTable::append_block_index(uint64_t block_offset,std::shared_ptr<BlockIn
 	return true;
 }
 
+	
+
+int RootTable::get_seek_pos_by_row_index(uint64_t row_index,uint32_t& ret_block_id,uint64_t& ret_block_offset){
+	ret_block_id = get_block_index_by_global_offset(row_index);	
+	auto p_block_index = block_index_list_[ret_block_id];
+	ret_block_offset = p_block_index->at(row_index - p_block_index->row_start_index());
+	return 0;					
+}
 
 }//namespace db
 

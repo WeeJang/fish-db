@@ -159,6 +159,37 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 	return 0;
 }
 
+std::shared_ptr<db::BlockDataSeeker> FishDBImpl::get_block_data_seeker(size_t block_id){
+	auto got = block_data_seeker_map_.find(block_id);
+	if(got == block_data_seeker_map_.end()){
+		std::string block_path(db_block_dir_path_);
+		block_path.append("/").append(std::to_string(block_id));
+		auto p_seeker =  std::make_shared<db::BlockDataSeeker>(block_path);
+		block_data_seeker_map_[block_id] = p_seeker;
+		return p_seeker;
+	}else{
+		return got->second;		
+	}
+}
+
+int FishDBImpl::get_triple_by_row_index(uint64_t row_index,std::shared_ptr<core::TripleSpec> p_triple_spec){
+	uint32_t block_id;
+	uint64_t block_offset;
+				
+	if(-1 == root_table_.get_seek_pos_by_row_index(row_index,block_id,block_offset)){
+		fprintf(stderr,"fish_db_imple get_seek_pos failed\n");
+		return -1;	
+	}
+	
+	auto p_block_seeker = get_block_data_seeker(block_id);
+	
+	if(-1 == p_block_seeker->get_triple_by_index(block_offset,p_triple_spec)){
+		fprintf(stderr,"fish_db_imple get_triple_by_index failed\n");
+		return -1;
+}	
+	return 0;		
+}
+
 
 
 /**

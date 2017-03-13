@@ -4,12 +4,14 @@
 #include "iri_index.hpp"
 #include "meta_iri_index.hpp"
 #include "triple.h"
+#include "../db/block_data_seeker.h"
 #include "../db/root_table.h"
 #include "../utils/file_util.h"
 #include "../utils/tiny_log.hpp"
 
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <memory>
 
 namespace test{ class FishDBTest; }
@@ -37,8 +39,11 @@ public:
 				const std::string& obj_str,\
 				std::shared_ptr<std::vector<core::TripleSpec>> query_result);
 
+	int get_triple_by_row_index(uint64_t row_index,std::shared_ptr<core::TripleSpec> p_triple_spec);
+
 private:
 	void init();
+	std::shared_ptr<db::BlockDataSeeker> get_block_data_seeker(size_t block_id);
 
 private:
 	std::string db_dir_path_;	
@@ -49,6 +54,8 @@ private:
 	db::RootTable root_table_;
 	core::MetaIRIIndex<core::IRIType::HashValue> hv_meta_iri_index_;
 	core::MetaIRIIndex<core::IRIType::ShortString> ss_meta_iri_index_;	
+	std::unordered_map<size_t,std::shared_ptr<db::BlockDataSeeker>> block_data_seeker_map_;
+
 };//class DB
 
 }//namespace fishdb

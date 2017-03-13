@@ -2,8 +2,10 @@
 #define DB_ROOT_TABLE_H_
 
 #include "block_index.h"
+#include "block_data_seeker.h"
 
 #include <vector>
+#include <memory>
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -47,6 +49,15 @@ public:
 		block_offset_list_.resize(new_size);
 		block_index_list_.resize(new_size);
 	}
+	
+	/**
+	* 0 correct
+	*/	
+	int get_seek_pos_by_row_index(uint64_t row_index,uint32_t& ret_block_id,uint64_t& ret_block_offset);
+
+	
+private:
+	std::shared_ptr<BlockDataSeeker> get_block_data_seeker(size_t block_id);
 
 private:
 	std::vector<uint64_t> block_offset_list_;

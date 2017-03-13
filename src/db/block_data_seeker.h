@@ -25,6 +25,11 @@ public:
 	virtual ~BlockDataSeeker();
 	
 	int get_triple_by_index(uint64_t index_offset,std::shared_ptr<core::TripleSpec> p_triple_spec);
+
+	//non-copyable
+	BlockDataSeeker(const BlockDataSeeker&) = delete;
+	BlockDataSeeker& operator=(const BlockDataSeeker&) = delete;
+
 private:
 	const static size_t start_offset_of_block_;
 	const static size_t end_offset_of_block_; 

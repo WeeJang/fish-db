@@ -82,4 +82,6 @@ BlockIndex::BlockIndex(const std::string& filename){
 }
 
 
+
+
 }//namesapce db
