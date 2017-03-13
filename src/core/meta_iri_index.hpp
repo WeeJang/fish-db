@@ -87,7 +87,7 @@ private:
 			MAP_KEY_T iri_int = ::strtol(hex_value_str.c_str(),nullptr,16);
 			auto iri_index = std::make_shared<IRIIndex<IRIType::HashValue>>(IRIType::HashValue(iri_int));
 			std::string iri_index_file(meta_iri_path);
-			iri_index_file.push_back('\\');
+			iri_index_file.push_back('/');
 			iri_index_file.append(iri_name);
 			iri_index->load_from_files(iri_index_file);
 			meta_iri_map_[iri_int] = iri_index;
@@ -106,7 +106,7 @@ private:
 			auto ss_value_str = iri_name.substr(3);
 			auto iri_index = std::make_shared<IRIIndex<IRIType::ShortString>>(IRIType::ShortString(ss_value_str));
 			std::string iri_index_file(meta_iri_path);
-			iri_index_file.push_back('\\');
+			iri_index_file.push_back('/');
 			iri_index_file.append(iri_name);
 			iri_index->load_from_files(iri_index_file);
 			meta_iri_map_[ss_value_str] = iri_index;

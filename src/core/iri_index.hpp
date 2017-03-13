@@ -104,7 +104,7 @@ private:
 			LOG("load from file : %s success !",load_file_path.c_str());
 			return true;
 		}else{
-			fprintf(stderr,"open load file %s failed !",load_file_path.c_str());	
+			LOG("open load file %s failed !",load_file_path.c_str());	
 			return false;
 		}
 	}	
