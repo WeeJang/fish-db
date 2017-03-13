@@ -41,7 +41,8 @@ private:
 struct alignas(8) BlockData{
 	friend class Block;
 public:
-	constexpr static uint32_t BLOCK_DATA_SIZE_LIMIT = 1 << 27; //128MB
+	//constexpr static uint32_t BLOCK_DATA_SIZE_LIMIT = 1 << 27; //128MB
+	constexpr static uint32_t BLOCK_DATA_SIZE_LIMIT = 1 << 12; //4k
 	void init() { memset(data_,0,sizeof(data_)); }
 	void write(const char* p_data,size_t data_size) ;
 private:	
