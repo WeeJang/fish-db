@@ -194,7 +194,6 @@ int FishDBImpl::get_triple_by_row_index(uint64_t row_index,std::shared_ptr<core:
 }
 
 
-
 /**
 *	get_triple("df:96666","df:type.object.name","?",query_result);
 *	get_triple("?","df:type.object.name","?",query_result);

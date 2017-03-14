@@ -31,7 +31,7 @@ public:
 	int load_data(const std::string& triple_file_path);
 
 	/**
-	*	get_triple("df:96666","df:type.object.name","?",query_result);
+	*	get_triple("60036","df:type.object.name","?",query_result);
 	*	get_triple("?","df:type.object.name","?",query_result);
 	*/	
 	int get_triple(const std::string& sub_str,\
