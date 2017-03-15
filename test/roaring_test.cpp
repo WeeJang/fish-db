@@ -18,5 +18,6 @@ int main(int argc,char** argv){
 	std::cout << "before run optimize : " << size_1 << std::endl;
 	std::cout << "after  run optimize : " << size_2 << std::endl;
 	std::cout << "after  run optimize : " << size_3 << std::endl;
+	
 	return 0;
 }
