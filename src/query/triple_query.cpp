@@ -13,6 +13,7 @@ TripleQuery::TripleQuery(HashValue sub, ShortString pre,Variable obj,std::shared
 	spo_vec_iri_type_tag_[2] = UD;
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
+	init();
 }
 	
 TripleQuery::TripleQuery(HashValue sub, Variable pre,HashValue obj,std::shared_ptr<SharedQueryData> p_shared){
@@ -25,6 +26,7 @@ TripleQuery::TripleQuery(HashValue sub, Variable pre,HashValue obj,std::shared_p
 	spo_vec_iri_type_tag_[2] = HV;
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
+	init();
 }
 	
 
@@ -39,6 +41,7 @@ TripleQuery::TripleQuery(HashValue sub, Variable pre,ShortString obj,std::shared
 	spo_vec_iri_type_tag_[2] = SS;
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
+	init();
 }
 
 
@@ -52,8 +55,7 @@ TripleQuery::TripleQuery(HashValue sub, Variable pre,Variable obj,std::shared_pt
 	var_pos_[pre] = core::TripleElemPos::pre;
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
-
-
+	init();
 }
 	
 TripleQuery::TripleQuery(ShortString sub, ShortString pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
@@ -66,6 +68,7 @@ TripleQuery::TripleQuery(ShortString sub, ShortString pre,Variable obj,std::shar
 	spo_vec_iri_type_tag_[2] = UD;
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
+	init();
 }
 
 
@@ -79,6 +82,7 @@ TripleQuery::TripleQuery(ShortString sub, Variable pre,HashValue obj,std::shared
 	spo_vec_iri_type_tag_[2] = HV;
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
+	init();
 }
 
 
@@ -94,9 +98,10 @@ TripleQuery::TripleQuery(ShortString sub, Variable pre,ShortString obj,std::shar
 	spo_vec_iri_type_tag_[2] = SS;
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
-
-
+	init();
 }
+
+
 TripleQuery::TripleQuery(ShortString sub, Variable pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(sub.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
@@ -106,7 +111,7 @@ TripleQuery::TripleQuery(ShortString sub, Variable pre,Variable obj,std::shared_
 	var_pos_[pre] = core::TripleElemPos::pre;
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
-
+	init();
 }
 	
 TripleQuery::TripleQuery(Variable sub, ShortString pre,HashValue obj,std::shared_ptr<SharedQueryData> p_shared){
@@ -119,6 +124,7 @@ TripleQuery::TripleQuery(Variable sub, ShortString pre,HashValue obj,std::shared
 	spo_vec_iri_type_tag_[2] = HV;
 	var_pos_[sub] = core::TripleElemPos::sub;
 	p_shared_ = p_shared;
+	init();
 }
 
 
@@ -132,8 +138,9 @@ TripleQuery::TripleQuery(Variable sub, ShortString pre,ShortString obj,std::shar
 	spo_vec_iri_type_tag_[2] = SS;
 	var_pos_[sub] = core::TripleElemPos::sub;
 	p_shared_ = p_shared;
-
+	init();
 }
+
 TripleQuery::TripleQuery(Variable sub, ShortString pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(pre.value());
 	iri_pos_.push_back(core::TripleElemPos::pre);
@@ -143,7 +150,9 @@ TripleQuery::TripleQuery(Variable sub, ShortString pre,Variable obj,std::shared_
 	var_pos_[sub] = core::TripleElemPos::sub;
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
+	init();
 }
+
 TripleQuery::TripleQuery(Variable sub, Variable pre,HashValue obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::obj);
@@ -153,6 +162,7 @@ TripleQuery::TripleQuery(Variable sub, Variable pre,HashValue obj,std::shared_pt
 	var_pos_[sub] = core::TripleElemPos::sub;
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
+	init();
 }
 
 TripleQuery::TripleQuery(Variable sub, Variable pre,ShortString obj,std::shared_ptr<SharedQueryData> p_shared){
@@ -164,6 +174,7 @@ TripleQuery::TripleQuery(Variable sub, Variable pre,ShortString obj,std::shared_
 	var_pos_[sub] = core::TripleElemPos::sub;
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
+	init();
 }
 
 TripleQuery::TripleQuery(Variable sub, Variable pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
@@ -174,6 +185,7 @@ TripleQuery::TripleQuery(Variable sub, Variable pre,Variable obj,std::shared_ptr
 	var_pos_[pre] = core::TripleElemPos::pre;
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
+	init();
 }
 
 int TripleQuery::get_iri_index(IRITypeUnion_T iri_variant,IRITypeUnionTag typetag,core::TripleElemPos pos,BitMap_T& ret_bitmap){
@@ -225,8 +237,11 @@ void TripleQuery::init(){
 	is_valid_ = true;
 }
 
-}
+//根据现有信息，取数据
+void TripleQuery::select(){
 
+
+}
 
 
 
