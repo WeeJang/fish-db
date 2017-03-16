@@ -5,6 +5,14 @@
 
 namespace core{
 
+
+enum class TripleElemPos{
+	sub = 0,
+	pre,
+	obj
+}; //class TripleElemPos
+
+
 struct TripleSpec{
 
 public:

@@ -15,8 +15,10 @@ public:
 
 namespace IRIType{
 
+class Value{};
+
 //当前用了128-md5中间的64bit,因此uint64可以支撑。以后变化了还需要改.
-class HashValue{
+class HashValue : public Value{
 public:
 	using value_type = uint64_t;
 	constexpr static char TYPE_STR[3] = "HV";
@@ -30,7 +32,7 @@ private:
 };
 
 //字符串仅支持短字符串（人名，地名，公司名,股票代码,schema）
-class ShortString{
+class ShortString : public Value{
 public:
 	using value_type = std::string;
 	constexpr static char TYPE_STR[3] = "SS";
