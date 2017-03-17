@@ -1,6 +1,5 @@
 #include "triple_query.h"
 
-
 namespace query{
 
 TripleQuery::TripleQuery(HashValue sub, ShortString pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
@@ -237,9 +236,45 @@ void TripleQuery::init(){
 	is_valid_ = true;
 }
 
+
+void TripleQuery::improve_spo_vec_iri_type_tag(std::shared_ptr<core::TripleSpec> p_triple){
+	for(size_t i = 0 ; i < spo_vec_iri_type_tag_.size() ; i ++){
+		if(IRITypeUnionTag::UD == spo_vec_iri_type_tag_[i]){
+			if(IRIType::is_hashvalue(p_triple->at(i).c_str(),p_triple->at(i).size())){
+				spo_vec_iri_type_tag_ = IRITypeUnionTag::HV;	
+			}else{
+				spo_vec_iri_type_tag_ = IRITypeUnionTag::SS;
+			}
+		}
+	}
+}
+
+void select_new_triple(std::shared_ptr<core::TripleSpec> p_triple_spec){
+	for(auto iter->
+}
+
+void TripleQuery::update(std::string var_name){
+				
+}
+
+
 //根据现有信息，取数据
 void TripleQuery::select(){
+	auto p_db = p_shared_->p_fish_db_;
+	auto p_triple_spec = std::make_shared<core::TripleSpec>(); 
+	auto rowindex_bm = new uint64_t[cur_valid_row_bm_index_cardinality];
+	cur_valiad_row_bm_index_.toUnit64Array(rowindex_bm);	
+	for(size_t i = 0 ; i < cur_valid_row_bm_index_cardinality_ ; i++){
+		p_fish_db_->get_triple_by_row_index(rowindex_bm[i],p_triple_spec);
+		if(0 == i){
+			improve_spo_vec_iri_type_tag(p_triple_spec);
+		}
+			
+	}
+		
 
+	delete [] bitmap_array;
+					
 
 }
 

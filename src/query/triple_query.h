@@ -24,6 +24,7 @@ enum class IRITypeUnionTag{
 }; 
 
 class SharedQueryData{
+	friend class TripleQuery;
 public:
 	SharedQueryData(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db) {}	
 private:
@@ -55,7 +56,8 @@ public:
 public:
 	const is_valid() const { return is_valid_; } 
 
-	void update(std::string var_name)
+	void select();
+	void update(std::string var_name);
 
 	
 pivate:
@@ -63,15 +65,18 @@ pivate:
 
 	int get_iri_index(IRITypeUnion_T iri_variant,IRITypeUnionTag typetag,core::TripleElemPos pos,BitMap_T& ret_bitmap);
 
+	void improve_spo_vec_iri_type_tag(std::shared_ptr<core::TripleSpec> p_triple);		
+	void select_new_triple(std::shared_ptr<core::TripleSpec> p_triple);
+
 private:
-	std::vector<IRITypeUnion_T>     iri_vec_ //non-var: HV/SS
-	std::vector<core::TripleElemPos> iri_pos_ //non-var-pos [0,2]
-	std::unordered_map<std::string,core::TripleElemPos> var_pos_ //var-pos ( var_name-> pos )
+	std::vector<IRITypeUnion_T>     iri_vec_; //non-var: HV/SS
+	std::vector<core::TripleElemPos> iri_pos_; //non-var-pos [0,2]
+	std::unordered_map<std::string,core::TripleElemPos> var_pos_; //var-pos ( var_name-> pos )
 
-	IRITypeUnionTag    spo_vec_iri_type_tag_[3]   // s-p-o iri_type [ note var's val has type ! ]
-	std::vector<IRITypeUnion_T> selet_spo_vec_[3] // s-p-o selected
+	IRITypeUnionTag    spo_vec_iri_type_tag_[3];   // s-p-o iri_type [ note var's val has type ! ] //其实这里与type-system是冲突的(当pre不同时）
+	std::vector<IRITypeUnion_T> select_spo_vec_[3]; // s-p-o selected
 
-	BitMap_T cur_valid_row_bm_index_      // current valid row bitmap index;
+	BitMap_T cur_valid_row_bm_index_;    // current valid row bitmap index;
 	uint64_t cur_valid_row_bm_index_cardinality_;
 	
 	std::shared_ptr<SharedQueryData> p_shared_;

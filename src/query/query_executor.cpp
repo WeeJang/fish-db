@@ -27,9 +27,7 @@ void QueryExecutor::run(){
 	//select the less triple		
 	auto p_triple_query = sorted_triple_vec[0]	
 	p_triple_query->select();	
-
 			
-		
 }
 
 }
