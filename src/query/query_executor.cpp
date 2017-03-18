@@ -62,11 +62,51 @@ void QueryExecutor::run(){
 }
 
 void QueryExecutor::get_min_growth_tree_by_kruskal(){
-
-
+	std::vector<std::shared_ptr<TripleQuery>> sorted_triple_vec;
+	for(auto p_triple_query : triple_query_set_){
+		if(p_triple_query->var_vec_.size() < 2){
+			continue;	
+		}
+		filter_query_vec.push_back(p_triple_query);	
+	}
+	//sorted	
+	std::sort(sorted_triple_vec.begin(),sorted_triple_vec.end(),\
+		[](std::shared_ptr<TripleQuery> p_a,std::shared_ptr<TripleQuery> p_b){
+			return p_a->cur_valid_row_bm_index_cardinality_  \
+				< p_b->cur_valid_row_bm_index_cardinality_;
+});
+	std::set<std::string> visited_var_node;
+	for(auto p_triple_query : sorted_triple_vec){
+		size_t find_count = 0;
+		for(auto& var_name : p_triple_query->var_vec_){
+			if(visited_var_node.find(var_name) != visited_var_node.end()){
+				find_count ++;
+				visited_var_node.insert(var_name);//trick
+			}
+		}
+		if(find_count < 2){
+			min_growth_tree_.push_back(p_triple_query);			
+		}	
+	}		
 }
 
 void QueryExecutor::shrink_min_growth_tree(){
+	std::unorder_map<std::string,size_t> node_degree;
+	for(auto p_triple_query : min_growth_tree_){
+		for(auto& var_name : p_triple_query->var_vec_){
+			node_degree[var_name] ++;
+		}	
+	}
+		
+	for(auto p_triple_query : min_growth_tree_){
+		for(auto& var_name : p_triple_query->var_vec_){
+			if(node_degree[var_name] == 1){
+				p_triple_query->update_cartesian_product(var_name);
+														
+			}	
+		}
+	}
+
 }
 
 void QueryExecutor::make_result(){	

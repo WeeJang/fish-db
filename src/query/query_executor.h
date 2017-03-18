@@ -34,7 +34,9 @@ private:
 	bool is_empty_result_;
 	size_t result_row_num_; // result_num
 	size_t result_col_num_; // var_num
+	std::vector<std::string> result_col_name_;
 	std::vector<std::vector<std::string>> result_matrix_;
+	std::vector<std::shared_ptr<TripleQuery>> min_growth_tree_;
 };//class QueryExector
 
 
