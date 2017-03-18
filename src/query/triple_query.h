@@ -65,6 +65,7 @@ public:
 	void union_update_shared_data(std::string var_name);
 	void join_update_shared_data(std::string var_name);
 	
+	void shrink_cur_valid_row_bm();
 pivate:
 	void init();
 

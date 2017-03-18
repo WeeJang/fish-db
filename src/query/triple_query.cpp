@@ -340,6 +340,8 @@ void TripleQuery::join_update_shared_data(std::string var_name){
 
 //根据现有信息，取数据
 void TripleQuery::select(){
+	shrink_cur_valid_row_bm();
+	
 	auto p_db = p_shared_->p_fish_db_;
 	auto p_triple_spec = std::make_shared<core::TripleSpec>(); 
 	auto rowindex_bm = new uint64_t[cur_valid_row_bm_index_cardinality];
@@ -351,20 +353,42 @@ void TripleQuery::select(){
 		}
 		select_new_triple(p_triple_spec);				
 	}
-
 	delete [] bitmap_array;
+
+	for(auto var_name : var_vec_){
+		if(p_shared_->var_val_type_.find(var_name) == p_shared_->var_val_type_.end()){
+			union_update_shared_data(var_name);
+		}else{
+			join_update_shared_data(var_name); 
+		}	
+	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
+void TripleQuery::shrink_cur_valid_row_bm(){
+	auto p_fish_db = p_shared_->p_fish_db_;
+	for(auto var_name : var_vec_){
+		if(p_shared_->var_val_type_.find(var_name) == p_shared_->var_val_type_.end()){
+			continue;
+		}
+		auto var_pos = var_pos_[var_name];
+		BitMap_T union_bm;
+		auto var_tag = spo_vec_iri_type_tag_[var_pos];
+		if(var_tag == IRITypeUnionTag::HV){
+			auto var_set = p_shared_->hv_bound_vals_[var_name];
+			for(auto var_set_elem : var_set){
+				union_bm |= p_fish_db->hv_meta_iri_index_.get_IRI_index(var_set_lem).at(var_pos);
+			}
+		}else if(var_tag == IRITypeUnionTag::SS){
+			auto var_set = p_shared_->ss_bound_vals_[var_name];
+			for(auto var_set_elem : var_set){
+				union_bm |= p_fish_db->ss_meta_iri_index_.get_IRI_index(var_set_lem).at(var_pos);
+			}
+		}else{
+			fprintf(stderr,"shink_cur_valid_row_bm error!\n");
+			exit(-1);
+		}
+		cur_valid_row_bm_index_ &= union_bm;
+	}			
+}
 
 }//namespace query
