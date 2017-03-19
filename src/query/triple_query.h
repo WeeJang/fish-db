@@ -32,6 +32,10 @@ private:
 	std::unordered_map<std::string,IRITypeUnionTag> var_val_type_
 	std::unordered_map<std::string,std::set<HV_T>>  hv_bound_vals_ //var_1 -> set(val_1,val_2,...)
 	std::unordered_map<std::string,std::set<SS_T>>  ss_bound_vals_ //same 
+	//var->val1->val2*val3
+	std::unordered_map<std::string,std::unordered_map<std::string,std::vector<std::string>>> intermediate_result_;
+	std::unordered_map<std::string,std::vector<std::string>> intermediate_result_col_name_;
+	//std::vector<std::string> intermediate_result_col_name_;	
 };
 
 class TripleQuery{
@@ -64,6 +68,7 @@ public:
 	void select();
 	void union_update_shared_data(std::string var_name);
 	void join_update_shared_data(std::string var_name);
+	std::string update_cartesian_product_in_shared_data(std::string var_name);
 	
 	void shrink_cur_valid_row_bm();
 pivate:
