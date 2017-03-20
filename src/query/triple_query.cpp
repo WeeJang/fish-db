@@ -12,7 +12,8 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 	   got_var_intermediate_result == intermediate_result_.end()){
 		for(size_t i = 0 ; i < filter_var_val_vector[0].size(); i++){
 			another_val_2_var_val_map[filter_var_val_vector[0][i]].push_back(filter_var_val_vector[1][i]);
-		}	
+		}
+		intermediate_result_col_name_[another_var_name].push_back(var_name);	
 	}else if(got_another_var_intermediate_result == intermediate_result_.end() && \
 		 got_var_intermediate_result != intermediate_result_.end()){
 		auto var_map = got_var_intermediate_result->second;
@@ -28,7 +29,11 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 					another_val_2_var_val_map[another_var_val].push_back(std::string(var_val).append("\t").append(val));		
 				}
 			}	
-		}	
+		}
+		intermediate_result_col_name_[another_var_name].push_back(var_name);	
+		for(auto& col_name : inermediate_result_col_name_[var_name]){
+			intermediate_result_col_name_[another_var_name].push_back(col_name);	
+		}
 	}else if(got_another_var_intermediate_result != intermediate_result_.end() && \
 		 got_var_intermediate_result == intermediate_result_.end()){
 		auto another_var_map = got_another_var_intermediate_result->second;
@@ -46,6 +51,7 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 			}
 					
 		}
+		intermediate_result_col_name_[another_var_name].push_back(var_name);	
 	}else if(got_another_var_intermediate_result != intermediate_result_.end() && \
 		 got_var_intermediate_result != intermediate_result_.end()){
 		auto another_var_map = got_another_var_intermediate_result->second;
@@ -71,7 +77,12 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 			}
 					
 		}
+		intermediate_result_col_name_[another_var_name].push_back(var_name);	
+		for(auto& col_name : inermediate_result_col_name_[var_name]){
+			intermediate_result_col_name_[another_var_name].push_back(col_name);	
+		}
 	}
+	intermediate_result_[another_var_name] = another_val_2_var_val_map;
 	return 0;
 }
 
