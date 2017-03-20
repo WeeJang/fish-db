@@ -87,7 +87,34 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 }
 
 
+SPARQLParserType_T make_typed_value(sparql::SPARQLParser::TriplePatternElem& triple_elem,SPARQLParserTypeTag& tag){
+	SPARQLParserType_T ret;	
+	if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::Variable){
+		tag = SPARQLParserTypeTag::VAR;	
+		ret = query::Variable(triple_elem.value_);	
+	}else if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::IRI){
+		std::string format_iri;
+		int err = Utils::IRI2inner_format(triple_it->subj_.value_,&format_iri);
+		if(err != 0){
+			fprintf(stderr,"make_type_value error \n");
+			exit(-1);				
+		}
+		if(core::IRIType::is_hashvalue(format_iri.c_str(),format_iri.size())){
+			tag = SPARQLParserTypeTag::HV;	
+			ret = query::HashValue(::strtol(triple_elem.value_.c_str(),nullptr,16));	
+		}else{
+			tag = SPARQLParserTypeTag::SS;
+			ret = query::ShortString(triple_elem.value_.c_str());
+		}	
+	}else if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::Literal){
+		tag = SPARQLParserTypeTag::SS;
+		ret = query::ShortString(triple_elem.value_.c_str());
+	}
+	return ret;
+}
 
+
+std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_query_str);
 
 
 std::vector<std::string> TripleQuery::make_cartesian_product(std::vector<std::string>& vec_1,std::vector<std::string>& vec_2){
@@ -592,5 +619,206 @@ void TripleQuery::shrink_cur_valid_row_bm(){
 		cur_valid_row_bm_index_ &= union_bm;
 	}			
 }
+
+//helper function
+SPARQLParserType_T make_typed_value(sparql::SPARQLParser::TriplePatternElem& triple_elem,SPARQLParserTypeTag& tag){
+	SPARQLParserType_T ret;	
+	if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::Variable){
+		tag = SPARQLParserTypeTag::VAR;	
+		ret = query::Variable(triple_elem.value_);	
+	}else if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::IRI){
+		std::string format_iri;
+		int err = Utils::IRI2inner_format(triple_it->subj_.value_,&format_iri);
+		if(err != 0){
+			fprintf(stderr,"make_type_value error \n");
+			exit(-1);				
+		}
+		if(core::IRIType::is_hashvalue(format_iri.c_str(),format_iri.size())){
+			tag = SPARQLParserTypeTag::HV;	
+			ret = query::HashValue(::strtol(triple_elem.value_.c_str(),nullptr,16));	
+		}else{
+			tag = SPARQLParserTypeTag::SS;
+			ret = query::ShortString(triple_elem.value_.c_str());
+		}	
+	}else if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::Literal){
+		tag = SPARQLParserTypeTag::SS;
+		ret = query::ShortString(triple_elem.value_.c_str());
+	}
+	return ret;
+}
+
+
+std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_query_str){
+	SPARQLLexer lexer(sparql_query);
+	SPARQLParser parser(lexer);
+	try
+	{
+		parser.parse();
+	}
+	catch(SPARQLParser::ParserException& parse_excep)
+	{
+		LOG("parse failed.Info : %s",parse_excep.to_string().c_str());
+		return {};
+	}	
+	std::set<std::shared_ptr<TripleQuery>> ret_query_set ;
+
+	std::vector<std::string> variables = parser.project_variables();
+	auto triple_patterns = parser.triple_patterns();
+	//auto filters = parser.filters();
+	
+	SPARQLParserType_T triple[3];
+	SPARQLParserTypeTag triple_tag[3];
+
+	for(auto triple_it = triple_patterns.begin() ; triple_it != triple_patterns.end();\
+			triple_it ++ )
+	{
+		triple[0] = make_typed_value(triple_it->subj_,triple_tag[0]);
+		triple[1] = make_typed_value(triple_it->pred_,triple_tag[1]);
+		triple[2] = make_typed_value(triple_it->obj_,triple_tag[2]);
+		if(triple_tag[0] == SPARQLParserTypeTag::HV){
+			if(triple_tag[1] == SPARQLParserTypeTag::HV){
+				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<HashValue>(triple[0]),
+						std::get<HashValue>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);		
+				}
+			}else if(triple_tag[1] == SPARQLParserTypeTag::SS){
+				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<HashValue>(triple[0]),
+						std::get<ShortString>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);		
+				}
+			}else if(triple_tag[1] == SPARQLParserTypeTag::VAR){
+				if(triple_tag[2] == SPARQLParserTypeTag::HV){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<HashValue>(triple[0]),
+						std::get<Variable>(triple[1]),
+						std::get<HashValue>(triple[2]));
+					ret_query_set.insert(triple_query);		
+				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<HashValue>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<ShortString>(triple[2]));
+					ret_query_set.insert(triple_query);		
+				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<HashValue>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);		
+				}
+		}else if (triple_tag[0] == SPARQLParserTypeTag::SS){
+			if(triple_tag[1] == SPARQLParserTypeTag::HV){
+				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<ShortString>(triple[0]),
+						std::get<HashValue>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}
+			}else if(triple_tag[1] == SPARQLParserTypeTag::SS){
+				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<ShortString>(triple[0]),
+						std::get<ShortString>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}			
+			}else if(triple_tag[1] == SPARQLParserTypeTag::VAR){
+				if(triple_tag[2] == SPARQLParserTypeTag::HV){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<ShortString>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<HashValue>(triple[2]));
+					ret_query_set.insert(triple_query);						
+						
+				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<ShortString>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<ShortString>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				
+				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<ShortString>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}
+		}else if (triple_tag[0] == SPARQLParserTypeTag::VAR){
+			if(triple_tag[1] == SPARQLParserTypeTag::HV){
+				if(triple_tag[2] == SPARQLParserTypeTag::HV){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<HashValue>(triple[1]),			
+						std::get<Hashvalue>(triple[2]));
+					ret_query_set.insert(triple_query);						
+						
+				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<HashValue>(triple[1]),			
+						std::get<ShortString>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				
+				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<HashValue>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}
+			}else if(triple_tag[1] == SPARQLParserTypeTag::SS){
+				if(triple_tag[2] == SPARQLParserTypeTag::HV){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<ShortString>(triple[1]),			
+						std::get<HashValue>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<ShortString>(triple[1]),			
+						std::get<ShortString>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<ShortString>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}
+			}else if(triple_tag[1] == SPARQLParserTypeTag::VAR){
+				if(triple_tag[2] == SPARQLParserTypeTag::HV){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<HashValue>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<ShortString>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				
+				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
+					auto triple_query = std::make_shared<TripleQuery>(\
+						std::get<Variable>(triple[0]),
+						std::get<Variable>(triple[1]),			
+						std::get<Variable>(triple[2]));
+					ret_query_set.insert(triple_query);						
+				}
+		}
+	}	
+
+}
+
 
 }//namespace query

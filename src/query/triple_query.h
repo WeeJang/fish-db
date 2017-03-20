@@ -11,6 +11,12 @@ using BitMap_T    = IRIIndex<IRIType::Value>::BitMap_T;
 using HashValue   = core::IRIType::HashValue;
 using ShortString = core::IRIType::ShortString;
 using Variable	  = std::string;
+using SPARQLParserType_T   = std::variant<HashValue,ShortString,Variable>;
+enum class SPARQLParserTypeTag{
+	HV,
+	SS,
+	VAR
+}; 
 
 using HV_T        = core::IRITypeTrait<HashValue>::value_type;
 using SS_T        = core::IRITypeTrait<ShortString>::value_type;
@@ -93,6 +99,13 @@ private:
 	std::shared_ptr<SharedQueryData> p_shared_;
 	bool is_valid_; //no elem 
 };//class TripleQuery
+
+
+//helper function
+SPARQLParserType_T make_typed_value(sparql::SPARQLParser::TriplePatternElem& triple_elem,SPARQLParserTypeTag& tag);
+std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_query_str);
+
+
 
 
 }//namespace query
