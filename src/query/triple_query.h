@@ -26,7 +26,9 @@ class SharedQueryData{
 	friend class TripleQuery;
 	friend class QueryExecutor;
 public:
-	SharedQueryData(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db) {}	
+	SharedQueryData(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db) {}
+	std::vector<std::string> make_cartesian_product(std::vector<std::string>& vec_1,std::vector<std::string>& vec_2);
+	int make_cartesian_product_by_filter_vector_linked(std::string another_var_name,std::string var_name,std::vector<std::string> (&filter_var_val_vector)[2]);
 private:
 	std::shared_ptr<fishdb::FishDBImpl> p_fish_db_;	
 	std::unordered_map<std::string,IRITypeUnionTag> var_val_type_

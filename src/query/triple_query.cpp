@@ -2,6 +2,96 @@
 
 namespace query{
 
+int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string another_var_name,std::string var_name,\
+							std::vector<std::string> (&filter_var_val_vector)[2]){
+
+	auto got_another_var_intermediate_result = intermediate_result_.find(another_var_name);
+	auto got_var_intermediate_result = intermediate_result_.find(var_name);
+	std::unordered_map<std::string,std::vector<std::string>> another_val_2_var_val_map;
+	if(got_another_var_intermediate_result == intermediate_result_.end() && \
+	   got_var_intermediate_result == intermediate_result_.end()){
+		for(size_t i = 0 ; i < filter_var_val_vector[0].size(); i++){
+			another_val_2_var_val_map[filter_var_val_vector[0][i]].push_back(filter_var_val_vector[1][i]);
+		}	
+	}else if(got_another_var_intermediate_result == intermediate_result_.end() && \
+		 got_var_intermediate_result != intermediate_result_.end()){
+		auto var_map = got_var_intermediate_result->second;
+		for(size_t i = 0 ; i < filter_var_val_vector[0].size(); i++){
+			std::string& another_var_val = filter_var_val_vector[0][i];
+			std::string& var_val = filter_var_val_vector[1][i];
+			auto var_val_2_vec = var_map.find(var_val);
+			if(var_val_2_vec == var_map.end()){
+				continue;
+			}else{
+				std::vector<std::string> val_2_vec = var_val_2_vec->second;
+				for(auto& val : val_2_vec){
+					another_val_2_var_val_map[another_var_val].push_back(std::string(var_val).append("\t").append(val));		
+				}
+			}	
+		}	
+	}else if(got_another_var_intermediate_result != intermediate_result_.end() && \
+		 got_var_intermediate_result == intermediate_result_.end()){
+		auto another_var_map = got_another_var_intermediate_result->second;
+		for(size_t i = 0 ; i < filter_var_val_vector[0].size(); i++){
+			std::string&  another_var_val = filter_var_val_vector[0][i];
+			std::string& var_val = filter_var_val_vector[1][i];
+			auto another_var_val_2_vec = another_var_map.find(another_var_val);
+			if(another_var_val_2_vec == another_var_map.end()){
+				continue;
+			}else{
+				std::vector<std::string> val_2_vec == another_var_val_2_vec->second;
+				for(auto val : val_2_vec){
+					another_val_2_var_val_map[another_var_val].push_back(std::string(val).append("\t").append(var_val));;
+				}
+			}
+					
+		}
+	}else if(got_another_var_intermediate_result != intermediate_result_.end() && \
+		 got_var_intermediate_result != intermediate_result_.end()){
+		auto another_var_map = got_another_var_intermediate_result->second;
+		auto var_map = got_var_intermediate_result->second;
+		for(size_t i = 0 ; i < filter_var_val_vector[0].size(); i++){
+			std::string& another_var_val = filter_var_val_vector[0][i];
+			std::string& var_val = filter_var_val_vector[1][i];
+			auto another_var_val_2_vec = another_var_map.find(another_var_val);
+			auto var_val_2_vec = var_map.find(var_val);
+			if(var_val_2_vec == var_map.end() || another_var_val_2_vec == another_var_map.end()){
+				continue;
+			}else{
+				std::vector<std::string> val_vec == var_val_2_vec->second;
+				std::vector<std::string> another_val_vec == another_var_val_2_vec->second;
+				for(auto& another_val : another_val_vec){
+					for(auto& val : val_vec){
+						another_val_2_var_val_map[another_var_val]\
+							.push_back(std::string(another_val).append("\t")\
+									.append(var_val).append("\t").append(val));
+					}
+				}
+
+			}
+					
+		}
+	}
+	return 0;
+}
+
+
+
+
+
+std::vector<std::string> TripleQuery::make_cartesian_product(std::vector<std::string>& vec_1,std::vector<std::string>& vec_2){
+	std::vector<std::string> vec_result;
+	for(auto& vec_2_elem : vec_2){
+		for(auto vec_1_elem : vec_1){
+			vec_result.push_back(vec_1_elem.append(vec_2));
+		}
+	}
+	return vec_result;
+}
+
+
+
+
 TripleQuery::TripleQuery(HashValue sub, ShortString pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(sub.value());
 	iri_vec_.push_back(pre.value());
@@ -305,172 +395,84 @@ std::string TripleQuery::update_cartesian_product_in_shared_data(std::string var
 	p_shared_->intermediate_result_col_name_[another_var_name].push_back(var_name);
 	
 	std::unordered_map<std::string,std::vector<std::string>> another2var_map;
-	//check if another_var_name in shared_data.intermidiate_result	
-	auto got_another_var_intermediate_result = p_shared_->intermediate_result_.find(another_var_name);
-	if(got_another_var_intermediate_result == p_shared_->intermediate_result_.end()){
-		if(another_tag == IRITypeUnionTag::HV && var_tag == IRITypeUnionTag::HV){
-			for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-				auto another_val = std::get<HV_T>(select_spo_vec_[another_pos][i]);
-				auto var_val     = std::get<HV_T>(select_spo_vec_[var_pos][i]);
-				if(p_shared_->hv_bound_vals[another_var_name].find(another_val) \
-					== p_shared_->hv_bound_vals[another_var_name].end()){ continue;
-				}
-				if(p_shared_->hv_bound_vals[var_name].find(var_val) \
-					== p_shared_->hv_bound_vals[var_name].end()){
-					continue;
-				}
-				std::string another_str = std::to_string(another_val);
-				std::string var_str     = std::to_string(var_val);
-				another2var_map[another_str].push_back(var_str);
-			}	
-		}else if(another_tag == IRTTypeUnionTag::HV && var_tag == IRITypeUnionTag::SS){
-			for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-				auto another_val = std::get<HV_T>(select_spo_vec_[another_pos][i]);
-				auto var_val     = std::get<SS_T>(select_spo_vec_[var_pos][i]);
-				if(p_shared_->hv_bound_vals[another_var_name].find(another_val) \
-					== p_shared_->hv_bound_vals[another_var_name].end()){
-					continue;
-				}
-				if(p_shared_->ss_bound_vals[var_name].find(var_val) \
-					== p_shared_->ss_bound_vals[var_name].end()){
-					continue;
-				}
-				std::string another_str = std::to_string(another_val);
-				another2var_map[another_str].push_back(var_val);
-			}	
-		}
-		}else if(another_tag == IRTTypeUnionTag::SS && var_tag == IRITypeUnionTag::SS){
-			for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-				auto another_val = std::get<SS_T>(select_spo_vec_[another_pos][i]);
-				auto var_val     = std::get<SS_T>(select_spo_vec_[var_pos][i]);
-				if(p_shared_->ss_bound_vals[another_var_name].find(another_val) \
-					== p_shared_->ss_bound_vals[another_var_name].end()){
-					continue;
-				}
-				if(p_shared_->ss_bound_vals[var_name].find(var_val) \
-					== p_shared_->ss_bound_vals[var_name].end()){
-					continue;
-				}
-				another2var_map[another_val].push_back(var_val);
 
-			}	
-		}
-		}else if(another_tag == IRTTypeUnionTag::SS && var_tag == IRITypeUnionTag::HV){
-			for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-				auto another_val = std::get<SS_T>(select_spo_vec_[another_pos][i]);
-				auto var_val     = std::get<HV_T>(select_spo_vec_[var_pos][i]);
-				if(p_shared_->ss_bound_vals[another_var_name].find(another_val) \
-					== p_shared_->ss_bound_vals[another_var_name].end()){
-					continue;
-				}
-				if(p_shared_->hv_bound_vals[var_name].find(var_val) \
-					== p_shared_->hv_bound_vals[var_name].end()){
-					continue;
-				}
-				std::string var_str     = std::to_string(var_val);
-				another2var_map[another_val].push_back(var_str);
-			}	
-		}
-		}else{
-			fprintf(stderr,"update cartesian product error\n");
-			error(-1);
-		}
-}else{
-	auto interm_result = got_another_var_intermediate_result->second;
-	p_shared_->intermediate_result_col_name_[another_var_name] = var_name;
+	std::vector<std::string> filter_var_val_vector[2];//0 : anther_var, 1: var
+	//check if another_var_name in shared_data.intermidiate_result	
 	if(another_tag == IRITypeUnionTag::HV && var_tag == IRITypeUnionTag::HV){
 		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
 			auto another_val = std::get<HV_T>(select_spo_vec_[another_pos][i]);
 			auto var_val     = std::get<HV_T>(select_spo_vec_[var_pos][i]);
-			std::string another_str = std::to_string(another_val);
-			std::string var_str     = std::to_string(var_val);
-			auto got_another_var_vec = interm_result.find(another_str)
-			if(got_another_var_vec == interm_result.end()){
-				continue;	
-			}	
-			if(p_shared_->ss_bound_vals[var_name].find(var_val) \
-				== p_shared_->ss_bound_vals[var_name].end()){
+			if(p_shared_->hv_bound_vals[another_var_name].find(another_val) \
+				== p_shared_->hv_bound_vals[another_var_name].end()){ 
 				continue;
 			}
+			if(p_shared_->hv_bound_vals[var_name].find(var_val) \
+				== p_shared_->hv_bound_vals[var_name].end()){
+				continue;
+			}
+			std::string another_str = std::to_string(another_val);
+			std::string var_str     = std::to_string(var_val);
+			filter_var_val_vector[0].push_back(another_str);
+			filter_var_val_vector[1].push_back(var_str);
 
-			std::vector<std::string> another_var_vec = *got_another_var_vec;
-			for(auto str : another_var_vec){
-				str.append("\n").append(var_str);
-				another2var_map[another_str].push_back(str);
-			}	
 		}	
 	}else if(another_tag == IRTTypeUnionTag::HV && var_tag == IRITypeUnionTag::SS){
 		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
 			auto another_val = std::get<HV_T>(select_spo_vec_[another_pos][i]);
 			auto var_val     = std::get<SS_T>(select_spo_vec_[var_pos][i]);
-			std::string another_str = std::to_string(another_val);
-			auto got_another_var_vec = interm_result.find(another_val)
-			if(got_another_var_vec == interm_result.end()){
-				continue;	
-			}	
+			if(p_shared_->hv_bound_vals[another_var_name].find(another_val) \
+				== p_shared_->hv_bound_vals[another_var_name].end()){
+				continue;
+			}
 			if(p_shared_->ss_bound_vals[var_name].find(var_val) \
 				== p_shared_->ss_bound_vals[var_name].end()){
 				continue;
 			}
-
-			std::vector<std::string> another_var_vec = *got_another_var_vec;
-			for(auto str : another_var_vec){
-				str.append("\n").append(var_str);
-				another2var_map[another_val].push_back(str);
-			}	
+			std::string another_str = std::to_string(another_val);
+			filter_var_val_vector[0].push_back(another_str);
+			filter_var_val_vector[1].push_back(var_val);
 		}	
 	}
 	}else if(another_tag == IRTTypeUnionTag::SS && var_tag == IRITypeUnionTag::SS){
 		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
 			auto another_val = std::get<SS_T>(select_spo_vec_[another_pos][i]);
 			auto var_val     = std::get<SS_T>(select_spo_vec_[var_pos][i]);
-			auto got_another_var_vec = interm_result.find(another_val)
-			if(got_another_var_vec == interm_result.end()){
-				continue;	
-			}	
-			
+			if(p_shared_->ss_bound_vals[another_var_name].find(another_val) \
+				== p_shared_->ss_bound_vals[another_var_name].end()){
+				continue;
+			}
 			if(p_shared_->ss_bound_vals[var_name].find(var_val) \
 				== p_shared_->ss_bound_vals[var_name].end()){
 				continue;
 			}
-			std::vector<std::string> another_var_vec = *got_another_var_vec;
-			for(auto str : another_var_vec){
-				str.append("\n").append(var_val);
-				another2var_map[another_val].push_back(str);
-			}	
+			filter_var_val_vector[0].push_back(another_val);
+			filter_var_val_vector[1].push_back(var_val);
 		}	
 	}
 	}else if(another_tag == IRTTypeUnionTag::SS && var_tag == IRITypeUnionTag::HV){
 		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
 			auto another_val = std::get<SS_T>(select_spo_vec_[another_pos][i]);
 			auto var_val     = std::get<HV_T>(select_spo_vec_[var_pos][i]);
-			std::string var_str     = std::to_string(var_val);
-			
-			auto got_another_var_vec = interm_result.find(another_val)
-			if(got_another_var_vec == interm_result.end()){
-				continue;	
-			}	
-			
+			if(p_shared_->ss_bound_vals[another_var_name].find(another_val) \
+				== p_shared_->ss_bound_vals[another_var_name].end()){
+				continue;
+			}
 			if(p_shared_->hv_bound_vals[var_name].find(var_val) \
 				== p_shared_->hv_bound_vals[var_name].end()){
 				continue;
 			}
-			std::vector<std::string> another_var_vec = *got_another_var_vec;
-			for(auto str : another_var_vec){
-				str.append("\n").append(var_str);
-				another2var_map[another_val].push_back(str);
-			}	
+			std::string var_str     = std::to_string(var_val);
+			filter_var_val_vector[0].push_back(another_val);
+			filter_var_val_vector[1].push_back(var_str);
 		}	
 	}
 	}else{
 		fprintf(stderr,"update cartesian product error\n");
 		error(-1);
-	}			
-}//else
-		p_shared_->intermediate_result_[another_var_name] = another2var_map;
-			
+	}
 
-
+	p_shared_->make_cartesian_product_by_filter_vector_linked(another_var_name,var_name,filter_var_val_vector);
+	return another_var_name;	
 }
 
 
