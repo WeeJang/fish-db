@@ -31,7 +31,7 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 			}	
 		}
 		intermediate_result_col_name_[another_var_name].push_back(var_name);	
-		for(auto& col_name : inermediate_result_col_name_[var_name]){
+		for(auto& col_name : intermediate_result_col_name_[var_name]){
 			intermediate_result_col_name_[another_var_name].push_back(col_name);	
 		}
 	}else if(got_another_var_intermediate_result != intermediate_result_.end() && \
@@ -44,7 +44,7 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 			if(another_var_val_2_vec == another_var_map.end()){
 				continue;
 			}else{
-				std::vector<std::string> val_2_vec == another_var_val_2_vec->second;
+				std::vector<std::string> val_2_vec = another_var_val_2_vec->second;
 				for(auto val : val_2_vec){
 					another_val_2_var_val_map[another_var_val].push_back(std::string(val).append("\t").append(var_val));;
 				}
@@ -64,8 +64,8 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 			if(var_val_2_vec == var_map.end() || another_var_val_2_vec == another_var_map.end()){
 				continue;
 			}else{
-				std::vector<std::string> val_vec == var_val_2_vec->second;
-				std::vector<std::string> another_val_vec == another_var_val_2_vec->second;
+				std::vector<std::string> val_vec = var_val_2_vec->second;
+				std::vector<std::string> another_val_vec = another_var_val_2_vec->second;
 				for(auto& another_val : another_val_vec){
 					for(auto& val : val_vec){
 						another_val_2_var_val_map[another_var_val]\
@@ -78,7 +78,7 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 					
 		}
 		intermediate_result_col_name_[another_var_name].push_back(var_name);	
-		for(auto& col_name : inermediate_result_col_name_[var_name]){
+		for(auto& col_name : intermediate_result_col_name_[var_name]){
 			intermediate_result_col_name_[another_var_name].push_back(col_name);	
 		}
 	}
@@ -87,57 +87,15 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 }
 
 
-SPARQLParserType_T make_typed_value(sparql::SPARQLParser::TriplePatternElem& triple_elem,SPARQLParserTypeTag& tag){
-	SPARQLParserType_T ret;	
-	if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::Variable){
-		tag = SPARQLParserTypeTag::VAR;	
-		ret = query::Variable(triple_elem.value_);	
-	}else if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::IRI){
-		std::string format_iri;
-		int err = Utils::IRI2inner_format(triple_it->subj_.value_,&format_iri);
-		if(err != 0){
-			fprintf(stderr,"make_type_value error \n");
-			exit(-1);				
-		}
-		if(core::IRIType::is_hashvalue(format_iri.c_str(),format_iri.size())){
-			tag = SPARQLParserTypeTag::HV;	
-			ret = query::HashValue(::strtol(triple_elem.value_.c_str(),nullptr,16));	
-		}else{
-			tag = SPARQLParserTypeTag::SS;
-			ret = query::ShortString(triple_elem.value_.c_str());
-		}	
-	}else if(triple_elem.type_ == sparql::SPARQLParser::TriplePatternElem::Type::Literal){
-		tag = SPARQLParserTypeTag::SS;
-		ret = query::ShortString(triple_elem.value_.c_str());
-	}
-	return ret;
-}
-
-
-std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_query_str);
-
-
-std::vector<std::string> TripleQuery::make_cartesian_product(std::vector<std::string>& vec_1,std::vector<std::string>& vec_2){
-	std::vector<std::string> vec_result;
-	for(auto& vec_2_elem : vec_2){
-		for(auto vec_1_elem : vec_1){
-			vec_result.push_back(vec_1_elem.append(vec_2));
-		}
-	}
-	return vec_result;
-}
-
-
-
 
 TripleQuery::TripleQuery(HashValue sub, ShortString pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(sub.value());
 	iri_vec_.push_back(pre.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
 	iri_pos_.push_back(core::TripleElemPos::pre);
-	spo_vec_iri_type_tag_[0] = HV;
-	spo_vec_iri_type_tag_[1] = SS;
-	spo_vec_iri_type_tag_[2] = UD;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::HV;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::UD;
 	var_vec_.push_back(obj);
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
@@ -149,9 +107,9 @@ TripleQuery::TripleQuery(HashValue sub, Variable pre,HashValue obj,std::shared_p
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = HV;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = HV;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::HV;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::HV;
 	var_vec_.push_back(pre);
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
@@ -165,9 +123,9 @@ TripleQuery::TripleQuery(HashValue sub, Variable pre,ShortString obj,std::shared
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = HV;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = SS;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::HV;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::SS;
 	var_vec_.push_back(pre);
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
@@ -179,9 +137,9 @@ TripleQuery::TripleQuery(HashValue sub, Variable pre,ShortString obj,std::shared
 TripleQuery::TripleQuery(HashValue sub, Variable pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(sub.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
-	spo_vec_iri_type_tag_[0] = HV;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = UD;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::HV;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::UD;
 	var_vec_.push_back(pre);
 	var_vec_.push_back(obj);
 	var_pos_[pre] = core::TripleElemPos::pre;
@@ -195,9 +153,9 @@ TripleQuery::TripleQuery(ShortString sub, ShortString pre,Variable obj,std::shar
 	iri_vec_.push_back(pre.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
 	iri_pos_.push_back(core::TripleElemPos::pre);
-	spo_vec_iri_type_tag_[0] = SS;
-	spo_vec_iri_type_tag_[1] = SS;
-	spo_vec_iri_type_tag_[2] = UD;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::UD;
 	var_vec_.push_back(obj);
 	var_pos_[obj] = core::TripleElemPos::obj;
 	p_shared_ = p_shared;
@@ -210,9 +168,9 @@ TripleQuery::TripleQuery(ShortString sub, Variable pre,HashValue obj,std::shared
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = SS;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = HV;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::HV;
 	var_vec_.push_back(pre);
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
@@ -227,9 +185,9 @@ TripleQuery::TripleQuery(ShortString sub, Variable pre,ShortString obj,std::shar
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = SS;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = SS;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::SS;
 	var_vec_.push_back(pre);
 	var_pos_[pre] = core::TripleElemPos::pre;
 	p_shared_ = p_shared;
@@ -240,9 +198,9 @@ TripleQuery::TripleQuery(ShortString sub, Variable pre,ShortString obj,std::shar
 TripleQuery::TripleQuery(ShortString sub, Variable pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(sub.value());
 	iri_pos_.push_back(core::TripleElemPos::sub);
-	spo_vec_iri_type_tag_[0] = SS;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = UD;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::UD;
 	var_vec_.push_back(pre);
 	var_vec_.push_back(obj);
 	var_pos_[pre] = core::TripleElemPos::pre;
@@ -256,9 +214,9 @@ TripleQuery::TripleQuery(Variable sub, ShortString pre,HashValue obj,std::shared
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::pre);
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = UD;
-	spo_vec_iri_type_tag_[1] = SS;
-	spo_vec_iri_type_tag_[2] = HV;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::HV;
 	var_vec_.push_back(sub);
 	var_pos_[sub] = core::TripleElemPos::sub;
 	p_shared_ = p_shared;
@@ -271,9 +229,9 @@ TripleQuery::TripleQuery(Variable sub, ShortString pre,ShortString obj,std::shar
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::pre);
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = UD;
-	spo_vec_iri_type_tag_[1] = SS;
-	spo_vec_iri_type_tag_[2] = SS;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::SS;
 	var_vec_.push_back(sub);
 	var_pos_[sub] = core::TripleElemPos::sub;
 	p_shared_ = p_shared;
@@ -283,9 +241,9 @@ TripleQuery::TripleQuery(Variable sub, ShortString pre,ShortString obj,std::shar
 TripleQuery::TripleQuery(Variable sub, ShortString pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(pre.value());
 	iri_pos_.push_back(core::TripleElemPos::pre);
-	spo_vec_iri_type_tag_[0] = UD;
-	spo_vec_iri_type_tag_[1] = SS;
-	spo_vec_iri_type_tag_[2] = UD;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::SS;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::UD;
 	var_vec_.push_back(sub);
 	var_vec_.push_back(obj);
 	var_pos_[sub] = core::TripleElemPos::sub;
@@ -297,9 +255,9 @@ TripleQuery::TripleQuery(Variable sub, ShortString pre,Variable obj,std::shared_
 TripleQuery::TripleQuery(Variable sub, Variable pre,HashValue obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = UD;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = HV;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::HV;
 	var_vec_.push_back(sub);
 	var_vec_.push_back(pre);
 	var_pos_[sub] = core::TripleElemPos::sub;
@@ -311,9 +269,9 @@ TripleQuery::TripleQuery(Variable sub, Variable pre,HashValue obj,std::shared_pt
 TripleQuery::TripleQuery(Variable sub, Variable pre,ShortString obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(obj.value());
 	iri_pos_.push_back(core::TripleElemPos::obj);
-	spo_vec_iri_type_tag_[0] = UD;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = SS;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::SS;
 	var_vec_.push_back(sub);
 	var_vec_.push_back(pre);
 	var_pos_[sub] = core::TripleElemPos::sub;
@@ -323,9 +281,9 @@ TripleQuery::TripleQuery(Variable sub, Variable pre,ShortString obj,std::shared_
 }
 
 TripleQuery::TripleQuery(Variable sub, Variable pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
-	spo_vec_iri_type_tag_[0] = UD;
-	spo_vec_iri_type_tag_[1] = UD;
-	spo_vec_iri_type_tag_[2] = HV;
+	spo_vec_iri_type_tag_[0] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[1] = IRITypeUnionTag::UD;
+	spo_vec_iri_type_tag_[2] = IRITypeUnionTag::HV;
 	var_vec_.push_back(sub);
 	var_vec_.push_back(pre);
 	var_vec_.push_back(obj);
@@ -338,7 +296,7 @@ TripleQuery::TripleQuery(Variable sub, Variable pre,Variable obj,std::shared_ptr
 
 int TripleQuery::get_iri_index(IRITypeUnion_T iri_variant,IRITypeUnionTag typetag,core::TripleElemPos pos,BitMap_T& ret_bitmap){
 	if(IRITypeUnionTag::HV == typetag){
-		auto iri_value = std::get<HV_T>(iri_variant);	
+		auto iri_value = boost::get<HV_T>(iri_variant);	
 		auto p_iri_index = p_shared_->p_fish_db_->hv_meta_iri_index_.get_IRI_index(iri_value);
 		if(!p_iri_index){
 			return -1;
@@ -347,8 +305,8 @@ int TripleQuery::get_iri_index(IRITypeUnion_T iri_variant,IRITypeUnionTag typeta
 			return 0;	
 		}
 	}else if(IRITypeUnionTag::SS == typetag){
-		auto iri_value = std::get<SS_T>(iri_variant);	
-		auto p_iri_index = p_shared_->p_fish_db_->hv_meta_iri_index_.get_IRI_index(iri_value);
+		auto iri_value = boost::get<SS_T>(iri_variant);	
+		auto p_iri_index = p_shared_->p_fish_db_->ss_meta_iri_index_.get_IRI_index(iri_value);
 		if(!p_iri_index){
 			return -1;
 		}else{
@@ -370,7 +328,7 @@ void TripleQuery::init(){
 	for(size_t i = 0 ; i < iri_vec_.size() ; i ++){
 		auto iri_variant = iri_vec_[i];
 		auto iri_elem_pos = iri_pos_[i];
-		auto iri_type_tag = spo_vec_iri_type_tag_[iri_elem_pos];
+		auto iri_type_tag = spo_vec_iri_type_tag_[static_cast<int>(iri_elem_pos)];
 		if(-1 == get_iri_index(iri_variant,iri_type_tag,iri_elem_pos,bit_map)){
 			is_valid_ = false;
 			return;
@@ -381,33 +339,33 @@ void TripleQuery::init(){
 			cur_valid_row_bm_index_ &= bit_map;
 		}
 	}
-	cur_valid_row_bm_index_ = cur_valid_row_bm_index_.cardinality();
+	cur_valid_row_bm_index_cardinality_ = cur_valid_row_bm_index_.cardinality();
 	is_valid_ = true;
 }
 
 
 void TripleQuery::improve_spo_vec_iri_type_tag(std::shared_ptr<core::TripleSpec> p_triple){
-	for(size_t i = 0 ; i < spo_vec_iri_type_tag_.size() ; i ++){
+	for(size_t i = 0 ; i < 3 ; i ++){
 		if(IRITypeUnionTag::UD == spo_vec_iri_type_tag_[i]){
-			if(IRIType::is_hashvalue(p_triple->at(i).c_str(),p_triple->at(i).size())){
-				spo_vec_iri_type_tag_ = IRITypeUnionTag::HV;	
+			if(core::IRIType::is_hashvalue(p_triple->at(static_cast<core::TripleElemPos>(i)).c_str(),p_triple->at(static_cast<core::TripleElemPos>(i)).size())){
+				spo_vec_iri_type_tag_[i] = IRITypeUnionTag::HV;	
 			}else{
-				spo_vec_iri_type_tag_ = IRITypeUnionTag::SS;
+				spo_vec_iri_type_tag_[i] = IRITypeUnionTag::SS;
 			}
 		}
 	}
 }
 
-void select_new_triple(std::shared_ptr<core::TripleSpec> p_triple_spec){
+void TripleQuery::select_new_triple(std::shared_ptr<core::TripleSpec> p_triple_spec){
 	for(auto iter = var_pos_.begin(); iter != var_pos_.end() ; iter++){
 		auto var_name = iter->first;
 		auto var_pos  = iter->second;
-		auto var_tag  = spo_vec_iri_type_tag_[var_pos];
+		auto var_tag  = spo_vec_iri_type_tag_[static_cast<int>(var_pos)];
 		if(IRITypeUnionTag::HV == var_tag){
 			HV_T hv_value = ::strtol(p_triple_spec->at(var_pos).c_str(),nullptr,16);
-			select_spo_vec_[var_pos].push_back(hv_value);
+			select_spo_vec_[static_cast<int>(var_pos)].push_back(hv_value);
 		}else if(IRITypeUnionTag::SS == var_tag){
-			select_pos_vec_[var_pos].push_back(p_triple_spec->at(var_pos));
+			select_spo_vec_[static_cast<int>(var_pos)].push_back(p_triple_spec->at(var_pos));
 		}else{
 			fprintf(stderr,"select new triple error!");
 			exit(-1);
@@ -427,8 +385,8 @@ std::string TripleQuery::update_cartesian_product_in_shared_data(std::string var
 	}
 	auto var_pos = var_pos_[var_name];
 	auto another_pos = var_pos_[another_var_name];
-	auto var_tag = spo_vec_iri_type_tag_[var_pos];
-	auto another_tag = spo_vec_iri_type_tag_[another_pos];
+	auto var_tag = spo_vec_iri_type_tag_[static_cast<int>(var_pos)];
+	auto another_tag = spo_vec_iri_type_tag_[static_cast<int>(another_pos)];
 
 	p_shared_->intermediate_result_col_name_[another_var_name].push_back(var_name);
 	
@@ -437,15 +395,15 @@ std::string TripleQuery::update_cartesian_product_in_shared_data(std::string var
 	std::vector<std::string> filter_var_val_vector[2];//0 : anther_var, 1: var
 	//check if another_var_name in shared_data.intermidiate_result	
 	if(another_tag == IRITypeUnionTag::HV && var_tag == IRITypeUnionTag::HV){
-		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-			auto another_val = std::get<HV_T>(select_spo_vec_[another_pos][i]);
-			auto var_val     = std::get<HV_T>(select_spo_vec_[var_pos][i]);
-			if(p_shared_->hv_bound_vals[another_var_name].find(another_val) \
-				== p_shared_->hv_bound_vals[another_var_name].end()){ 
+		for(size_t i = 0 ; i < select_spo_vec_[static_cast<int>(var_pos)].size() ; i++){
+			auto another_val = boost::get<HV_T>(select_spo_vec_[static_cast<int>(another_pos)][i]);
+			auto var_val     = boost::get<HV_T>(select_spo_vec_[static_cast<int>(var_pos)][i]);
+			if(p_shared_->hv_bound_vals_[another_var_name].find(another_val) \
+				== p_shared_->hv_bound_vals_[another_var_name].end()){ 
 				continue;
 			}
-			if(p_shared_->hv_bound_vals[var_name].find(var_val) \
-				== p_shared_->hv_bound_vals[var_name].end()){
+			if(p_shared_->hv_bound_vals_[var_name].find(var_val) \
+				== p_shared_->hv_bound_vals_[var_name].end()){
 				continue;
 			}
 			std::string another_str = std::to_string(another_val);
@@ -454,59 +412,56 @@ std::string TripleQuery::update_cartesian_product_in_shared_data(std::string var
 			filter_var_val_vector[1].push_back(var_str);
 
 		}	
-	}else if(another_tag == IRTTypeUnionTag::HV && var_tag == IRITypeUnionTag::SS){
-		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-			auto another_val = std::get<HV_T>(select_spo_vec_[another_pos][i]);
-			auto var_val     = std::get<SS_T>(select_spo_vec_[var_pos][i]);
-			if(p_shared_->hv_bound_vals[another_var_name].find(another_val) \
-				== p_shared_->hv_bound_vals[another_var_name].end()){
+	}else if(another_tag == IRITypeUnionTag::HV && var_tag == IRITypeUnionTag::SS){
+		for(size_t i = 0 ; i < select_spo_vec_[static_cast<int>(var_pos)].size() ; i++){
+			auto another_val = boost::get<HV_T>(select_spo_vec_[static_cast<int>(another_pos)][i]);
+			auto var_val     = boost::get<SS_T>(select_spo_vec_[static_cast<int>(var_pos)][i]);
+			if(p_shared_->hv_bound_vals_[another_var_name].find(another_val) \
+				== p_shared_->hv_bound_vals_[another_var_name].end()){
 				continue;
 			}
-			if(p_shared_->ss_bound_vals[var_name].find(var_val) \
-				== p_shared_->ss_bound_vals[var_name].end()){
+			if(p_shared_->ss_bound_vals_[var_name].find(var_val) \
+				== p_shared_->ss_bound_vals_[var_name].end()){
 				continue;
 			}
 			std::string another_str = std::to_string(another_val);
 			filter_var_val_vector[0].push_back(another_str);
 			filter_var_val_vector[1].push_back(var_val);
 		}	
-	}
-	}else if(another_tag == IRTTypeUnionTag::SS && var_tag == IRITypeUnionTag::SS){
-		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-			auto another_val = std::get<SS_T>(select_spo_vec_[another_pos][i]);
-			auto var_val     = std::get<SS_T>(select_spo_vec_[var_pos][i]);
-			if(p_shared_->ss_bound_vals[another_var_name].find(another_val) \
-				== p_shared_->ss_bound_vals[another_var_name].end()){
+	}else if(another_tag == IRITypeUnionTag::SS && var_tag == IRITypeUnionTag::SS){
+		for(size_t i = 0 ; i < select_spo_vec_[static_cast<int>(var_pos)].size() ; i++){
+			auto another_val = boost::get<SS_T>(select_spo_vec_[static_cast<int>(another_pos)][i]);
+			auto var_val     = boost::get<SS_T>(select_spo_vec_[static_cast<int>(var_pos)][i]);
+			if(p_shared_->ss_bound_vals_[another_var_name].find(another_val) \
+				== p_shared_->ss_bound_vals_[another_var_name].end()){
 				continue;
 			}
-			if(p_shared_->ss_bound_vals[var_name].find(var_val) \
-				== p_shared_->ss_bound_vals[var_name].end()){
+			if(p_shared_->ss_bound_vals_[var_name].find(var_val) \
+				== p_shared_->ss_bound_vals_[var_name].end()){
 				continue;
 			}
 			filter_var_val_vector[0].push_back(another_val);
 			filter_var_val_vector[1].push_back(var_val);
 		}	
-	}
-	}else if(another_tag == IRTTypeUnionTag::SS && var_tag == IRITypeUnionTag::HV){
-		for(size_t i = 0 ; i < select_spo_vec_[var_pos].size() ; i++){
-			auto another_val = std::get<SS_T>(select_spo_vec_[another_pos][i]);
-			auto var_val     = std::get<HV_T>(select_spo_vec_[var_pos][i]);
-			if(p_shared_->ss_bound_vals[another_var_name].find(another_val) \
-				== p_shared_->ss_bound_vals[another_var_name].end()){
+	}else if(another_tag == IRITypeUnionTag::SS && var_tag == IRITypeUnionTag::HV){
+		for(size_t i = 0 ; i < select_spo_vec_[static_cast<int>(var_pos)].size() ; i++){
+			auto another_val = boost::get<SS_T>(select_spo_vec_[static_cast<int>(another_pos)][i]);
+			auto var_val     = boost::get<HV_T>(select_spo_vec_[static_cast<int>(var_pos)][i]);
+			if(p_shared_->ss_bound_vals_[another_var_name].find(another_val) \
+				== p_shared_->ss_bound_vals_[another_var_name].end()){
 				continue;
 			}
-			if(p_shared_->hv_bound_vals[var_name].find(var_val) \
-				== p_shared_->hv_bound_vals[var_name].end()){
+			if(p_shared_->hv_bound_vals_[var_name].find(var_val) \
+				== p_shared_->hv_bound_vals_[var_name].end()){
 				continue;
 			}
 			std::string var_str     = std::to_string(var_val);
 			filter_var_val_vector[0].push_back(another_val);
 			filter_var_val_vector[1].push_back(var_str);
 		}	
-	}
 	}else{
 		fprintf(stderr,"update cartesian product error\n");
-		error(-1);
+		exit(-1);
 	}
 
 	p_shared_->make_cartesian_product_by_filter_vector_linked(another_var_name,var_name,filter_var_val_vector);
@@ -518,17 +473,17 @@ std::string TripleQuery::update_cartesian_product_in_shared_data(std::string var
 
 void TripleQuery::union_update_shared_data(std::string var_name){
 	auto var_pos = var_pos_[var_name];
-	auto var_tag = spo_vec_iri_type_tag_[var_pos];
-	auto val_vec = select_spo_vec_[var_pos];
+	auto var_tag = spo_vec_iri_type_tag_[static_cast<int>(var_pos)];
+	auto val_vec = select_spo_vec_[static_cast<int>(var_pos)];
 	
 	p_shared_->var_val_type_[var_name] = var_tag;	
 	if(IRITypeUnionTag::HV == var_tag){
 		for(auto& elem : val_vec){
-			p_shared_->hv_bound_vals_[var_name].insert(std::get<HV_T>(elem));
+			p_shared_->hv_bound_vals_[var_name].insert(boost::get<HV_T>(elem));
 		}
 	}else if(IRITypeUnionTag::SS == var_tag){
 		for(auto& elem : val_vec){
-			p_shared_->ss_bound_vals_[var_name].insert(std::get<SS_T>(elem));
+			p_shared_->ss_bound_vals_[var_name].insert(boost::get<SS_T>(elem));
 		}
 	}else{
 		fprintf(stderr,"union update shared data error!\n");
@@ -538,14 +493,14 @@ void TripleQuery::union_update_shared_data(std::string var_name){
 
 void TripleQuery::join_update_shared_data(std::string var_name){
 	auto var_pos = var_pos_[var_name];
-	auto var_tag = spo_vec_iri_type_tag_[var_pos];
-	auto val_vec = select_spo_vec_[var_pos];
+	auto var_tag = spo_vec_iri_type_tag_[static_cast<int>(var_pos)];
+	auto val_vec = select_spo_vec_[static_cast<int>(var_pos)];
 	
 	if(IRITypeUnionTag::HV == var_tag){
 		auto hv_var_vals_set = p_shared_->hv_bound_vals_[var_name];
 		p_shared_->hv_bound_vals_[var_name].clear();
 		for(auto& elem : val_vec){
-			HV_T hv_elem = std::get<HV_T>(elem);
+			HV_T hv_elem = boost::get<HV_T>(elem);
 			if(hv_var_vals_set.find(hv_elem) != hv_var_vals_set.end()){
 				p_shared_->hv_bound_vals_[var_name].insert(hv_elem);
 			}
@@ -554,8 +509,8 @@ void TripleQuery::join_update_shared_data(std::string var_name){
 		auto ss_var_vals_set = p_shared_->ss_bound_vals_[var_name];
 		p_shared_->ss_bound_vals_[var_name].clear();
 		for(auto& elem : val_vec){
-			SS_T ss_elem = std::get<SS_T>(elem);
-			if(ss_var_vals_set.find(hv_elem) != ss_var_vals_set.end()){
+			SS_T ss_elem = boost::get<SS_T>(elem);
+			if(ss_var_vals_set.find(ss_elem) != ss_var_vals_set.end()){
 				p_shared_->ss_bound_vals_[var_name].insert(ss_elem);
 			}
 		}
@@ -573,16 +528,16 @@ void TripleQuery::select(){
 	
 	auto p_db = p_shared_->p_fish_db_;
 	auto p_triple_spec = std::make_shared<core::TripleSpec>(); 
-	auto rowindex_bm = new uint64_t[cur_valid_row_bm_index_cardinality];
-	cur_valiad_row_bm_index_.toUnit64Array(rowindex_bm);	
+	auto rowindex_bm = new uint64_t[cur_valid_row_bm_index_cardinality_];
+	cur_valid_row_bm_index_.toUint64Array(rowindex_bm);	
 	for(size_t i = 0 ; i < cur_valid_row_bm_index_cardinality_ ; i++){
-		p_fish_db_->get_triple_by_row_index(rowindex_bm[i],p_triple_spec);
+		p_db->get_triple_by_row_index(rowindex_bm[i],p_triple_spec);
 		if(0 == i){
 			improve_spo_vec_iri_type_tag(p_triple_spec);
 		}
 		select_new_triple(p_triple_spec);				
 	}
-	delete [] bitmap_array;
+	delete [] rowindex_bm;
 
 	for(auto var_name : var_vec_){
 		if(p_shared_->var_val_type_.find(var_name) == p_shared_->var_val_type_.end()){
@@ -601,16 +556,16 @@ void TripleQuery::shrink_cur_valid_row_bm(){
 		}
 		auto var_pos = var_pos_[var_name];
 		BitMap_T union_bm;
-		auto var_tag = spo_vec_iri_type_tag_[var_pos];
+		auto var_tag = spo_vec_iri_type_tag_[static_cast<int>(var_pos)];
 		if(var_tag == IRITypeUnionTag::HV){
 			auto var_set = p_shared_->hv_bound_vals_[var_name];
 			for(auto var_set_elem : var_set){
-				union_bm |= p_fish_db->hv_meta_iri_index_.get_IRI_index(var_set_lem).at(var_pos);
+				union_bm |= p_fish_db->hv_meta_iri_index_.get_IRI_index(var_set_elem).at(var_pos);
 			}
 		}else if(var_tag == IRITypeUnionTag::SS){
 			auto var_set = p_shared_->ss_bound_vals_[var_name];
 			for(auto var_set_elem : var_set){
-				union_bm |= p_fish_db->ss_meta_iri_index_.get_IRI_index(var_set_lem).at(var_pos);
+				union_bm |= p_fish_db->ss_meta_iri_index_.get_IRI_index(var_set_elem).at(var_pos);
 			}
 		}else{
 			fprintf(stderr,"shink_cur_valid_row_bm error!\n");
@@ -679,140 +634,140 @@ std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_
 			if(triple_tag[1] == SPARQLParserTypeTag::HV){
 				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<HashValue>(triple[0]),
-						std::get<HashValue>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<HashValue>(triple[0]),
+						boost::get<HashValue>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);		
 				}
 			}else if(triple_tag[1] == SPARQLParserTypeTag::SS){
 				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<HashValue>(triple[0]),
-						std::get<ShortString>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<HashValue>(triple[0]),
+						boost::get<ShortString>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);		
 				}
 			}else if(triple_tag[1] == SPARQLParserTypeTag::VAR){
 				if(triple_tag[2] == SPARQLParserTypeTag::HV){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<HashValue>(triple[0]),
-						std::get<Variable>(triple[1]),
-						std::get<HashValue>(triple[2]));
+						boost::get<HashValue>(triple[0]),
+						boost::get<Variable>(triple[1]),
+						boost::get<HashValue>(triple[2]));
 					ret_query_set.insert(triple_query);		
 				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<HashValue>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<ShortString>(triple[2]));
+						boost::get<HashValue>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<ShortString>(triple[2]));
 					ret_query_set.insert(triple_query);		
 				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<HashValue>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<HashValue>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);		
 				}
 		}else if (triple_tag[0] == SPARQLParserTypeTag::SS){
 			if(triple_tag[1] == SPARQLParserTypeTag::HV){
 				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<ShortString>(triple[0]),
-						std::get<HashValue>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<ShortString>(triple[0]),
+						boost::get<HashValue>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}
 			}else if(triple_tag[1] == SPARQLParserTypeTag::SS){
 				if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<ShortString>(triple[0]),
-						std::get<ShortString>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<ShortString>(triple[0]),
+						boost::get<ShortString>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}			
 			}else if(triple_tag[1] == SPARQLParserTypeTag::VAR){
 				if(triple_tag[2] == SPARQLParserTypeTag::HV){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<ShortString>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<HashValue>(triple[2]));
+						boost::get<ShortString>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<HashValue>(triple[2]));
 					ret_query_set.insert(triple_query);						
 						
 				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<ShortString>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<ShortString>(triple[2]));
+						boost::get<ShortString>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<ShortString>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				
 				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<ShortString>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<ShortString>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}
 		}else if (triple_tag[0] == SPARQLParserTypeTag::VAR){
 			if(triple_tag[1] == SPARQLParserTypeTag::HV){
 				if(triple_tag[2] == SPARQLParserTypeTag::HV){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<HashValue>(triple[1]),			
-						std::get<Hashvalue>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<HashValue>(triple[1]),			
+						boost::get<Hashvalue>(triple[2]));
 					ret_query_set.insert(triple_query);						
 						
 				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<HashValue>(triple[1]),			
-						std::get<ShortString>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<HashValue>(triple[1]),			
+						boost::get<ShortString>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				
 				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<HashValue>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<HashValue>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}
 			}else if(triple_tag[1] == SPARQLParserTypeTag::SS){
 				if(triple_tag[2] == SPARQLParserTypeTag::HV){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<ShortString>(triple[1]),			
-						std::get<HashValue>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<ShortString>(triple[1]),			
+						boost::get<HashValue>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<ShortString>(triple[1]),			
-						std::get<ShortString>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<ShortString>(triple[1]),			
+						boost::get<ShortString>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<ShortString>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<ShortString>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}
 			}else if(triple_tag[1] == SPARQLParserTypeTag::VAR){
 				if(triple_tag[2] == SPARQLParserTypeTag::HV){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<HashValue>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<HashValue>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}else if(triple_tag[2] == SPARQLParserTypeTag::SS){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<ShortString>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<ShortString>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				
 				}else if(triple_tag[2] == SPARQLParserTypeTag::VAR){
 					auto triple_query = std::make_shared<TripleQuery>(\
-						std::get<Variable>(triple[0]),
-						std::get<Variable>(triple[1]),			
-						std::get<Variable>(triple[2]));
+						boost::get<Variable>(triple[0]),
+						boost::get<Variable>(triple[1]),			
+						boost::get<Variable>(triple[2]));
 					ret_query_set.insert(triple_query);						
 				}
 		}

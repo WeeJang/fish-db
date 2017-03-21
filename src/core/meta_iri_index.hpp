@@ -20,14 +20,18 @@ public:
 	using Map_Type 	  = typename std::unordered_map<MAP_KEY_T,MAP_VALUE_T>;
 public:
 	MetaIRIIndex(){ LOG("MetaIRIIndex init"); }
-	//get
-	MAP_VALUE_T get_IRI_index(T iri_value){
-		auto got = meta_iri_map_.find(iri_value.value());
+	
+	MAP_VALUE_T get_IRI_index(MAP_KEY_T iri_value){
+		auto got = meta_iri_map_.find(iri_value);
 		if(got == meta_iri_map_.end()){
 			return {};
 		}else{
 			return got->second;
 		}
+	}
+	//get
+	MAP_VALUE_T get_IRI_index(T iri_value){
+		return get_IRI_index(iri_value.value());
 	}
 
 	MAP_VALUE_T operator[] (const MAP_KEY_T& key){

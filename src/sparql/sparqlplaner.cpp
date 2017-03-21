@@ -195,22 +195,10 @@ query::TripleSetQuery SPARQLPlaner::handle(const std::string sparql_query)
 					int err = Utils::IRI2inner_format(triple_it->subj_.value_,&format_iri);
 					if(err != 0)
 						return {};
-					std::string new_var_name = get_next_temporary_var_name();
 
-					std::vector<std::string> bound_vals;
-					bound_vals.push_back(format_iri);
-					if(triple_it->is_option_)
-					{
-						LOG("add_opt_blv( %s,%s,%s,%s )",new_var_name.c_str(),format_iri.c_str(),triple_it->pred_.value_.c_str(),triple_it->obj_.value_.c_str());
-						triple_set.add_opt_blv(new_var_name,bound_vals,\
-							triple_it->pred_.value_, triple_it->obj_.value_);	
 					}
-					else
-					{
-						LOG("add_blv( %s,%s,%s,%s )",new_var_name.c_str(),format_iri.c_str(),triple_it->pred_.value_.c_str(),triple_it->obj_.value_.c_str());
-						triple_set.add_blv(new_var_name,bound_vals,\
-							triple_it->pred_.value_, triple_it->obj_.value_);	
-					}
+					//fuck here
+					core::IRIType::is_hashvalue(format_iri.c_str(),format_iri.size());		
 				}
 				break;
 			//subj 为 Variable.暂时忽略有针对主语的过滤器。此时主要考虑对obj的情况。
@@ -286,6 +274,9 @@ query::TripleSetQuery SPARQLPlaner::handle(const std::string sparql_query)
 	}
 	return triple_set;
 }
+
+
+
 
 }//sparql
 

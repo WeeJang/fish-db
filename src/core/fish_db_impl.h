@@ -6,7 +6,7 @@
 #include "triple.h"
 #include "../db/block_data_seeker.h"
 #include "../db/root_table.h"
-#include "../utils/file_util.h"
+#include "../utils/file_util.h" 
 #include "../utils/tiny_log.hpp"
 
 #include <string>
@@ -15,11 +15,15 @@
 #include <memory>
 
 namespace test{ class FishDBTest; }
+namespace query{ class SharedQueryData; }
+namespace query{ class TripleQuery; }
 
 namespace fishdb{
 
 class FishDBImpl {
 	friend class test::FishDBTest;
+	friend class query::SharedQueryData;
+	friend class query::TripleQuery;
 public:
 	FishDBImpl() { }
 	virtual ~FishDBImpl() {}

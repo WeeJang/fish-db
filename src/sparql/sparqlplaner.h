@@ -9,6 +9,8 @@
 #include "valuefilter_impl.h"
 #include "log.h"
 
+#include "../core/fish_db_impl.h"
+#include "../core/iri_type.h"
 
 //TODO:集成后改成 forward-declara
 

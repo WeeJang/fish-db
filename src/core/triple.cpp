@@ -2,6 +2,19 @@
 
 namespace core{
 
+const std::string& TripleSpec::at(TripleElemPos pos) const {
+	if(pos == TripleElemPos::sub){
+		return sub_;
+	}else if(pos == TripleElemPos::pre){
+		return pre_;
+	}else if(pos == TripleElemPos::obj){
+		return obj_;	
+	}else{
+		fprintf(stderr,"triplespec at error\n");
+		exit(-1);
+	}
+}
+
 std::string TripleSpec::to_string(){
 	std::string buffer;
 	buffer.append(sub_.c_str());

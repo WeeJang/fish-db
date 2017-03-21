@@ -2,6 +2,7 @@
 #define CORE_TRIPLE_H_
 
 #include <string>
+#include <cstdlib>
 
 namespace core{
 
@@ -19,7 +20,7 @@ public:
 	void sub(const std::string& sub) { sub_ = sub ; }
 	void pre(const std::string& pre) { pre_ = pre ; }
 	void obj(const std::string& obj) { obj_ = obj ; }
-
+	const std::string& at(TripleElemPos pos) const ;	
 	std::string to_string();
 
 private:

@@ -1,7 +1,11 @@
+#ifndef IRI_INDEX_H_
+#define IRI_INDEX_H_
+
 #include "../utils/roaring.hh"
 //#include "../utils/roaring.c"
 #include "../utils/tiny_log.hpp"
 #include "../utils/file_util.h"
+#include "triple.h"
 
 #include <fstream>
 
@@ -23,7 +27,7 @@ public:
 	IRIIndex& operator = (IRIIndex&&) = delete;
 
 	void value(IRIType value){ value_ = value; }
-		
+	
 	const BitMap_T& sub_index() const {
 		return sub_index_; 
 	}
@@ -33,6 +37,19 @@ public:
 	const BitMap_T& obj_index() const {
 		return obj_index_;
 	}		
+
+	const BitMap_T& at(core::TripleElemPos pos) const {
+		if(core::TripleElemPos::sub == pos){ 
+			return sub_index_; 
+		}else if(core::TripleElemPos::pre == pos){
+			return pre_index_; 
+		}else if(core::TripleElemPos::obj == pos){
+			return obj_index_; 
+		}else{
+			fprintf(stderr,"iri_index.at error!\n");
+			exit(-1);	
+		}
+	}
 
 	void add_index(const char triple_elem_pos,uint64_t pos){
 		LOG("tirple elem pos : %d, pos : %llu pos",triple_elem_pos,pos);
@@ -122,5 +139,6 @@ private:
 
 }//namespace core
 
+#endif //IRI_INDEX_H_
 
 
