@@ -24,7 +24,8 @@ public:
 	constexpr static char TYPE_STR[3] = "HV";
 
 public:	
-	explicit HashValue(value_type value):value_(value){}
+	HashValue(){}
+	HashValue(value_type value):value_(value){}
 	value_type value() { return value_; }
 
 private:

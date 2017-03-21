@@ -23,19 +23,19 @@ void QueryExecutor::run(){
 			return p_a->cur_valid_row_bm_index_cardinality_  \
 				< p_b->cur_valid_row_bm_index_cardinality_;
 });
-	std::set<size_t> visited_query_index_set;
+	std::set<size_t> visited_index_query_set;
 	std::vector<std::string> visited_var_vec;
 	//select the less triple		
 		
 	auto pick_next_query = [&sorted_triple_vec,\
 				&visited_index_query_set,\
-				&visited_var_vec](){
+				&visited_var_vec]()->int{
 			for(size_t i = 1 ; i < sorted_triple_vec.size() ; i ++){
 				if(visited_index_query_set.find(i) != visited_index_query_set.end()){
 					continue;
 				}
 				for(auto& visited_var : visited_var_vec){
-					if(sorted_triple_vec[i].contain_vars(visited_var)){
+					if(sorted_triple_vec[i]->contain_vars(visited_var)){
 						return i;
 					}
 				}
@@ -43,7 +43,7 @@ void QueryExecutor::run(){
 			return -1;
 		};	
 	
-	auto p_triple_query = sorted_triple_vec[0]	
+	auto p_triple_query = sorted_triple_vec[0];
 	p_triple_query->select();	
 	if(!p_triple_query->is_valid()){
 		is_empty_result_ = true;
@@ -51,9 +51,12 @@ void QueryExecutor::run(){
 	}
 	visited_index_query_set.insert(0);
 	do{
-		size_t query_index = pick_next_query();
-		sorted_triple_vec[i]->select();
-		if(!sorted_triple_vec[i]->is_valid()){
+		int query_index = pick_next_query();
+		if(-1 == query_index){
+			return;
+		}
+		sorted_triple_vec[query_index]->select();
+		if(!sorted_triple_vec[query_index]->is_valid()){
 			is_empty_result_ = true;
 			return ;
 		}
@@ -61,13 +64,13 @@ void QueryExecutor::run(){
 	}while(true);								
 }
 
-void QueryExecutor::get_min_growth_tree_by_kruskal(){
+int QueryExecutor::get_min_growth_tree_by_kruskal(){
 	std::vector<std::shared_ptr<TripleQuery>> sorted_triple_vec;
 	for(auto p_triple_query : triple_query_set_){
 		if(p_triple_query->var_vec_.size() < 2){
 			continue;	
 		}
-		filter_query_vec.push_back(p_triple_query);	
+		sorted_triple_vec.push_back(p_triple_query);	
 	}
 	//sorted	
 	std::sort(sorted_triple_vec.begin(),sorted_triple_vec.end(),\
@@ -87,11 +90,12 @@ void QueryExecutor::get_min_growth_tree_by_kruskal(){
 		if(find_count < 2){
 			min_growth_tree_.push_back(p_triple_query);			
 		}	
-	}		
+	}
+	return 0;	
 }
 
-void QueryExecutor::shrink_min_growth_tree(){
-	std::unorder_map<std::string,size_t> node_degree;
+int QueryExecutor::shrink_min_growth_tree(){
+	std::unordered_map<std::string,size_t> node_degree;
 	for(auto p_triple_query : min_growth_tree_){
 		for(auto& var_name : p_triple_query->var_vec_){
 			node_degree[var_name] ++;
@@ -99,12 +103,12 @@ void QueryExecutor::shrink_min_growth_tree(){
 	}
 	
 	std::set<size_t> visited_triple_query;
-	auto shrink_step = [&min_growth_tree_,&node_degree,&visited_triple_query](){
-		for(size_t i = 0 ; i < min_growth_tree_.size() ; i++){
+	auto shrink_step = [this,&node_degree,&visited_triple_query](){
+		for(size_t i = 0 ; i < this->min_growth_tree_.size() ; i++){
 			if(visited_triple_query.find(i) != visited_triple_query.end()){
 				continue;
 			}
-			auto p_triple_query = visited_triple_query[i];
+			auto p_triple_query = this->min_growth_tree_[i];
 			for(auto& var_name : p_triple_query->var_vec_){
 				if(node_degree[var_name] == 1){
 					std::string merged_var_name = p_triple_query->update_cartesian_product_in_shared_data(var_name);
@@ -116,20 +120,20 @@ void QueryExecutor::shrink_min_growth_tree(){
 			}
 		}};
 
-	while(visited_triple_query.size() != min_growth_tree.size()){
+	while(visited_triple_query.size() != this->min_growth_tree_.size()){
 		shrink_step();
 	}
 }
 
 void QueryExecutor::make_result(){	
-	size_t result_col_num_ = var_val_type_.size();
-	auto make_empty_result = [&result_matrix_,\
+	size_t result_col_num_ = p_shared_query_data_->var_val_type_.size();
+	auto make_empty_result = [this,\
 				  result_col_num_](){
 		std::vector<std::string> null_result;
 		for(size_t i = 0 ; i < result_col_num_ ; i++){
 			null_result.push_back("null");
 		}
-		result_matrix_.push_back(null_result);
+		this->result_matrix_.push_back(null_result);
 	};
 
 	if(is_empty_result_){
@@ -147,3 +151,5 @@ void QueryExecutor::make_result(){
 		return;
 	}
 }
+
+}//query

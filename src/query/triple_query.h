@@ -36,7 +36,6 @@ class SharedQueryData{
 	friend class QueryExecutor;
 public:
 	SharedQueryData(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db) {}
-	std::vector<std::string> make_cartesian_product(std::vector<std::string>& vec_1,std::vector<std::string>& vec_2);
 	int make_cartesian_product_by_filter_vector_linked(std::string another_var_name,std::string var_name,std::vector<std::string> (&filter_var_val_vector)[2]);
 private:
 	std::shared_ptr<fishdb::FishDBImpl> p_fish_db_;	
@@ -106,7 +105,7 @@ private:
 
 //helper function
 SPARQLParserType_T make_typed_value(sparql::SPARQLParser::TriplePatternElem& triple_elem,SPARQLParserTypeTag& tag);
-std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_query_str);
+std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_query_str,std::shared_ptr<SharedQueryData> p_shared_data);
 
 }//namespace query
 
