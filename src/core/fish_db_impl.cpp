@@ -103,13 +103,15 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 		}
 	
 		for(size_t i = 0; i < row_block_size ; i++){
-			triple_elem_pos %= 3;
+			if(triple_elem_pos == 3){
+				triple_elem_pos = 0;
+				row_offset_in_global ++;
+			}
 			if(*(buffer + i) == '\n'){
 				if(triple_elem_pos != 2){
 					fprintf(stderr,"FishDBImpl Error,meet illegal newline flag\n");
 					exit(-1);
 				}	
-				row_offset_in_global ++;
 			}else if(*(buffer + i) != '\t'){
 				sstream << *(buffer+i);
 				continue;
@@ -136,6 +138,7 @@ int FishDBImpl::load_data(const std::string& triple_file_path){
 			}
 			iri_index->add_index(triple_elem_pos++,row_offset_in_global);		
 			LOG("add result triple_pos : %hhd, row_offset_in_global : %llu",triple_elem_pos,row_offset_in_global);
+						
 		}
 
 		//ugly	
