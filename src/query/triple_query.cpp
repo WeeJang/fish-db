@@ -87,7 +87,6 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 }
 
 
-
 TripleQuery::TripleQuery(HashValue sub, ShortString pre,Variable obj,std::shared_ptr<SharedQueryData> p_shared){
 	iri_vec_.push_back(sub.value());
 	iri_vec_.push_back(pre.value());

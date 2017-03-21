@@ -33,7 +33,6 @@ int FishDBImpl::open_db(const std::string& db_name){
 		std::string block_file_path(db_block_dir_path_);
 		block_file_path += file_name;
 		auto p_block_index = std::make_shared<db::BlockIndex>(block_file_path);
-		LOG("when const  the p_loock_index : %p",p_block_index.get());
 		root_table_.modify_block_index_at(p_block_index->block_id(),p_block_index->row_start_index(),p_block_index);
 	}	
 	return 0;
