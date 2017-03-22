@@ -2,6 +2,14 @@
 
 namespace query{
 
+bool SharedQueryData::contains_var_in_bounds_vals_map(std::string& var_name){
+		LOG("contain test, p_shared :%p",this);
+		std::cout << (hv_bound_vals_.find(var_name) != hv_bound_vals_.end()) << std::endl;
+		std::cout << (ss_bound_vals_.find(var_name) != ss_bound_vals_.end()) << std::endl;
+		printf_hv_bound_vals();	
+		printf_ss_bound_vals();	
+		return (hv_bound_vals_.find(var_name) != hv_bound_vals_.end()) || (ss_bound_vals_.find(var_name) != ss_bound_vals_.end());
+	}
 
 void SharedQueryData::printf_var_val_type(){
 	LOG("printf var val type {{{=========");
@@ -407,7 +415,9 @@ void TripleQuery::init(){
 		}else{
 			cur_valid_row_bm_index_ &= bit_map;
 		}
+		LOG("cur_valid_row_bm_index_:{{{=========");
 		cur_valid_row_bm_index_.printf();
+		LOG("=========}}}");
 	}
 	cur_valid_row_bm_index_cardinality_ = cur_valid_row_bm_index_.cardinality();
 	LOG("cur_valid_row_bm_index_cardinality : %d ",cur_valid_row_bm_index_cardinality_);
@@ -627,6 +637,9 @@ void TripleQuery::select(){
 	p_shared_->printf_ss_bound_vals();
 	p_shared_->printf_intermediate_result();
 	p_shared_->printf_intermediate_result_col_name();
+	LOG("fuck =========")
+	p_shared_->printf_hv_bound_vals();
+	LOG("fuck =========")
 }
 
 void TripleQuery::printf_select_spo_vec(){

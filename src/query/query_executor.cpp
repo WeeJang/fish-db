@@ -3,6 +3,8 @@
 namespace query{
 
 void QueryExecutor::run(){
+
+	p_shared_query_data_->printf_hv_bound_vals();
 	LOG("query executor run");
 	if(is_finished_){
 		return;
@@ -17,7 +19,7 @@ void QueryExecutor::run(){
 			return;
 		}	
 	}
-	//sorted	
+	//sorted 依据备选spo数量	
 	std::vector<std::shared_ptr<TripleQuery>> sorted_triple_vec(triple_query_set_.begin(),triple_query_set_.end());	
 	std::sort(sorted_triple_vec.begin(),sorted_triple_vec.end(),\
 		[](std::shared_ptr<TripleQuery> p_a,std::shared_ptr<TripleQuery> p_b){
@@ -25,20 +27,24 @@ void QueryExecutor::run(){
 				< p_b->cur_valid_row_bm_index_cardinality_;
 });
 	std::set<size_t> visited_index_query_set;
-	std::vector<std::string> visited_var_vec;
-	//select the less triple		
-		
-	auto pick_next_query = [&sorted_triple_vec,\
-				&visited_index_query_set,\
-				&visited_var_vec]()->int{
+	
+	//select 策略：（1）spo数量少 (2)存在共享变量	
+	auto pick_next_query = [this,\
+				&sorted_triple_vec,\
+				&visited_index_query_set]() -> int{
+			LOG("pick next query , size :%d",sorted_triple_vec.size());
 			for(size_t i = 1 ; i < sorted_triple_vec.size() ; i ++){
+				LOG("pick next query , index :%d",i);
 				if(visited_index_query_set.find(i) != visited_index_query_set.end()){
 					continue;
 				}
-				for(auto& visited_var : visited_var_vec){
-					if(sorted_triple_vec[i]->contain_vars(visited_var)){
+				LOG("pick next query , p_shared :%p",p_shared_query_data_.get());
+				for(auto& var_name : sorted_triple_vec[i]->var_vec_){
+					LOG("pick next query : %s",var_name.c_str());
+					if(p_shared_query_data_->contains_var_in_bounds_vals_map(var_name)){
+						LOG("pick next query , find : %d",i);
 						return i;
-					}
+					}		
 				}
 			}
 			return -1;
@@ -47,14 +53,22 @@ void QueryExecutor::run(){
 	auto p_triple_query = sorted_triple_vec[0];
 	LOG("query executor select 0");
 	p_triple_query->select();	
+	LOG("======================");
+	p_shared_query_data_->printf_hv_bound_vals();
+	LOG("======================");
 	if(!p_triple_query->is_valid()){
 		is_empty_result_ = true;
 		return ;
 	}
 	LOG("query executor select 0 finish");
 	visited_index_query_set.insert(0);
+	LOG("go on selec");
+	LOG("======================");
+	p_shared_query_data_->printf_hv_bound_vals();
+	LOG("======================");
 	do{
 		int query_index = pick_next_query();
+		LOG("select next query : %d",query_index);
 		if(-1 == query_index){
 			return;
 		}

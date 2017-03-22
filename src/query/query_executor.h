@@ -21,6 +21,9 @@ public:
 	bool is_finished() const { return is_finished_; };
 	void run();
 	void make_result();
+	std::shared_ptr<SharedQueryData> get_shared_query_data_ptr(){
+		return p_shared_query_data_;
+	}
 
 private:
 	int get_min_growth_tree_by_kruskal();

@@ -37,6 +37,7 @@ class SharedQueryData{
 public:
 	SharedQueryData(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db) {}
 	int make_cartesian_product_by_filter_vector_linked(std::string another_var_name,std::string var_name,std::vector<std::string> (&filter_var_val_vector)[2]);
+	bool contains_var_in_bounds_vals_map(std::string& var_name);
 	//debug
 	void printf_var_val_type();
 	void printf_hv_bound_vals();
