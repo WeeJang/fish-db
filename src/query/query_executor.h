@@ -7,7 +7,7 @@
 #include <memory>
 #include <algorithm>
 #include <set>
-
+#include <sstream>
 
 namespace query{
 
@@ -24,7 +24,8 @@ public:
 	std::shared_ptr<SharedQueryData> get_shared_query_data_ptr(){
 		return p_shared_query_data_;
 	}
-
+	
+	const std::string format_query_result() const ;
 private:
 	int get_min_growth_tree_by_kruskal();
 	int shrink_min_growth_tree();
@@ -38,8 +39,10 @@ private:
 	size_t result_row_num_; // result_num
 	size_t result_col_num_; // var_num
 	std::vector<std::string> result_col_name_;
-	std::vector<std::vector<std::string>> result_matrix_;
+	//std::vector<std::vector<std::string>> result_matrix_;
+	std::vector<std::string> result_matrix_;
 	std::vector<std::shared_ptr<TripleQuery>> min_growth_tree_;
+	std::string last_merged_var_name_;
 };//class QueryExector
 
 

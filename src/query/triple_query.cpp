@@ -84,9 +84,10 @@ int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string 
 	   got_var_intermediate_result == intermediate_result_.end()){
 		for(size_t i = 0 ; i < filter_var_val_vector[0].size(); i++){
 			another_val_2_var_val_map[filter_var_val_vector[0][i]].push_back(filter_var_val_vector[1][i]);
-		} intermediate_result_col_name_[another_var_name].push_back(var_name);	
+		} 
+		intermediate_result_col_name_[another_var_name].push_back(var_name);	
 	}else if(got_another_var_intermediate_result == intermediate_result_.end() && \
-		 got_var_intermediate_result != intermediate_result_.end()){
+			got_var_intermediate_result != intermediate_result_.end()){
 		auto var_map = got_var_intermediate_result->second;
 		for(size_t i = 0 ; i < filter_var_val_vector[0].size(); i++){
 			std::string& another_var_val = filter_var_val_vector[0][i];
@@ -466,12 +467,14 @@ std::string TripleQuery::update_cartesian_product_in_shared_data(std::string var
 			break;
 		}	
 	}
+	LOG("var_name : %s \t another_var_name : %s \n",var_name.c_str(),another_var_name.c_str());
+
 	auto var_pos = var_pos_[var_name];
 	auto another_pos = var_pos_[another_var_name];
 	auto var_tag = spo_vec_iri_type_tag_[static_cast<int>(var_pos)];
 	auto another_tag = spo_vec_iri_type_tag_[static_cast<int>(another_pos)];
 
-	p_shared_->intermediate_result_col_name_[another_var_name].push_back(var_name);
+	//p_shared_->intermediate_result_col_name_[another_var_name].push_back(var_name);
 	
 	std::unordered_map<std::string,std::vector<std::string>> another2var_map;
 

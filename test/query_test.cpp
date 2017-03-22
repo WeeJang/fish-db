@@ -13,9 +13,11 @@ std::string sparql_str_1 = "\
         }";
 
 std::string sparql_str_2 = "\
-	select ?id ?name  where { \
+	select ?id ?name ?parent ?child where { \
  		   ?id <http://rdf.dingfu.com/ns/business.stock_ticker_symbol.isin> cne100001zg7 .  \
  		   ?id <http://rdf.dingfu.com/ns/business.stock_ticker_symbol.short_name> ?name .  \
+ 		   ?id <http://rdf.dingfu.com/ns/business.stock_ticker_symbol.parent> ?parent .  \
+ 		   ?parent <http://rdf.dingfu.com/ns/business.stock_ticker_symbol.child> ?child .  \
         }";
 
 //6f1c42c2d2b919
@@ -39,6 +41,7 @@ int main(int argc,char** argv){
 	LOG("query query exec");
 	query_exec.make_result();
 	LOG("query make_result");
+	std::cout << query_exec.format_query_result() << std::endl;
 	p_fishdb->close_db();
 	return 0;
 }

@@ -123,7 +123,8 @@ int QueryExecutor::shrink_min_growth_tree(){
 	}
 	
 	std::set<size_t> visited_triple_query;
-	auto shrink_step = [this,&node_degree,&visited_triple_query](){
+	std::string last_merged_var_name;
+	auto shrink_step = [this,&node_degree,&visited_triple_query,&last_merged_var_name]() -> int {
 		for(size_t i = 0 ; i < this->min_growth_tree_.size() ; i++){
 			if(visited_triple_query.find(i) != visited_triple_query.end()){
 				continue;
@@ -135,41 +136,99 @@ int QueryExecutor::shrink_min_growth_tree(){
 					node_degree[var_name] --;
 					node_degree[merged_var_name] --;		
 					visited_triple_query.insert(i);
-					break;
+					LOG("merge var name : %s",merged_var_name.c_str());
+					last_merged_var_name = merged_var_name;
+					return 0;
 				}	
 			}
-		}};
-
+		}	
+		return -1;
+		};
 	while(visited_triple_query.size() != this->min_growth_tree_.size()){
-		shrink_step();
+		if(-1 == shrink_step()){
+			fprintf(stderr,"shrink_step error :-1\n");
+			return -1;
+		}
 	}
+	last_merged_var_name_ = last_merged_var_name;
+	is_finished_ = true;
+	return 0;	
 }
 
 void QueryExecutor::make_result(){	
 	size_t result_col_num_ = p_shared_query_data_->var_val_type_.size();
 	auto make_empty_result = [this,\
 				  result_col_num_](){
-		std::vector<std::string> null_result;
+		std::string null_result;
 		for(size_t i = 0 ; i < result_col_num_ ; i++){
-			null_result.push_back("null");
+			null_result.append("null\t");
 		}
 		this->result_matrix_.push_back(null_result);
 	};
 
+	LOG("will make result");
 	if(is_empty_result_){
 		make_empty_result();
 		return;
 	}
-	
+	LOG("will get min_growth tree by kruska");	
 	if(-1 == get_min_growth_tree_by_kruskal()){
 		make_empty_result();
 		return;	
 	}
 	
+	LOG("will shrink min_growth tree by kruska");	
 	if(-1 == shrink_min_growth_tree()){
 		make_empty_result();
 		return;
 	}
+	//for debug
+	p_shared_query_data_->printf_intermediate_result();
+	p_shared_query_data_->printf_intermediate_result_col_name();
+
+	//create col_name
+	auto got_merged_node_col_name = p_shared_query_data_->intermediate_result_col_name_.find(last_merged_var_name_);
+	if(got_merged_node_col_name == p_shared_query_data_->intermediate_result_col_name_.end()){
+		fprintf(stderr,"merged_tree_map node name not found!\n");
+		exit(-1);
+	}		
+			
+	result_col_name_.push_back(last_merged_var_name_);
+	for(auto& col_name : got_merged_node_col_name->second){
+		result_col_name_.push_back(col_name);	
+	}
+
+	//create col_val	
+	auto got_merged_tree_map = p_shared_query_data_->intermediate_result_.find(last_merged_var_name_);
+	if(got_merged_tree_map == p_shared_query_data_->intermediate_result_.end()){
+		fprintf(stderr,"merged_tree_map node not found!\n");
+		exit(-1);
+	}	
+	auto merged_tree_map = got_merged_tree_map->second;
+	for(auto val_iter = merged_tree_map.begin() ; val_iter != merged_tree_map.end() ; val_iter ++){
+		std::string val_key = val_iter->first;
+		std::vector<std::string> val_vec = val_iter->second;
+		for(auto& val_value : val_vec){
+			std::string line_value(val_key);
+			line_value.append("\t").append(val_value);
+			result_matrix_.push_back(line_value);	
+		}	
+	}	
 }
+
+const std::string QueryExecutor::format_query_result() const {
+	std::stringstream ss;
+	ss << "====================query result======================\n";
+	for(auto& col_name : result_col_name_){
+		ss << col_name << "\t";
+	}
+	ss << "\n";
+	for(auto& row_value : result_matrix_){
+		ss << row_value << "\n";
+	}
+	ss << "======================================================\n";
+	return ss.str();	
+}
+
 
 }//query
