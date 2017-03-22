@@ -73,6 +73,8 @@ void QueryExecutor::run(){
 			return;
 		}
 		sorted_triple_vec[query_index]->select();
+		//TODO :这个地方得改进
+		//is_valid() 为false就应该提前终止query,因为有一个spo query没有结果
 		if(!sorted_triple_vec[query_index]->is_valid()){
 			is_empty_result_ = true;
 			return ;

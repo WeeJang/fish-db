@@ -185,7 +185,7 @@ int FishDBImpl::get_triple_by_row_index(uint64_t row_index,std::shared_ptr<core:
 	uint32_t block_id;
 	uint64_t block_offset;
 				
-	LOG("row index : %d",row_index);	
+	LOG("row index : %llu",row_index);	
 	if(-1 == root_table_.get_seek_pos_by_row_index(row_index,block_id,block_offset)){
 		fprintf(stderr,"fish_db_imple get_seek_pos failed\n");
 		return -1;	

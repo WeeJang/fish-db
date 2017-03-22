@@ -612,8 +612,12 @@ void TripleQuery::select(){
 	auto p_db = p_shared_->p_fish_db_;
 	auto p_triple_spec = std::make_shared<core::TripleSpec>(); 
 	auto rowindex_bm = new uint64_t[cur_valid_row_bm_index_cardinality_];
-	cur_valid_row_bm_index_.toUint64Array(rowindex_bm);	
+	cur_valid_row_bm_index_.toUint64Array(rowindex_bm);
+	LOG("select row_bm_index_======== %d",cur_valid_row_bm_index_cardinality_);	
+	cur_valid_row_bm_index_.printf();	
+	LOG("============================");	
 	for(size_t i = 0 ; i < cur_valid_row_bm_index_cardinality_ ; i++){
+		LOG("rowindex_bm %d : %llu",i,rowindex_bm[i]);	
 		p_db->get_triple_by_row_index(rowindex_bm[i],p_triple_spec);
 		if(0 == i){
 			improve_spo_vec_iri_type_tag(p_triple_spec);
@@ -631,15 +635,19 @@ void TripleQuery::select(){
 		}	
 	}
 	
+	if(cur_valid_row_bm_index_cardinality_ == 0){
+		is_valid_ = false;
+	}
+
 	//for debug
 	p_shared_->printf_var_val_type();
 	p_shared_->printf_hv_bound_vals();
 	p_shared_->printf_ss_bound_vals();
 	p_shared_->printf_intermediate_result();
 	p_shared_->printf_intermediate_result_col_name();
-	LOG("fuck =========")
+	LOG("fuck =========");
 	p_shared_->printf_hv_bound_vals();
-	LOG("fuck =========")
+	LOG("fuck =========");
 }
 
 void TripleQuery::printf_select_spo_vec(){
@@ -691,7 +699,12 @@ void TripleQuery::shrink_cur_valid_row_bm(){
 			continue;
 		}
 		spo_vec_iri_type_tag_[static_cast<int>(var_pos)] = var_tag;
+		LOG("shrink before {{{============");
+		cur_valid_row_bm_index_.printf();
+		LOG("shrink after ============}}}");
 		cur_valid_row_bm_index_ &= union_bm;
+		cur_valid_row_bm_index_.printf();
+		cur_valid_row_bm_index_cardinality_ = cur_valid_row_bm_index_.cardinality();
 	}			
 }
 
