@@ -16,7 +16,7 @@ using ShortString = core::IRIType::ShortString;
 using Variable	  = std::string;
 using SPARQLParserType_T   = boost::variant<HashValue,ShortString,Variable>;
 enum class SPARQLParserTypeTag{
-	HV,
+	HV = 0,
 	SS,
 	VAR
 }; 
@@ -26,7 +26,7 @@ using SS_T        = core::IRITypeTrait<ShortString>::value_type;
 using IRITypeUnion_T = boost::variant<HV_T,SS_T>;
 
 enum class IRITypeUnionTag{
-	UD, //un-decide
+	UD = 0, //un-decide
 	HV, //HashValue
 	SS  //shortstring
 }; 
@@ -37,6 +37,12 @@ class SharedQueryData{
 public:
 	SharedQueryData(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db) {}
 	int make_cartesian_product_by_filter_vector_linked(std::string another_var_name,std::string var_name,std::vector<std::string> (&filter_var_val_vector)[2]);
+	//debug
+	void printf_var_val_type();
+	void printf_hv_bound_vals();
+	void printf_ss_bound_vals();
+	void printf_intermediate_result();
+	void printf_intermediate_result_col_name();
 private:
 	std::shared_ptr<fishdb::FishDBImpl> p_fish_db_;	
 	std::unordered_map<std::string,IRITypeUnionTag> var_val_type_;
@@ -88,6 +94,9 @@ private:
 
 	void improve_spo_vec_iri_type_tag(std::shared_ptr<core::TripleSpec> p_triple);		
 	void select_new_triple(std::shared_ptr<core::TripleSpec> p_triple);
+
+	//for debug
+	void printf_select_spo_vec();
 
 private:
 	std::vector<IRITypeUnion_T>     iri_vec_; //non-var: HV/SS

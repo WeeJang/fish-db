@@ -3,6 +3,7 @@
 namespace query{
 
 void QueryExecutor::run(){
+	LOG("query executor run");
 	if(is_finished_){
 		return;
 	}
@@ -44,11 +45,13 @@ void QueryExecutor::run(){
 		};	
 	
 	auto p_triple_query = sorted_triple_vec[0];
+	LOG("query executor select 0");
 	p_triple_query->select();	
 	if(!p_triple_query->is_valid()){
 		is_empty_result_ = true;
 		return ;
 	}
+	LOG("query executor select 0 finish");
 	visited_index_query_set.insert(0);
 	do{
 		int query_index = pick_next_query();
@@ -62,6 +65,7 @@ void QueryExecutor::run(){
 		}
 		visited_index_query_set.insert(query_index);
 	}while(true);								
+	LOG("query executor run finished ");
 }
 
 int QueryExecutor::get_min_growth_tree_by_kruskal(){

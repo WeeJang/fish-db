@@ -2,6 +2,70 @@
 
 namespace query{
 
+
+void SharedQueryData::printf_var_val_type(){
+	LOG("printf var val type {{{=========");
+	for(auto iter = var_val_type_.begin(); iter != var_val_type_.end(); iter++){
+		std::cout << iter->first << "\t"  ;
+		std::cout << static_cast<int>(iter->second) << std::endl;
+	}	
+	LOG("printf var val type =========}}}");
+}
+void SharedQueryData::printf_hv_bound_vals(){
+	LOG("printf hv bound vals {{{=========");
+	for(auto iter = hv_bound_vals_.begin(); iter != hv_bound_vals_.end(); iter++){
+		std::cout << iter->first << ": (" ;
+		for(auto& elem : iter->second){
+			std::cout << elem << ",";
+		}
+		std::cout << ")" << std::endl;
+	}	
+	LOG("printf hv bound vals =========}}}");
+
+}
+void SharedQueryData::printf_ss_bound_vals(){
+	LOG("printf ss bound vals {{{=========");
+	for(auto iter = ss_bound_vals_.begin(); iter != ss_bound_vals_.end(); iter++){
+		std::cout << iter->first << ": (" ;
+		for(auto& elem : iter->second){
+			std::cout << elem << ",";
+		}
+		std::cout << ")" << std::endl;
+	}	
+	LOG("printf ss bound vals =========}}}");
+
+}
+void SharedQueryData::printf_intermediate_result(){
+	LOG("printf itermediate result  {{{=========");
+	for(auto iter = intermediate_result_.begin(); iter != intermediate_result_.end(); iter++){
+		std::cout << "var: " << iter->first << std::endl;
+		auto var_val_map = iter->second;
+		for(auto val_ter = var_val_map.begin(); val_ter != var_val_map.end(); val_ter ++){
+			std::cout << "\t val:[" << val_ter->first << "]" << "--->[";
+			for(auto& elem : val_ter->second){
+				std::cout << elem << ",";
+			}
+			std::cout << "]" << std::endl;
+			}
+
+	}	
+	LOG("printf intermediate result  =========}}}");
+
+}
+void SharedQueryData::printf_intermediate_result_col_name(){
+	LOG("printf intermedaite result col name {{{=========");
+	for(auto iter = intermediate_result_col_name_.begin(); iter != intermediate_result_col_name_.end(); iter++){
+		std::cout << "var: " << iter->first << " ->[";
+		for(auto& elem : iter->second){
+			std::cout  << elem << ",";
+		}
+		std::cout << "]" << std::endl;
+	}	
+	LOG("printf intermediate result col name =========}}}");
+
+}
+
+
 int SharedQueryData::make_cartesian_product_by_filter_vector_linked(std::string another_var_name,std::string var_name,\
 							std::vector<std::string> (&filter_var_val_vector)[2]){
 
@@ -351,6 +415,7 @@ void TripleQuery::init(){
 }
 
 
+//完善select 出来的vec的type tag
 void TripleQuery::improve_spo_vec_iri_type_tag(std::shared_ptr<core::TripleSpec> p_triple){
 	for(size_t i = 0 ; i < 3 ; i ++){
 		if(IRITypeUnionTag::UD == spo_vec_iri_type_tag_[i]){
@@ -364,6 +429,7 @@ void TripleQuery::improve_spo_vec_iri_type_tag(std::shared_ptr<core::TripleSpec>
 }
 
 void TripleQuery::select_new_triple(std::shared_ptr<core::TripleSpec> p_triple_spec){
+	LOG("select new triple :%s",p_triple_spec->to_string().c_str());
 	for(auto iter = var_pos_.begin(); iter != var_pos_.end() ; iter++){
 		auto var_name = iter->first;
 		auto var_pos  = iter->second;
@@ -529,7 +595,7 @@ void TripleQuery::join_update_shared_data(std::string var_name){
 }
 
 
-//根据现有信息，取数据
+//根据现有信息，从db 中取数据
 void TripleQuery::select(){
 	shrink_cur_valid_row_bm();
 	
@@ -545,6 +611,7 @@ void TripleQuery::select(){
 		select_new_triple(p_triple_spec);				
 	}
 	delete [] rowindex_bm;
+	printf_select_spo_vec();
 
 	for(auto var_name : var_vec_){
 		if(p_shared_->var_val_type_.find(var_name) == p_shared_->var_val_type_.end()){
@@ -553,7 +620,27 @@ void TripleQuery::select(){
 			join_update_shared_data(var_name); 
 		}	
 	}
+	
+	//for debug
+	p_shared_->printf_var_val_type();
+	p_shared_->printf_hv_bound_vals();
+	p_shared_->printf_ss_bound_vals();
+	p_shared_->printf_intermediate_result();
+	p_shared_->printf_intermediate_result_col_name();
 }
+
+void TripleQuery::printf_select_spo_vec(){
+	LOG("select result {{{====================");		
+	for(size_t i = 0 ; i < 3 ; i ++){
+		std::cout << i << " | " << "\t";
+		for(size_t j = 0 ; j < select_spo_vec_[i].size() ; j++){
+			std::cout << select_spo_vec_[i][j] << "\t" ;
+		}
+		std::cout << std::endl;
+	}
+	LOG("select result ====================}}}");	
+}
+
 
 void TripleQuery::shrink_cur_valid_row_bm(){
 	auto p_fish_db = p_shared_->p_fish_db_;
