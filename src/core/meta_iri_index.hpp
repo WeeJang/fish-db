@@ -24,6 +24,7 @@ public:
 	MAP_VALUE_T get_IRI_index(MAP_KEY_T iri_value){
 		auto got = meta_iri_map_.find(iri_value);
 		if(got == meta_iri_map_.end()){
+			LOG("get iri error");
 			return {};
 		}else{
 			return got->second;
@@ -32,6 +33,11 @@ public:
 	//get
 	MAP_VALUE_T get_IRI_index(T iri_value){
 		return get_IRI_index(iri_value.value());
+	}
+
+
+	void printf(){
+		LOG("meta iri map size %d",meta_iri_map_.size());
 	}
 
 	MAP_VALUE_T operator[] (const MAP_KEY_T& key){
@@ -88,13 +94,16 @@ private:
 		LOG("hash value load from file : %zu",dict_list.size());	
 		for(auto& iri_name : dict_list){
 			auto hex_value_str = iri_name.substr(3);
-			MAP_KEY_T iri_int = ::strtol(hex_value_str.c_str(),nullptr,16);
+			MAP_KEY_T iri_int = ::strtol(hex_value_str.c_str(),nullptr,10); //因为存储的时候变成10进制
 			auto iri_index = std::make_shared<IRIIndex<IRIType::HashValue>>(IRIType::HashValue(iri_int));
 			std::string iri_index_file(meta_iri_path);
 			iri_index_file.push_back('/');
 			iri_index_file.append(iri_name);
-			iri_index->load_from_files(iri_index_file);
+			if(!iri_index->load_from_files(iri_index_file)){
+				exit(-1);		
+			}
 			meta_iri_map_[iri_int] = iri_index;
+			LOG("meta_iri_map_ load key : %llu",iri_int);	
 		}
 	}
 
@@ -104,7 +113,7 @@ private:
 	load_from_files_(const std::string& meta_iri_path){
 		//TODO: ugly !
 		std::vector<std::string> dict_list = utils::get_dict_list_with_prefix(meta_iri_path,IRIType::ShortString::TYPE_STR);
-		LOG("hash value load from file : %s, prefix : %s",meta_iri_path.c_str(),IRIType::ShortString::TYPE_STR);	
+		LOG("shortstring load from file : %s, prefix : %s",meta_iri_path.c_str(),IRIType::ShortString::TYPE_STR);	
 		LOG("shortstring load from file : %zu",dict_list.size());	
 		for(auto& iri_name : dict_list){
 			auto ss_value_str = iri_name.substr(3);

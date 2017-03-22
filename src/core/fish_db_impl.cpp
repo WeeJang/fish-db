@@ -34,7 +34,13 @@ int FishDBImpl::open_db(const std::string& db_name){
 		block_file_path += file_name;
 		auto p_block_index = std::make_shared<db::BlockIndex>(block_file_path);
 		root_table_.modify_block_index_at(p_block_index->block_id(),p_block_index->row_start_index(),p_block_index);
-	}	
+	}
+	LOG("======hv_meta_iri_index=====");
+	hv_meta_iri_index_.printf();
+	LOG("======ss_meta_iri_index=====");
+	ss_meta_iri_index_.printf();
+	LOG("=========");
+		
 	return 0;
 }
 

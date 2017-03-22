@@ -654,20 +654,30 @@ void TripleQuery::printf_select_spo_vec(){
 	LOG("select result ====================}}}");	
 }
 
-
+//根据shared_query_data中bound val过滤 shrink cur_valid_row_bm
 void TripleQuery::shrink_cur_valid_row_bm(){
 	auto p_fish_db = p_shared_->p_fish_db_;
 	for(auto var_name : var_vec_){
+		LOG("shrink_cur_valid_row_bm var_name :%s",var_name.c_str());
 		if(p_shared_->var_val_type_.find(var_name) == p_shared_->var_val_type_.end()){
 			continue;
 		}
 		auto var_pos = var_pos_[var_name];
 		BitMap_T union_bm;
 		auto var_tag = spo_vec_iri_type_tag_[static_cast<int>(var_pos)];
+		LOG("shrink_cur_valid_row_bm var pos :%d var_tag :%d",static_cast<int>(var_pos),static_cast<int>(var_tag));
+		if(var_tag == IRITypeUnionTag::UD){
+			//此时，该var在该spo中类型不明确，需要通过shared_query_data获取类型信息
+			var_tag = p_shared_->var_val_type_[var_name];
+		}
 		if(var_tag == IRITypeUnionTag::HV){
 			auto var_set = p_shared_->hv_bound_vals_[var_name];
 			for(auto var_set_elem : var_set){
-				union_bm |= p_fish_db->hv_meta_iri_index_.get_IRI_index(var_set_elem)->at(var_pos);
+				LOG("shrink_cur_valid_row_bm var_set_elem %llu",var_set_elem);
+				auto get_bm = p_fish_db->hv_meta_iri_index_.get_IRI_index(var_set_elem)->at(var_pos);
+				LOG("fuck here %d",get_bm.isEmpty());
+				get_bm.printf();
+				union_bm |= get_bm;	
 			}
 		}else if(var_tag == IRITypeUnionTag::SS){
 			auto var_set = p_shared_->ss_bound_vals_[var_name];
@@ -675,9 +685,12 @@ void TripleQuery::shrink_cur_valid_row_bm(){
 				union_bm |= p_fish_db->ss_meta_iri_index_.get_IRI_index(var_set_elem)->at(var_pos);
 			}
 		}else{
-			fprintf(stderr,"shink_cur_valid_row_bm error!\n");
-			exit(-1);
+			//fprintf(stderr,"shink_cur_valid_row_bm error!\n");
+			//exit(-1);
+			fprintf(stderr,"no meet this var in shared_data : %s\n",var_name.c_str());
+			continue;
 		}
+		spo_vec_iri_type_tag_[static_cast<int>(var_pos)] = var_tag;
 		cur_valid_row_bm_index_ &= union_bm;
 	}			
 }
