@@ -755,6 +755,7 @@ std::set<std::shared_ptr<TripleQuery>> make_triple_query_set(std::string sparql_
 	std::set<std::shared_ptr<TripleQuery>> ret_query_set ;
 
 	std::vector<std::string> variables = parser.project_variables();
+	p_shared_data->set_need_output_vars(variables);
 	auto triple_patterns = parser.triple_patterns();
 	//auto filters = parser.filters();
 	

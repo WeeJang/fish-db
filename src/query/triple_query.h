@@ -38,6 +38,7 @@ public:
 	SharedQueryData(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db) {}
 	int make_cartesian_product_by_filter_vector_linked(std::string another_var_name,std::string var_name,std::vector<std::string> (&filter_var_val_vector)[2]);
 	bool contains_var_in_bounds_vals_map(std::string& var_name);
+	void set_need_output_vars(std::vector<std::string>& vec){ need_output_vars_ = vec; }		
 	//debug
 	void printf_var_val_type();
 	void printf_hv_bound_vals();
@@ -46,6 +47,7 @@ public:
 	void printf_intermediate_result_col_name();
 private:
 	std::shared_ptr<fishdb::FishDBImpl> p_fish_db_;	
+	std::vector<std::string> need_output_vars_;//记录需要输出的vars_name
 	std::unordered_map<std::string,IRITypeUnionTag> var_val_type_;
 	std::unordered_map<std::string,std::set<HV_T>>  hv_bound_vals_; //var_1 -> set(val_1,val_2,...)
 	std::unordered_map<std::string,std::set<SS_T>>  ss_bound_vals_; //same 

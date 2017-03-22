@@ -217,14 +217,49 @@ void QueryExecutor::make_result(){
 }
 
 const std::string QueryExecutor::format_query_result() const {
+	std::unordered_map<std::string,size_t> result_matrix_pos;
+	for(size_t i = 0; i < result_col_name_.size() ; i++){
+		result_matrix_pos[result_col_name_[i]] = i;
+	}
+	
+	std::vector<int> aim_pos; // pos -1 means undefined var,will output 'null'
+	for(auto& col_name : p_shared_query_data_->need_output_vars_){
+		auto got_pos = result_matrix_pos.find(col_name);
+		if(got_pos == result_matrix_pos.end()){
+			aim_pos.push_back(-1);	
+		}else{
+			aim_pos.push_back(got_pos->second);
+		}
+	}
+	
 	std::stringstream ss;
 	ss << "====================query result======================\n";
-	for(auto& col_name : result_col_name_){
+	for(auto& col_name : p_shared_query_data_->need_output_vars_){
 		ss << col_name << "\t";
 	}
 	ss << "\n";
 	for(auto& row_value : result_matrix_){
-		ss << row_value << "\n";
+		std::vector<std::string> splited_row_value;
+		std::string elem;
+		for(const char& c : row_value){
+			if(c == '\t'){
+				splited_row_value.push_back(elem);
+				elem.clear();
+				continue;
+			}
+			elem.push_back(c);	
+		}
+		splited_row_value.push_back(elem);
+
+		for(auto& pos : aim_pos){
+			if(pos == -1){
+				ss << "null";		
+			}else{
+				ss << splited_row_value[pos];
+			}
+			ss << "\t";
+		}	
+		ss << "\n";
 	}
 	ss << "======================================================\n";
 	return ss.str();	
