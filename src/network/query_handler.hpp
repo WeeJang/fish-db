@@ -48,15 +48,15 @@ private:
 					handle_error(ec);
 					return;
 				}
-				size_t body_size = *(reinterpret_cast<size_t*>(&header));
+				size_t body_size = *(reinterpret_cast<size_t*>(header));
 				read_body(body_size);					
 			});	
 	}
 	
 	void read_body(size_t body_size){
 		auto self = shared_from_this();
-		std::string query_str(body_size,'\0');
-		boost::asio::async_read(socket_,boost::asio::buffer(query_str,body_size),\
+		char query_str[body_size];
+		boost::asio::async_read(socket_,boost::asio::buffer(&query_str,body_size),\
 			[=](const boost::system::error_code& ec,size_t size){
 				if(error_code){
 					fprintf(stderr,"read body of packet error!\n");
@@ -64,7 +64,8 @@ private:
 					return;
 				}
 				//handle query str
-				std::cout << "get query str : " << query_str << std::endl;
+				std::cout << "get query str : " << std::endl;
+				std::cout.write(&query_str,body_size);
 				//CallBack
 				//callback_(query_str);					
 				//go on

@@ -5,7 +5,6 @@
 
 #include<boost/asio.hpp>
 #include<boost/system/error_code.hpp>
-
 std::string sparql_str_2 = "\
 	select ?id ?name ?parent ?child where { \
  		   ?id <http://rdf.dingfu.com/ns/business.stock_ticker_symbol.isin> cne100001zg7 .  \
@@ -16,7 +15,6 @@ std::string sparql_str_2 = "\
 
 
 int main(int argc,char** argv){
-
 	try{
 		boost::asio::io_service io_service;
 		boost::asio::ip::tcp::resolver r(io_service);
@@ -32,13 +30,13 @@ int main(int argc,char** argv){
 			throw boost::system::system_error(ec);
 		}	
 		
-		std::array<char,sizeof(size_t)>  header_buffer;
-		boost::asio::read(socket,boost::asio::buffer(header_buffer),ec);
+		char header_buffer[sizeof(size_t)];
+		boost::asio::read(socket,boost::asio::buffer(header_buffer,sizeof(size_t)),ec);
 		if(ec){
 			throw boost::system::system_error(ec);
 		}
 		
-		size_t body_size = *(reinterpret_cast<size_t*>(header_buffer.data()));
+		size_t body_size = *(reinterpret_cast<size_t*>(header_buffer));
 	
 		char* body_buffer = new char[body_size];
 		boost::asio::read(socket,boost::asio::buffer(body_buffer,body_size),ec);
@@ -47,6 +45,7 @@ int main(int argc,char** argv){
 		}
 		std::cout << "query result" << std::endl;	
 		std::cout.write(body_buffer,body_size);
+		delete [] body_buffer;
 	}catch (std::exception& e){
 		std::cerr << e.what() << std::endl;
 	}

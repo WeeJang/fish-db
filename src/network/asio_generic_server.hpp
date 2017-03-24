@@ -1,5 +1,5 @@
-#ifndef FISH_KG_SERVER_H_
-#define FISH_KG_SERVER_H_
+#ifndef ASIO_GENERIC_SERVER_H_
+#define ASIO_GENERIC_SERVER_H_
 
 #include <vector>
 #include <thread>
@@ -13,9 +13,9 @@
 namespace network{
 
 template<typeneme ConnectionHandler>
-class FishKGServer{
+class AsioGenericServer{
 public:
-	FishKGServer(size_t thread_count = 1):thread_count_(thead_count),tcp_acceptor_(io_service_){
+	AsioGenericServer(size_t thread_count = 1):thread_count_(thead_count),tcp_acceptor_(io_service_){
 	}
 	
 	void start_server(uint16_t port){
@@ -64,7 +64,6 @@ private:
 };//class FishKGServer
 
 }//namesapce network
-#endif //FISH_KG_SERVER_H_
-
+#endif //ASIO_GENERIC_SERVER_H_
 
 
