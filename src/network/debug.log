@@ -1,4 +1,0 @@
-query_client.cpp:43:27: error: unknown type name 'body_buffer'
-                char* body_buffer = new body_buffer[body_size];
-                                        ^
-1 error generated.
