@@ -4,9 +4,7 @@
 #include "../utils/tiny_log.hpp"
 
 #include <string>
-
-#include <cstring>
-
+#include <cstring> 
 namespace test { class MessageTest; }
 
 namespace network{

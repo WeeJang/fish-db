@@ -64,7 +64,7 @@ private:
 					return;
 				}
 				//handle query str
-				std::cout << query_str << std::endl;
+				std::cout << "get query str : " << query_str << std::endl;
 				//CallBack
 				//callback_(query_str);					
 				//go on
