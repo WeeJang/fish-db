@@ -4,12 +4,12 @@
 
 #include <boost/asio.hpp>
 
-
 namespace network{
 
 class QueryHandler::
 	public std::enable_shared_from_this<QueryHandler>{
 
+	using QueryHandlerFnType = std::function<std::string(std::string)>;
 public:
 	QueryHandler(boost::asio::io_service& service)
 		:io_service_(service)
@@ -26,10 +26,16 @@ public:
 	}
 
 private:
-	void handle_error(const boost::system::error_code& ec){
-
+	void close_socket(){
+		boost::system::error_code ec;
+		socket_.shutdown(boost::tcp::socket::shutdown_both,ec);
+		m_socket.close(ec);
 	}
 
+	void handle_error(const boost::system::error_code& ec){
+		close_socket();
+		fprintf(stderr,"handle error : %s",ec.message().c_str());
+	}
 
 	void read_packet(){
 		auto self = shared_from_this();	
@@ -105,11 +111,10 @@ private:
 	boost::asio::io_service& io_service_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::io_service::strand write_strand_;
-
 	std::queue<std::string> write_packet_queue_;
-
+	QueryHandlerFnType query_handler_fn_;
+		
 };//class query_handler
-
 
 
 }//namespace network

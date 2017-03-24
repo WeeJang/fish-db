@@ -1,5 +1,5 @@
-#ifndef NETWORK_ASIO_GENERIC_SERVER_H_
-#define NETWORK_ASIO_GENERIC_SERVER_H_
+#ifndef FISH_KG_SERVER_H_
+#define FISH_KG_SERVER_H_
 
 #include <vector>
 #include <thread>
@@ -10,11 +10,12 @@
 
 #include <cstdio>
 
+namespace network{
 
 template<typeneme ConnectionHandler>
-class AsioGenericServer{
+class FishKGServer{
 public:
-	AsioGenericServer(size_t thread_count = 1):thread_count_(thead_count),tcp_acceptor_(io_service_){
+	FishKGServer(size_t thread_count = 1):thread_count_(thead_count),tcp_acceptor_(io_service_){
 	}
 	
 	void start_server(uint16_t port){
@@ -59,10 +60,11 @@ private:
 	boost::asio::ip::tcp::acceptor acceptor_;
 	size_t thread_count_;
 	std::vector<std::thread> thread_pool_;
-};
 
+};//class FishKGServer
 
-#endif //NETWORK_ASIO_GENERIC_SERVER_H_
+}//namesapce network
+#endif //FISH_KG_SERVER_H_
 
 
 
