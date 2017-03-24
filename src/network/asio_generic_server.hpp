@@ -1,6 +1,8 @@
 #ifndef ASIO_GENERIC_SERVER_H_
 #define ASIO_GENERIC_SERVER_H_
 
+#include "../utils/tiny_log.hpp"
+
 #include <vector>
 #include <thread>
 #include <memory>
@@ -12,24 +14,24 @@
 
 namespace network{
 
-template<typeneme ConnectionHandler>
+template<typename ConnectionHandler>
 class AsioGenericServer{
 public:
-	AsioGenericServer(size_t thread_count = 1):thread_count_(thead_count),tcp_acceptor_(io_service_){
+	AsioGenericServer(size_t thread_count = 1):thread_count_(thread_count),acceptor_(io_service_){
 	}
 	
 	void start_server(uint16_t port){
 		//set up the acceptor to listen on the tcp port
 		boost::asio::ip::tcp::endpoint endpoint(boost::asio::ip::tcp::v4(),port);
-		acceptor_.open(endpoint.protocal());
-		acceptor_.set_option(tcp::acceptor::reuse_address(true));
+		acceptor_.open(endpoint.protocol());
+		acceptor_.set_option(boost::asio::ip::tcp::acceptor::reuse_address(true));
 		acceptor_.bind(endpoint);
 		acceptor_.listen();
 		
 		auto handler = std::make_shared<ConnectionHandler>(io_service_);
 
 		acceptor_.async_accept(handler->socket(),\
-					[=](auto error){
+					[=](const boost::system::error_code& error){
 						handler_new_connection(handler,error);
 					}
 		);
@@ -37,21 +39,28 @@ public:
 		for(size_t i = 0; i < thread_count_ ; i++){
 			thread_pool_.emplace_back( [=]{io_service_.run();} );	
 		}
+		for(auto& thread : thread_pool_){
+			thread.join();
+		}
+		LOG("hello");
 	}
 
 private:
-	handler_new_connection(std::shared_ptr<ConnectionHandler> handler,const boost::system::error_code& error){
+	void handler_new_connection(std::shared_ptr<ConnectionHandler> handler,const boost::system::error_code& error){
+		LOG("hello");
 		if(error){
 			return;
 		}
 		handler->start();
 		
 		auto new_handler = std::make_shared<ConnectionHandler>(io_service_);
+		LOG("hello");
 		acceptor_.async_accept(new_handler->socket(),\
 					[=](const boost::system::error_code& error){
 						handler_new_connection(new_handler,error);					
 					}
 		);
+		LOG("hello");
 
 	}	
 

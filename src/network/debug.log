@@ -1,0 +1,28 @@
+Apple LLVM version 8.0.0 (clang-800.0.42.1)
+Target: x86_64-apple-darwin16.4.0
+Thread model: posix
+InstalledDir: /Library/Developer/CommandLineTools/usr/bin
+ "/Library/Developer/CommandLineTools/usr/bin/clang" -cc1 -triple x86_64-apple-macosx10.12.0 -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -mrelax-all -disable-free -disable-llvm-verifier -discard-value-names -main-file-name query_server.cpp -mrelocation-model pic -pic-level 2 -mthread-model posix -mdisable-fp-elim -masm-verbose -munwind-tables -target-cpu penryn -target-linker-version 274.2 -v -dwarf-column-info -debug-info-kind=standalone -dwarf-version=2 -debugger-tuning=lldb -resource-dir /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0 -D DEBUG -stdlib=libc++ -std=c++11 -fdeprecated-macro -fdebug-compilation-dir /Users/jiangwei/Workspace/cayley-backend/src/network -ferror-limit 19 -fmessage-length 0 -stack-protector 1 -fblocks -fobjc-runtime=macosx-10.12.0 -fencode-extended-block-signature -fcxx-exceptions -fexceptions -fmax-type-align=16 -fdiagnostics-show-option -o /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/query_server-047632.o -x c++ query_server.cpp
+clang -cc1 version 8.0.0 (clang-800.0.42.1) default target x86_64-apple-darwin16.4.0
+ignoring nonexistent directory "/usr/include/c++/v1"
+#include "..." search starts here:
+#include <...> search starts here:
+ /Library/Developer/CommandLineTools/usr/bin/../include/c++/v1
+ /usr/local/include
+ /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/include
+ /Library/Developer/CommandLineTools/usr/include
+ /usr/include
+ /System/Library/Frameworks (framework directory)
+ /Library/Frameworks (framework directory)
+End of search list.
+In file included from query_server.cpp:2:
+./message.hpp:64:26: warning: format specifies type 'int' but the argument has type 'size_t' (aka 'unsigned long') [-Wformat]
+                LOG("data_length : %d",data_length_);                           
+                                   ~~  ^~~~~~~~~~~~
+                                   %zu
+./../utils/tiny_log.hpp:10:17: note: expanded from macro 'LOG'
+        fprintf(stderr,__VA_ARGS__); \
+                       ^~~~~~~~~~~
+1 warning generated.
+ "/Library/Developer/CommandLineTools/usr/bin/ld" -demangle -dynamic -arch x86_64 -macosx_version_min 10.12.0 -o query_server -lboost_system /var/folders/vz/f6lm0vg96_jfz_tvznnl1byr0000gn/T/query_server-047632.o -lc++ -lSystem /Library/Developer/CommandLineTools/usr/bin/../lib/clang/8.0.0/lib/darwin/libclang_rt.osx.a
+ "/Library/Developer/CommandLineTools/usr/bin/dsymutil" -o query_server.dSYM query_server

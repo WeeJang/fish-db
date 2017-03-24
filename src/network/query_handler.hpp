@@ -2,11 +2,13 @@
 #define NETWORK_QUERY_HANDLER_H_
 #include "message.hpp"
 
+#include <queue>
 #include <boost/asio.hpp>
+#include <iostream>
 
 namespace network{
 
-class QueryHandler::
+class QueryHandler:
 	public std::enable_shared_from_this<QueryHandler>{
 
 	using QueryHandlerFnType = std::function<std::string(std::string)>;
@@ -28,8 +30,8 @@ public:
 private:
 	void close_socket(){
 		boost::system::error_code ec;
-		socket_.shutdown(boost::tcp::socket::shutdown_both,ec);
-		m_socket.close(ec);
+		socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both,ec);
+		socket_.close(ec);
 	}
 
 	void handle_error(const boost::system::error_code& ec){
@@ -40,32 +42,32 @@ private:
 	void read_packet(){
 		auto self = shared_from_this();	
 		//parser header
-		char header[Message::HEADER_LENGTH];
-		boost::asio::async_read(socket_,boost::asio::buffer(&header,HEADER_LENGTH),\
+		size_t header;
+		boost::asio::async_read(socket_,boost::asio::buffer(&header,Message::HEADER_LENGTH),\
 			[=](const boost::system::error_code& ec,size_t size){
-				if(error_code){
+				if(ec){
 					fprintf(stderr,"read header of packet error!\n");
 					handle_error(ec);
 					return;
 				}
-				size_t body_size = *(reinterpret_cast<size_t*>(header));
-				read_body(body_size);					
+				read_body(header);					
 			});	
 	}
 	
 	void read_body(size_t body_size){
 		auto self = shared_from_this();
-		char query_str[body_size];
-		boost::asio::async_read(socket_,boost::asio::buffer(&query_str,body_size),\
+		char* query_str = new char[body_size];
+		boost::asio::async_read(socket_,boost::asio::buffer(query_str,body_size),\
 			[=](const boost::system::error_code& ec,size_t size){
-				if(error_code){
+				if(ec){
 					fprintf(stderr,"read body of packet error!\n");
 					handle_error(ec);
 					return;
 				}
 				//handle query str
 				std::cout << "get query str : " << std::endl;
-				std::cout.write(&query_str,body_size);
+				std::cout.write(query_str,body_size);
+				delete [] query_str;
 				//CallBack
 				//callback_(query_str);					
 				//go on
@@ -77,7 +79,7 @@ private:
 	void write_packet(const std::string& write_packet_str){
 		auto self = shared_from_this();
 		io_service_.post( write_strand_.wrap(\
-			[self](){
+			[self,&write_packet_str](){
 				self->queue_message(write_packet_str);
 			}));		
 	} 
