@@ -42,15 +42,16 @@ private:
 	void read_packet(){
 		auto self = shared_from_this();	
 		//parser header
-		size_t header;
-		boost::asio::async_read(socket_,boost::asio::buffer(&header,Message::HEADER_LENGTH),\
+		size_t* header = new size_t;
+		boost::asio::async_read(socket_,boost::asio::buffer(header,Message::HEADER_LENGTH),\
 			[=](const boost::system::error_code& ec,size_t size){
 				if(ec){
 					fprintf(stderr,"read header of packet error!\n");
 					handle_error(ec);
 					return;
 				}
-				read_body(header);					
+				LOG("read header %zu",*header);
+				read_body(*header);					
 			});	
 	}
 	

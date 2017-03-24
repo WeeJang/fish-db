@@ -24,7 +24,8 @@ int main(int argc,char** argv){
 		boost::asio::ip::tcp::socket socket(io_service);
 		boost::asio::connect(socket,r.resolve(q));
 	
-		network::Message query_msg(sparql_str_2);		
+		network::Message query_msg(sparql_str_2);
+		std::cout << "data length " << query_msg.data_length() << std::endl;
 		boost::asio::write(socket,boost::asio::buffer(query_msg.message_c_str(),query_msg.message_length()),ec);
 		if(ec){
 			throw boost::system::system_error(ec);
