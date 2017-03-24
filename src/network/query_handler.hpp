@@ -6,6 +6,10 @@
 #include <boost/asio.hpp>
 #include <iostream>
 
+#include <queue>
+#include <boost/asio.hpp>
+#include <iostream>
+
 namespace network{
 
 class QueryHandler:
@@ -51,7 +55,8 @@ private:
 					return;
 				}
 				LOG("read header %zu",*header);
-				read_body(*header);					
+				read_body(*header);
+				delete header;				
 			});	
 	}
 	
@@ -66,27 +71,30 @@ private:
 					return;
 				}
 				//handle query str
-				std::cout << "get query str : " << std::endl;
-				std::cout.write(query_str,body_size);
+				std::cout << "get query str : " << body_size << std::endl;
+				std::cout.write(query_str,body_size) << "\n";
 				delete [] query_str;
 				//CallBack
-				//callback_(query_str);					
+				//callback_(query_str);			
+				std::string ret_str("reture str");
+				auto query_ret = std::make_shared<network::Message>(ret_str);
+				write_packet(query_ret);	
 				//go on
 				read_packet();
 		});
 	}
 
 
-	void write_packet(const std::string& write_packet_str){
+	void write_packet(std::shared_ptr<network::Message> write_packet_str){
 		auto self = shared_from_this();
 		io_service_.post( write_strand_.wrap(\
-			[self,&write_packet_str](){
+			[=](){
 				self->queue_message(write_packet_str);
 			}));		
 	} 
 
 
-	void queue_message(const std::string& write_packet_str){
+	void queue_message(std::shared_ptr<network::Message> write_packet_str){
 		bool write_in_progress = !write_packet_queue_.empty();
 		write_packet_queue_.push(write_packet_str);
 		
@@ -97,9 +105,11 @@ private:
 
 	void do_write_packet(){
 		auto self = shared_from_this();
+		auto p_msg = write_packet_queue_.front();
+		
 		boost::asio::async_write(socket_
-			,boost::asio::buffer(write_packet_queue_.front())
-			,[self](const boost::system::error_code& ec,size_t size){
+			,boost::asio::buffer(p_msg->message_c_str(),p_msg->message_length())
+			,[=](const boost::system::error_code& ec,size_t size){
 				self->write_packet_done();	
 			});
 	}
@@ -115,7 +125,7 @@ private:
 	boost::asio::io_service& io_service_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::io_service::strand write_strand_;
-	std::queue<std::string> write_packet_queue_;
+	std::queue<std::shared_ptr<network::Message>> write_packet_queue_;
 	QueryHandlerFnType query_handler_fn_;
 		
 };//class query_handler
@@ -123,3 +133,4 @@ private:
 
 }//namespace network
 #endif // NETWORK_QUERY_HANDLER_H_
+

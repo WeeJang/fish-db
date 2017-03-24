@@ -23,6 +23,11 @@ public:
 	constexpr static size_t HEADER_LENGTH = sizeof(size_t); //sizeof(size_t) bytes;
 
 public:
+	Message(const Message&) = delete;
+	Message(Message&&) = delete;	
+	Message& operator=(const Message&) = delete;
+	Message& operator=(Message&&) = delete;
+
 	Message(const std::string& data_info){
 		data_length_ = data_info.size();
 		LOG("encode ...");
@@ -37,8 +42,17 @@ public:
 		decode_header();
 	}
 
+	//when you take the ownership of p_data_,you should set this invalid
+	void set_invalid(){
+		p_data_ = nullptr;	
+	}
+
 	virtual ~Message(){
-		delete p_data_;	
+		LOG("will delete %p",p_data_);
+		if(p_data_ != nullptr){
+			delete p_data_;	
+		}
+		LOG("delete ");
 	}
 	
 	const size_t data_length() const {
