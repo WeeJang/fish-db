@@ -22,6 +22,14 @@ public:
 		,socket_(service)
 		,write_strand_(service)
 	{}
+	
+	~QueryHandler(){
+		LOG("handler dconstor !!!! FUCK");
+	}
+	
+	QueryHandler(const QueryHandler&) = delete;
+	QueryHandler(QueryHandler&&) = delete;
+	QueryHandler& operator=(const QueryHandler&) = delete;
 
 	void start(){
 		read_packet();
@@ -46,28 +54,31 @@ private:
 	void read_packet(){
 		auto self = shared_from_this();	
 		//parser header
-		size_t* header = new size_t;
-		boost::asio::async_read(socket_,boost::asio::buffer(header,Message::HEADER_LENGTH),\
+		auto header = std::make_shared<size_t>();
+		LOG("this : %p header adderess %p",this,header.get());
+		boost::asio::async_read(socket_,boost::asio::buffer(header.get(),Message::HEADER_LENGTH),\
 			[=](const boost::system::error_code& ec,size_t size){
 				if(ec){
 					fprintf(stderr,"read header of packet error!\n");
-					handle_error(ec);
+					self->handle_error(ec);
 					return;
 				}
 				LOG("read header %zu",*header);
-				read_body(*header);
-				delete header;				
+				size_t body_size = *header;
+				self->read_body(body_size);
 			});	
 	}
 	
 	void read_body(size_t body_size){
 		auto self = shared_from_this();
+		LOG("this %p",this);
 		char* query_str = new char[body_size];
+		LOG("this %p | malloc query_str %p",this,query_str);
 		boost::asio::async_read(socket_,boost::asio::buffer(query_str,body_size),\
 			[=](const boost::system::error_code& ec,size_t size){
 				if(ec){
 					fprintf(stderr,"read body of packet error!\n");
-					handle_error(ec);
+					self->handle_error(ec);
 					return;
 				}
 				//handle query str
@@ -78,9 +89,9 @@ private:
 				//callback_(query_str);			
 				std::string ret_str("reture str");
 				auto query_ret = std::make_shared<network::Message>(ret_str);
-				write_packet(query_ret);	
+				self->write_packet(query_ret);	
 				//go on
-				read_packet();
+				self->read_packet();
 		});
 	}
 

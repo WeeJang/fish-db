@@ -6,7 +6,7 @@
 
 int main(int argc,char** argv){
 	try{
-		network::AsioGenericServer<network::QueryHandler> query_server;
+		network::AsioGenericServer<network::QueryHandler> query_server(1);
 		query_server.start_server(6666);
 		LOG("fuck");	
 	}catch(...){
