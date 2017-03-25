@@ -5,6 +5,7 @@
 
 #include<boost/asio.hpp>
 #include<boost/system/error_code.hpp>
+
 std::string sparql_str_2 = "\
 	select ?id ?name ?parent ?child where { \
  		   ?id <http://rdf.dingfu.com/ns/business.stock_ticker_symbol.isin> cne100001zg7 .  \

@@ -1,24 +1,31 @@
 #ifndef ASIO_GENERIC_SERVER_H_
 #define ASIO_GENERIC_SERVER_H_
 
+//#include "../core/fish_db_impl.h"
 #include "../utils/tiny_log.hpp"
+
+#include <boost/asio.hpp>
+#include <boost/system/error_code.hpp>
 
 #include <vector>
 #include <thread> 
 #include <memory>
 
-#include <boost/asio.hpp>
-#include <boost/system/error_code.hpp>
+#include <cstddef>
+
+//#include <boost/asio/impl/src.hpp> 
 
 #include <cstdio>
+
+namespace fishdb{ class FishDBImpl; }
 
 namespace network{
 
 template<typename ConnectionHandler>
 class AsioGenericServer{
 public:
-	AsioGenericServer(size_t thread_count = 1)
-		:thread_count_(thread_count),acceptor_(io_service_),work_(io_service_){
+	AsioGenericServer(std::shared_ptr<fishdb::FishDBImpl> p_fishdb,size_t thread_count = 1)
+		:p_fishdb_(p_fishdb),thread_count_(thread_count),acceptor_(io_service_),work_(io_service_){
 	}
 	
 	~AsioGenericServer(){
@@ -38,7 +45,7 @@ public:
 		acceptor_.bind(endpoint);
 		acceptor_.listen();
 		
-		auto handler = std::make_shared<ConnectionHandler>(io_service_);
+		auto handler = std::make_shared<ConnectionHandler>(io_service_,p_fishdb_);
 		LOG("create handler : %p",handler.get());	
 
 		acceptor_.async_accept(handler->socket(),\
@@ -66,7 +73,7 @@ private:
 		}
 		handler->start();
 	
-		auto new_handler = std::make_shared<ConnectionHandler>(io_service_);
+		auto new_handler = std::make_shared<ConnectionHandler>(io_service_,p_fishdb_);
 		LOG("hello");
 		LOG("create handler : %p",new_handler.get());	
 		acceptor_.async_accept(new_handler->socket(),\
@@ -79,6 +86,7 @@ private:
 	}	
 
 private:
+	std::shared_ptr<fishdb::FishDBImpl> p_fishdb_;
 	boost::asio::io_service io_service_;	
 	boost::asio::io_service::work work_;	
 	boost::asio::ip::tcp::acceptor acceptor_;

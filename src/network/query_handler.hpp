@@ -1,10 +1,10 @@
 #ifndef NETWORK_QUERY_HANDLER_H_
 #define NETWORK_QUERY_HANDLER_H_
-#include "message.hpp"
 
-#include <queue>
-#include <boost/asio.hpp>
-#include <iostream>
+#include "../core/fish_db_impl.h"
+#include "../query/query_executor.h"
+#include "../query/triple_query.h"
+#include "message.hpp"
 
 #include <queue>
 #include <boost/asio.hpp>
@@ -17,10 +17,11 @@ class QueryHandler:
 
 	using QueryHandlerFnType = std::function<std::string(std::string)>;
 public:
-	QueryHandler(boost::asio::io_service& service)
+	QueryHandler(boost::asio::io_service& service,std::shared_ptr<fishdb::FishDBImpl> p_fishdb)
 		:io_service_(service)
 		,socket_(service)
 		,write_strand_(service)
+		,p_fishdb_(p_fishdb)
 	{}
 	
 	~QueryHandler(){
@@ -85,9 +86,7 @@ private:
 				std::cout << "get query str : " << body_size << std::endl;
 				std::cout.write(query_str,body_size) << "\n";
 				delete [] query_str;
-				//CallBack
-				//callback_(query_str);			
-				std::string ret_str("reture str");
+				std::string ret_str = self->get_query_result(query_str);
 				auto query_ret = std::make_shared<network::Message>(ret_str);
 				self->write_packet(query_ret);	
 				//go on
@@ -131,8 +130,27 @@ private:
 			do_write_packet();	
 		}
 	}
+
+	//------------query_function-----------//
+	std::string get_query_result(const std::string& query_str){
+		query::QueryExecutor query_exec(p_fishdb_);
+		LOG("query exec init");
+		auto p_shared_data = query_exec.get_shared_query_data_ptr();
+		LOG("p_shared_data finished");
+		auto query_set = query::make_triple_query_set(query_str,p_shared_data);
+		LOG("query set");
+		for(auto p_query : query_set){
+			query_exec.add_triple_query(p_query);
+		}	
+		query_exec.run();
+		LOG("query query exec");
+		query_exec.make_result();
+		LOG("query make_result");
+		return query_exec.format_query_result();
+	}	
 		
 private:
+	std::shared_ptr<fishdb::FishDBImpl> p_fishdb_;
 	boost::asio::io_service& io_service_;
 	boost::asio::ip::tcp::socket socket_;
 	boost::asio::io_service::strand write_strand_;
