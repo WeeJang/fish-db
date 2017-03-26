@@ -3,13 +3,14 @@
 namespace query{
 
 void QueryExecutor::run(){
-
 	p_shared_query_data_->printf_hv_bound_vals();
-	LOG("query executor run");
+	LOG("this :%p query executor run",this);
 	if(is_finished_){
+		LOG("is finished ");
 		return;
 	}
 	if(triple_query_set_.size() == 0){
+		LOG("query_set size is 0");
 		is_finished_ = true;
 		return;
 	}

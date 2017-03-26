@@ -25,7 +25,7 @@ public:
 	{}
 	
 	~QueryHandler(){
-		LOG("handler dconstor !!!! FUCK");
+		LOG("handler :%p dconstor !!!! FUCK",this);
 	}
 	
 	QueryHandler(const QueryHandler&) = delete;
@@ -56,9 +56,10 @@ private:
 		auto self = shared_from_this();	
 		//parser header
 		auto header = std::make_shared<size_t>();
-		LOG("this : %p header adderess %p",this,header.get());
+		LOG("this : %p header adderess %p",self.get(),header.get());
 		boost::asio::async_read(socket_,boost::asio::buffer(header.get(),Message::HEADER_LENGTH),\
 			[=](const boost::system::error_code& ec,size_t size){
+				LOG("handler %p read packet ",self.get());
 				if(ec){
 					fprintf(stderr,"read header of packet error!\n");
 					self->handle_error(ec);
@@ -85,8 +86,9 @@ private:
 				//handle query str
 				std::cout << "get query str : " << body_size << std::endl;
 				std::cout.write(query_str,body_size) << "\n";
+				std::string query(query_str,body_size);
 				delete [] query_str;
-				std::string ret_str = self->get_query_result(query_str);
+				std::string ret_str = self->get_query_result(query);
 				auto query_ret = std::make_shared<network::Message>(ret_str);
 				self->write_packet(query_ret);	
 				//go on
@@ -134,7 +136,7 @@ private:
 	//------------query_function-----------//
 	std::string get_query_result(const std::string& query_str){
 		query::QueryExecutor query_exec(p_fishdb_);
-		LOG("query exec init");
+		LOG("query exec init,handler is %p , exec is %p",this,&query_exec);
 		auto p_shared_data = query_exec.get_shared_query_data_ptr();
 		LOG("p_shared_data finished");
 		auto query_set = query::make_triple_query_set(query_str,p_shared_data);
@@ -147,8 +149,8 @@ private:
 		query_exec.make_result();
 		LOG("query make_result");
 		return query_exec.format_query_result();
-	}	
-		
+	}
+
 private:
 	std::shared_ptr<fishdb::FishDBImpl> p_fishdb_;
 	boost::asio::io_service& io_service_;
@@ -156,7 +158,6 @@ private:
 	boost::asio::io_service::strand write_strand_;
 	std::queue<std::shared_ptr<network::Message>> write_packet_queue_;
 	QueryHandlerFnType query_handler_fn_;
-		
 };//class query_handler
 
 

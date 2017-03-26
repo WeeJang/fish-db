@@ -14,9 +14,19 @@ namespace query{
 class QueryExecutor{
 
 public:
-	QueryExecutor(std::shared_ptr<fishdb::FishDBImpl> p_fish_db):p_fish_db_(p_fish_db){
+	QueryExecutor(std::shared_ptr<fishdb::FishDBImpl> p_fish_db)
+		:p_fish_db_(p_fish_db)
+		,is_finished_(false)
+		,is_empty_result_(false){
+		LOG("========query executor will ctor, %p",this);
 		p_shared_query_data_ = std::make_shared<SharedQueryData>(p_fish_db_);
+		LOG("is finished : %d" , is_finished_);
 	}
+
+	~QueryExecutor(){
+		LOG("this query executor will dctor, %p",this);
+	}
+
 	void add_triple_query(std::shared_ptr<TripleQuery> p_triple_query){ triple_query_set_.insert(p_triple_query);}
 	bool is_finished() const { return is_finished_; };
 	void run();
