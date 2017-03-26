@@ -9,12 +9,13 @@
 #include <string.h>
 
 extern inline int32_t binarySearch(const uint16_t *array, int32_t lenarray,
-                                    uint16_t ikey);
+                                   uint16_t ikey);
 
 #ifdef IS_X64
 
 // used by intersect_vector16
-ALIGNED(0x1000) static const uint8_t shuffle_mask16[]  = {
+ALIGNED(0x1000)
+static const uint8_t shuffle_mask16[] = {
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0,    1,    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
     0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 2,    3,    0xFF, 0xFF,
@@ -362,92 +363,88 @@ ALIGNED(0x1000) static const uint8_t shuffle_mask16[]  = {
  * From Schlegel et al., Fast Sorted-Set Intersection using SIMD Instructions
  * Optimized by D. Lemire on May 3rd 2013
  */
-int32_t intersect_vector16(const uint16_t *__restrict__ A, size_t s_a, const uint16_t *__restrict__ B,
-                           size_t s_b, uint16_t * C) {
-    size_t count = 0;
-    size_t i_a = 0, i_b = 0;
-    const int vectorlength = sizeof(__m128i) / sizeof(uint16_t);
-    const size_t st_a = (s_a / vectorlength) * vectorlength;
-    const size_t st_b = (s_b / vectorlength) * vectorlength;
-    __m128i v_a, v_b;
-    if ((i_a < st_a) && (i_b < st_b)) {
+int32_t intersect_vector16(const uint16_t *__restrict__ A, size_t s_a,
+                           const uint16_t *__restrict__ B, size_t s_b,
+                           uint16_t *C) {
+  size_t count = 0;
+  size_t i_a = 0, i_b = 0;
+  const int vectorlength = sizeof(__m128i) / sizeof(uint16_t);
+  const size_t st_a = (s_a / vectorlength) * vectorlength;
+  const size_t st_b = (s_b / vectorlength) * vectorlength;
+  __m128i v_a, v_b;
+  if ((i_a < st_a) && (i_b < st_b)) {
+    v_a = _mm_lddqu_si128((__m128i *)&A[i_a]);
+    v_b = _mm_lddqu_si128((__m128i *)&B[i_b]);
+    while ((A[i_a] == 0) || (B[i_b] == 0)) {
+      const __m128i res_v =
+          _mm_cmpestrm(v_b, vectorlength, v_a, vectorlength,
+                       _SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK);
+      const int r = _mm_extract_epi32(res_v, 0);
+      __m128i sm16 = _mm_load_si128((const __m128i *)shuffle_mask16 + r);
+      __m128i p = _mm_shuffle_epi8(v_a, sm16);
+      _mm_storeu_si128((__m128i *)&C[count], p);  // can overflow
+      count += _mm_popcnt_u32(r);
+      const uint16_t a_max = A[i_a + vectorlength - 1];
+      const uint16_t b_max = B[i_b + vectorlength - 1];
+      if (a_max <= b_max) {
+        i_a += vectorlength;
+        if (i_a == st_a) break;
         v_a = _mm_lddqu_si128((__m128i *)&A[i_a]);
+      }
+      if (b_max <= a_max) {
+        i_b += vectorlength;
+        if (i_b == st_b) break;
         v_b = _mm_lddqu_si128((__m128i *)&B[i_b]);
-        while ((A[i_a] == 0) || (B[i_b] == 0)) {
-            const __m128i res_v = _mm_cmpestrm(
-                v_b, vectorlength, v_a, vectorlength,
-                _SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK);
-            const int r = _mm_extract_epi32(res_v, 0);
-            __m128i sm16 = _mm_load_si128((const __m128i *)shuffle_mask16 + r);
-            __m128i p = _mm_shuffle_epi8(v_a, sm16);
-            _mm_storeu_si128((__m128i *)&C[count], p);  // can overflow
-            count += _mm_popcnt_u32(r);
-            const uint16_t a_max = A[i_a + vectorlength - 1];
-            const uint16_t b_max = B[i_b + vectorlength - 1];
-            if (a_max <= b_max) {
-                i_a += vectorlength;
-                if (i_a == st_a) break;
-                v_a = _mm_lddqu_si128((__m128i *)&A[i_a]);
-            }
-            if (b_max <= a_max) {
-                i_b += vectorlength;
-                if (i_b == st_b) break;
-                v_b = _mm_lddqu_si128((__m128i *)&B[i_b]);
-            }
-        }
-        if ((i_a < st_a) && (i_b < st_b))
-            while (true) {
-                const __m128i res_v = _mm_cmpistrm(
-                    v_b, v_a,
-                    _SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK);
-                const int r = _mm_extract_epi32(res_v, 0);
-                __m128i sm16 =
-                    _mm_load_si128((const __m128i *)shuffle_mask16 + r);
-                __m128i p = _mm_shuffle_epi8(v_a, sm16);
-                _mm_storeu_si128((__m128i *)&C[count], p);  // can overflow
-                count += _mm_popcnt_u32(r);
-                const uint16_t a_max = A[i_a + vectorlength - 1];
-                const uint16_t b_max = B[i_b + vectorlength - 1];
-                if (a_max <= b_max) {
-                    i_a += vectorlength;
-                    if (i_a == st_a) break;
-                    v_a = _mm_lddqu_si128((__m128i *)&A[i_a]);
-                }
-                if (b_max <= a_max) {
-                    i_b += vectorlength;
-                    if (i_b == st_b) break;
-                    v_b = _mm_lddqu_si128((__m128i *)&B[i_b]);
-                }
-            }
+      }
     }
-    // intersect the tail using scalar intersection
-    while (i_a < s_a && i_b < s_b) {
-        uint16_t a = A[i_a];
-        uint16_t b = B[i_b];
-        if (a < b) {
-            i_a++;
-        } else if (b < a) {
-            i_b++;
-        } else {
-            C[count] = a;  //==b;
-            count++;
-            i_a++;
-            i_b++;
+    if ((i_a < st_a) && (i_b < st_b))
+      while (true) {
+        const __m128i res_v = _mm_cmpistrm(
+            v_b, v_a, _SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK);
+        const int r = _mm_extract_epi32(res_v, 0);
+        __m128i sm16 = _mm_load_si128((const __m128i *)shuffle_mask16 + r);
+        __m128i p = _mm_shuffle_epi8(v_a, sm16);
+        _mm_storeu_si128((__m128i *)&C[count], p);  // can overflow
+        count += _mm_popcnt_u32(r);
+        const uint16_t a_max = A[i_a + vectorlength - 1];
+        const uint16_t b_max = B[i_b + vectorlength - 1];
+        if (a_max <= b_max) {
+          i_a += vectorlength;
+          if (i_a == st_a) break;
+          v_a = _mm_lddqu_si128((__m128i *)&A[i_a]);
         }
+        if (b_max <= a_max) {
+          i_b += vectorlength;
+          if (i_b == st_b) break;
+          v_b = _mm_lddqu_si128((__m128i *)&B[i_b]);
+        }
+      }
+  }
+  // intersect the tail using scalar intersection
+  while (i_a < s_a && i_b < s_b) {
+    uint16_t a = A[i_a];
+    uint16_t b = B[i_b];
+    if (a < b) {
+      i_a++;
+    } else if (b < a) {
+      i_b++;
+    } else {
+      C[count] = a;  //==b;
+      count++;
+      i_a++;
+      i_b++;
     }
-    return count;
+  }
+  return count;
 }
 
-
-int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const uint16_t *__restrict__ B,
-                            size_t s_b, uint16_t * C) {
-
+int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a,
+                            const uint16_t *__restrict__ B, size_t s_b,
+                            uint16_t *C) {
   // we handle the degenerate case
-  if (s_a == 0)
-    return 0;
+  if (s_a == 0) return 0;
   if (s_b == 0) {
-    if (A != C)
-      memcpy(C, A, sizeof(uint16_t) * s_a);
+    if (A != C) memcpy(C, A, sizeof(uint16_t) * s_a);
     return s_a;
   }
   // handle the leading zeroes, it is messy but it allows us to use the fast
@@ -474,8 +471,8 @@ int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const ui
   const size_t vectorlength = sizeof(__m128i) / sizeof(uint16_t);
   const size_t st_a = (s_a / vectorlength) * vectorlength;
   const size_t st_b = (s_b / vectorlength) * vectorlength;
-  if ((i_a < st_a) && (i_b < st_b)) { // this is the vectorized code path
-    __m128i v_a, v_b;                 //, v_bmax;
+  if ((i_a < st_a) && (i_b < st_b)) {  // this is the vectorized code path
+    __m128i v_a, v_b;                  //, v_bmax;
     // we load a vector from A and a vector from B
     v_a = _mm_lddqu_si128((__m128i *)&A[i_a]);
     v_b = _mm_lddqu_si128((__m128i *)&B[i_b]);
@@ -483,11 +480,11 @@ int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const ui
     // spotted in B, these don't get written out.
     __m128i runningmask_a_found_in_b = _mm_setzero_si128();
     /****
-    * start of the main vectorized loop
-    *****/
+     * start of the main vectorized loop
+     *****/
     while (true) {
-      // afoundinb will contain a mask indicate for each entry in A whether it is seen
-      // in B
+      // afoundinb will contain a mask indicate for each entry in A whether it
+      // is seen in B
       const __m128i a_found_in_b = _mm_cmpistrm(
           v_b, v_a, _SIDD_UWORD_OPS | _SIDD_CMP_EQUAL_ANY | _SIDD_BIT_MASK);
       runningmask_a_found_in_b =
@@ -505,11 +502,11 @@ int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const ui
         __m128i sm16 = _mm_load_si128((const __m128i *)shuffle_mask16 +
                                       bitmask_belongs_to_difference);
         __m128i p = _mm_shuffle_epi8(v_a, sm16);
-        _mm_storeu_si128((__m128i *)&C[count], p); // can overflow
+        _mm_storeu_si128((__m128i *)&C[count], p);  // can overflow
         count += _mm_popcnt_u32(bitmask_belongs_to_difference);
         // we advance a
         i_a += vectorlength;
-        if (i_a == st_a)// no more
+        if (i_a == st_a)  // no more
           break;
         runningmask_a_found_in_b = _mm_setzero_si128();
         v_a = _mm_lddqu_si128((__m128i *)&A[i_a]);
@@ -517,15 +514,15 @@ int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const ui
       if (b_max <= a_max) {
         // in this code path, the current v_b has become useless
         i_b += vectorlength;
-        if (i_b == st_b)
-          break;
+        if (i_b == st_b) break;
         v_b = _mm_lddqu_si128((__m128i *)&B[i_b]);
       }
     }
-    // at this point, either we have i_a == st_a, which is the end of the vectorized processing,
-    // or we have i_b == st_b,  and we are not done processing the vector... so we need to finish it off.
-   if (i_a < st_a) {     // we have unfinished business...
-      uint16_t buffer[8]; // buffer to do a masked load
+    // at this point, either we have i_a == st_a, which is the end of the
+    // vectorized processing, or we have i_b == st_b,  and we are not done
+    // processing the vector... so we need to finish it off.
+    if (i_a < st_a) {      // we have unfinished business...
+      uint16_t buffer[8];  // buffer to do a masked load
       memset(buffer, 0, 8 * sizeof(uint16_t));
       memcpy(buffer, B + i_b, (s_b - i_b) * sizeof(uint16_t));
       v_b = _mm_lddqu_si128((__m128i *)buffer);
@@ -538,7 +535,7 @@ int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const ui
       __m128i sm16 = _mm_load_si128((const __m128i *)shuffle_mask16 +
                                     bitmask_belongs_to_difference);
       __m128i p = _mm_shuffle_epi8(v_a, sm16);
-      _mm_storeu_si128((__m128i *)&C[count], p); // can overflow
+      _mm_storeu_si128((__m128i *)&C[count], p);  // can overflow
       count += _mm_popcnt_u32(bitmask_belongs_to_difference);
       i_a += vectorlength;
     }
@@ -554,7 +551,7 @@ int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const ui
       C[count] = a;
       count++;
       i_a++;
-    } else { //==
+    } else {  //==
       i_a++;
       i_b++;
     }
@@ -573,35 +570,35 @@ int32_t difference_vector16(const uint16_t *__restrict__ A, size_t s_a, const ui
 int32_t intersect_skewed_uint16(const uint16_t *small, size_t size_s,
                                 const uint16_t *large, size_t size_l,
                                 uint16_t *buffer) {
-    size_t pos = 0, idx_l = 0, idx_s = 0;
+  size_t pos = 0, idx_l = 0, idx_s = 0;
 
-    if (0 == size_s) {
-        return 0;
+  if (0 == size_s) {
+    return 0;
+  }
+
+  uint16_t val_l = large[idx_l], val_s = small[idx_s];
+
+  while (true) {
+    if (val_l < val_s) {
+      idx_l = advanceUntil(large, (int32_t)idx_l, (int32_t)size_l, val_s);
+      if (idx_l == size_l) break;
+      val_l = large[idx_l];
+    } else if (val_s < val_l) {
+      idx_s++;
+      if (idx_s == size_s) break;
+      val_s = small[idx_s];
+    } else {
+      buffer[pos++] = val_s;
+      idx_s++;
+      if (idx_s == size_s) break;
+      val_s = small[idx_s];
+      idx_l = advanceUntil(large, (int32_t)idx_l, (int32_t)size_l, val_s);
+      if (idx_l == size_l) break;
+      val_l = large[idx_l];
     }
+  }
 
-    uint16_t val_l = large[idx_l], val_s = small[idx_s];
-
-    while (true) {
-        if (val_l < val_s) {
-            idx_l = advanceUntil(large, (int32_t)idx_l, (int32_t)size_l, val_s);
-            if (idx_l == size_l) break;
-            val_l = large[idx_l];
-        } else if (val_s < val_l) {
-            idx_s++;
-            if (idx_s == size_s) break;
-            val_s = small[idx_s];
-        } else {
-            buffer[pos++] = val_s;
-            idx_s++;
-            if (idx_s == size_s) break;
-            val_s = small[idx_s];
-            idx_l = advanceUntil(large, (int32_t)idx_l, (int32_t)size_l, val_s);
-            if (idx_l == size_l) break;
-            val_l = large[idx_l];
-        }
-    }
-
-    return (int32_t)pos;
+  return (int32_t)pos;
 }
 
 /**
@@ -609,27 +606,27 @@ int32_t intersect_skewed_uint16(const uint16_t *small, size_t size_s,
  */
 int32_t intersect_uint16(const uint16_t *A, const size_t lenA,
                          const uint16_t *B, const size_t lenB, uint16_t *out) {
-    const uint16_t *initout = out;
-    if (lenA == 0 || lenB == 0) return 0;
-    const uint16_t *endA = A + lenA;
-    const uint16_t *endB = B + lenB;
+  const uint16_t *initout = out;
+  if (lenA == 0 || lenB == 0) return 0;
+  const uint16_t *endA = A + lenA;
+  const uint16_t *endB = B + lenB;
 
-    while (1) {
-        while (*A < *B) {
-        SKIP_FIRST_COMPARE:
-            if (++A == endA) return (int32_t)(out - initout);
-        }
-        while (*A > *B) {
-            if (++B == endB) return (int32_t)(out - initout);
-        }
-        if (*A == *B) {
-            *out++ = *A;
-            if (++A == endA || ++B == endB) return (int32_t)(out - initout);
-        } else {
-            goto SKIP_FIRST_COMPARE;
-        }
+  while (1) {
+    while (*A < *B) {
+    SKIP_FIRST_COMPARE:
+      if (++A == endA) return (int32_t)(out - initout);
     }
-    return (int32_t)(out - initout);  // NOTREACHED
+    while (*A > *B) {
+      if (++B == endB) return (int32_t)(out - initout);
+    }
+    if (*A == *B) {
+      *out++ = *A;
+      if (++A == endA || ++B == endB) return (int32_t)(out - initout);
+    } else {
+      goto SKIP_FIRST_COMPARE;
+    }
+  }
+  return (int32_t)(out - initout);  // NOTREACHED
 }
 
 /**
@@ -638,52 +635,52 @@ int32_t intersect_uint16(const uint16_t *A, const size_t lenA,
 size_t intersection_uint32(const uint32_t *A, const size_t lenA,
                            const uint32_t *B, const size_t lenB,
                            uint32_t *out) {
-    const uint32_t *initout = out;
-    if (lenA == 0 || lenB == 0) return 0;
-    const uint32_t *endA = A + lenA;
-    const uint32_t *endB = B + lenB;
+  const uint32_t *initout = out;
+  if (lenA == 0 || lenB == 0) return 0;
+  const uint32_t *endA = A + lenA;
+  const uint32_t *endB = B + lenB;
 
-    while (1) {
-        while (*A < *B) {
-        SKIP_FIRST_COMPARE:
-            if (++A == endA) return (out - initout);
-        }
-        while (*A > *B) {
-            if (++B == endB) return (out - initout);
-        }
-        if (*A == *B) {
-            *out++ = *A;
-            if (++A == endA || ++B == endB) return (out - initout);
-        } else {
-            goto SKIP_FIRST_COMPARE;
-        }
+  while (1) {
+    while (*A < *B) {
+    SKIP_FIRST_COMPARE:
+      if (++A == endA) return (out - initout);
     }
-    return (out - initout);  // NOTREACHED
+    while (*A > *B) {
+      if (++B == endB) return (out - initout);
+    }
+    if (*A == *B) {
+      *out++ = *A;
+      if (++A == endA || ++B == endB) return (out - initout);
+    } else {
+      goto SKIP_FIRST_COMPARE;
+    }
+  }
+  return (out - initout);  // NOTREACHED
 }
 
 size_t intersection_uint32_card(const uint32_t *A, const size_t lenA,
                                 const uint32_t *B, const size_t lenB) {
-    if (lenA == 0 || lenB == 0) return 0;
-    size_t card = 0;
-    const uint32_t *endA = A + lenA;
-    const uint32_t *endB = B + lenB;
+  if (lenA == 0 || lenB == 0) return 0;
+  size_t card = 0;
+  const uint32_t *endA = A + lenA;
+  const uint32_t *endB = B + lenB;
 
-    while (1) {
-        while (*A < *B) {
-        SKIP_FIRST_COMPARE:
-            if (++A == endA) return card;
-        }
-        while (*A > *B) {
-            if (++B == endB) return card;
-        }
-        if (*A == *B) {
-            card++;
-            if (++A == endA || ++B == endB) return card;
-        } else {
-            goto SKIP_FIRST_COMPARE;
-        }
+  while (1) {
+    while (*A < *B) {
+    SKIP_FIRST_COMPARE:
+      if (++A == endA) return card;
     }
-    return card;  // NOTREACHED
+    while (*A > *B) {
+      if (++B == endB) return card;
+    }
+    if (*A == *B) {
+      card++;
+      if (++A == endA || ++B == endB) return card;
+    } else {
+      goto SKIP_FIRST_COMPARE;
+    }
+  }
+  return card;  // NOTREACHED
 }
 
 // can one vectorize the computation of the union? (Update: Yes! See
@@ -691,62 +688,60 @@ size_t intersection_uint32_card(const uint32_t *A, const size_t lenA,
 
 size_t union_uint16(const uint16_t *set_1, size_t size_1, const uint16_t *set_2,
                     size_t size_2, uint16_t *buffer) {
-    size_t pos = 0, idx_1 = 0, idx_2 = 0;
+  size_t pos = 0, idx_1 = 0, idx_2 = 0;
 
-    if (0 == size_2) {
-        memcpy(buffer, set_1, size_1 * sizeof(uint16_t));
-        return size_1;
+  if (0 == size_2) {
+    memcpy(buffer, set_1, size_1 * sizeof(uint16_t));
+    return size_1;
+  }
+  if (0 == size_1) {
+    memcpy(buffer, set_2, size_2 * sizeof(uint16_t));
+    return size_2;
+  }
+
+  uint16_t val_1 = set_1[idx_1], val_2 = set_2[idx_2];
+
+  while (true) {
+    if (val_1 < val_2) {
+      buffer[pos++] = val_1;
+      ++idx_1;
+      if (idx_1 >= size_1) break;
+      val_1 = set_1[idx_1];
+    } else if (val_2 < val_1) {
+      buffer[pos++] = val_2;
+      ++idx_2;
+      if (idx_2 >= size_2) break;
+      val_2 = set_2[idx_2];
+    } else {
+      buffer[pos++] = val_1;
+      ++idx_1;
+      ++idx_2;
+      if (idx_1 >= size_1 || idx_2 >= size_2) break;
+      val_1 = set_1[idx_1];
+      val_2 = set_2[idx_2];
     }
-    if (0 == size_1) {
-        memcpy(buffer, set_2, size_2 * sizeof(uint16_t));
-        return size_2;
-    }
+  }
 
-    uint16_t val_1 = set_1[idx_1], val_2 = set_2[idx_2];
+  if (idx_1 < size_1) {
+    const size_t n_elems = size_1 - idx_1;
+    memcpy(buffer + pos, set_1 + idx_1, n_elems * sizeof(uint16_t));
+    pos += n_elems;
+  } else if (idx_2 < size_2) {
+    const size_t n_elems = size_2 - idx_2;
+    memcpy(buffer + pos, set_2 + idx_2, n_elems * sizeof(uint16_t));
+    pos += n_elems;
+  }
 
-    while (true) {
-        if (val_1 < val_2) {
-            buffer[pos++] = val_1;
-            ++idx_1;
-            if (idx_1 >= size_1) break;
-            val_1 = set_1[idx_1];
-        } else if (val_2 < val_1) {
-            buffer[pos++] = val_2;
-            ++idx_2;
-            if (idx_2 >= size_2) break;
-            val_2 = set_2[idx_2];
-        } else {
-            buffer[pos++] = val_1;
-            ++idx_1;
-            ++idx_2;
-            if (idx_1 >= size_1 || idx_2 >= size_2) break;
-            val_1 = set_1[idx_1];
-            val_2 = set_2[idx_2];
-        }
-    }
-
-    if (idx_1 < size_1) {
-        const size_t n_elems = size_1 - idx_1;
-        memcpy(buffer + pos, set_1 + idx_1, n_elems * sizeof(uint16_t));
-        pos += n_elems;
-    } else if (idx_2 < size_2) {
-        const size_t n_elems = size_2 - idx_2;
-        memcpy(buffer + pos, set_2 + idx_2, n_elems * sizeof(uint16_t));
-        pos += n_elems;
-    }
-
-    return pos;
+  return pos;
 }
 
 int difference_uint16(const uint16_t *a1, int length1, const uint16_t *a2,
                       int length2, uint16_t *a_out) {
   int out_card = 0;
   int k1 = 0, k2 = 0;
-  if (length1 == 0)
-    return 0;
+  if (length1 == 0) return 0;
   if (length2 == 0) {
-    if (a1 != a_out)
-      memcpy(a_out, a1, sizeof(uint16_t) * length1);
+    if (a1 != a_out) memcpy(a_out, a1, sizeof(uint16_t) * length1);
     return length1;
   }
   uint16_t s1 = a1[k1];
@@ -771,7 +766,7 @@ int difference_uint16(const uint16_t *a1, int length1, const uint16_t *a2,
       }
       s1 = a1[k1];
       s2 = a2[k2];
-    } else { // if (val1>val2)
+    } else {  // if (val1>val2)
       ++k2;
       if (k2 >= length2) {
         memmove(a_out + out_card, a1 + k1, sizeof(uint16_t) * (length1 - k1));
@@ -782,7 +777,6 @@ int difference_uint16(const uint16_t *a1, int length1, const uint16_t *a2,
   }
   return out_card;
 }
-
 
 int32_t xor_uint16(const uint16_t *array_1, int32_t card_1,
                    const uint16_t *array_2, int32_t card_2, uint16_t *out) {
@@ -804,17 +798,16 @@ int32_t xor_uint16(const uint16_t *array_1, int32_t card_1,
     }
   }
   if (pos1 < card_1) {
-      const size_t n_elems = card_1 - pos1;
-      memcpy(out + pos_out, array_1 + pos1, n_elems * sizeof(uint16_t));
-      pos_out += (int32_t)n_elems;
+    const size_t n_elems = card_1 - pos1;
+    memcpy(out + pos_out, array_1 + pos1, n_elems * sizeof(uint16_t));
+    pos_out += (int32_t)n_elems;
   } else if (pos2 < card_2) {
-      const size_t n_elems = card_2 - pos2;
-      memcpy(out + pos_out, array_2 + pos2, n_elems * sizeof(uint16_t));
-      pos_out += (int32_t)n_elems;
+    const size_t n_elems = card_2 - pos2;
+    memcpy(out + pos_out, array_2 + pos2, n_elems * sizeof(uint16_t));
+    pos_out += (int32_t)n_elems;
   }
   return pos_out;
 }
-
 
 #if defined(IS_X64)
 
@@ -831,31 +824,31 @@ int32_t xor_uint16(const uint16_t *array_1, int32_t card_1,
 static inline void sse_merge(const __m128i *vInput1,
                              const __m128i *vInput2,              // input 1 & 2
                              __m128i *vecMin, __m128i *vecMax) {  // output
-    __m128i vecTmp;
-    vecTmp = _mm_min_epu16(*vInput1, *vInput2);
-    *vecMax = _mm_max_epu16(*vInput1, *vInput2);
-    vecTmp = _mm_alignr_epi8(vecTmp, vecTmp, 2);
-    *vecMin = _mm_min_epu16(vecTmp, *vecMax);
-    *vecMax = _mm_max_epu16(vecTmp, *vecMax);
-    vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
-    *vecMin = _mm_min_epu16(vecTmp, *vecMax);
-    *vecMax = _mm_max_epu16(vecTmp, *vecMax);
-    vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
-    *vecMin = _mm_min_epu16(vecTmp, *vecMax);
-    *vecMax = _mm_max_epu16(vecTmp, *vecMax);
-    vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
-    *vecMin = _mm_min_epu16(vecTmp, *vecMax);
-    *vecMax = _mm_max_epu16(vecTmp, *vecMax);
-    vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
-    *vecMin = _mm_min_epu16(vecTmp, *vecMax);
-    *vecMax = _mm_max_epu16(vecTmp, *vecMax);
-    vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
-    *vecMin = _mm_min_epu16(vecTmp, *vecMax);
-    *vecMax = _mm_max_epu16(vecTmp, *vecMax);
-    vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
-    *vecMin = _mm_min_epu16(vecTmp, *vecMax);
-    *vecMax = _mm_max_epu16(vecTmp, *vecMax);
-    *vecMin = _mm_alignr_epi8(*vecMin, *vecMin, 2);
+  __m128i vecTmp;
+  vecTmp = _mm_min_epu16(*vInput1, *vInput2);
+  *vecMax = _mm_max_epu16(*vInput1, *vInput2);
+  vecTmp = _mm_alignr_epi8(vecTmp, vecTmp, 2);
+  *vecMin = _mm_min_epu16(vecTmp, *vecMax);
+  *vecMax = _mm_max_epu16(vecTmp, *vecMax);
+  vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
+  *vecMin = _mm_min_epu16(vecTmp, *vecMax);
+  *vecMax = _mm_max_epu16(vecTmp, *vecMax);
+  vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
+  *vecMin = _mm_min_epu16(vecTmp, *vecMax);
+  *vecMax = _mm_max_epu16(vecTmp, *vecMax);
+  vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
+  *vecMin = _mm_min_epu16(vecTmp, *vecMax);
+  *vecMax = _mm_max_epu16(vecTmp, *vecMax);
+  vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
+  *vecMin = _mm_min_epu16(vecTmp, *vecMax);
+  *vecMax = _mm_max_epu16(vecTmp, *vecMax);
+  vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
+  *vecMin = _mm_min_epu16(vecTmp, *vecMax);
+  *vecMax = _mm_max_epu16(vecTmp, *vecMax);
+  vecTmp = _mm_alignr_epi8(*vecMin, *vecMin, 2);
+  *vecMin = _mm_min_epu16(vecTmp, *vecMax);
+  *vecMax = _mm_max_epu16(vecTmp, *vecMax);
+  *vecMin = _mm_alignr_epi8(*vecMin, *vecMin, 2);
 }
 
 // used by store_unique, generated by simdunion.py
@@ -1206,112 +1199,113 @@ static uint8_t uniqshuf[] = {
 // write vector new, while omitting repeated values assuming that previously
 // written vector was "old"
 static inline int store_unique(__m128i old, __m128i newval, uint16_t *output) {
-    __m128i vecTmp = _mm_alignr_epi8(newval, old, 16 - 2);
-    // lots of high latency instructions follow (optimize?)
-    int M = _mm_movemask_epi8(_mm_packs_epi16(_mm_cmpeq_epi16(vecTmp,newval),_mm_setzero_si128()));
-    int numberofnewvalues = 8 - _mm_popcnt_u32(M);
-    __m128i key = _mm_lddqu_si128((const __m128i *)uniqshuf + M);
-    __m128i val = _mm_shuffle_epi8(newval, key);
-    _mm_storeu_si128((__m128i *)output, val);
-    return numberofnewvalues;
+  __m128i vecTmp = _mm_alignr_epi8(newval, old, 16 - 2);
+  // lots of high latency instructions follow (optimize?)
+  int M = _mm_movemask_epi8(
+      _mm_packs_epi16(_mm_cmpeq_epi16(vecTmp, newval), _mm_setzero_si128()));
+  int numberofnewvalues = 8 - _mm_popcnt_u32(M);
+  __m128i key = _mm_lddqu_si128((const __m128i *)uniqshuf + M);
+  __m128i val = _mm_shuffle_epi8(newval, key);
+  _mm_storeu_si128((__m128i *)output, val);
+  return numberofnewvalues;
 }
 
 // working in-place, this function overwrites the repeated values
 // could be avoided?
 static inline uint32_t unique(uint16_t *out, uint32_t len) {
-    uint32_t pos = 1;
-    for (uint32_t i = 1; i < len; ++i) {
-        if (out[i] != out[i - 1]) {
-            out[pos++] = out[i];
-        }
+  uint32_t pos = 1;
+  for (uint32_t i = 1; i < len; ++i) {
+    if (out[i] != out[i - 1]) {
+      out[pos++] = out[i];
     }
-    return pos;
+  }
+  return pos;
 }
 
 // use with qsort, could be avoided
 static int uint16_compare(const void *a, const void *b) {
-    return (*(uint16_t *)a - *(uint16_t *)b);
+  return (*(uint16_t *)a - *(uint16_t *)b);
 }
 
 // a one-pass SSE union algorithm
 uint32_t union_vector16(const uint16_t *__restrict__ array1, uint32_t length1,
                         const uint16_t *__restrict__ array2, uint32_t length2,
                         uint16_t *__restrict__ output) {
-    if ((length1 < 8) || (length2 < 8)) {
-        return union_uint16(array1, length1, array2, length2, output);
+  if ((length1 < 8) || (length2 < 8)) {
+    return union_uint16(array1, length1, array2, length2, output);
+  }
+  __m128i vA, vB, V, vecMin, vecMax;
+  __m128i laststore;
+  uint16_t *initoutput = output;
+  uint32_t len1 = length1 / 8;
+  uint32_t len2 = length2 / 8;
+  uint32_t pos1 = 0;
+  uint32_t pos2 = 0;
+  // we start the machine
+  vA = _mm_lddqu_si128((const __m128i *)array1 + pos1);
+  pos1++;
+  vB = _mm_lddqu_si128((const __m128i *)array2 + pos2);
+  pos2++;
+  sse_merge(&vA, &vB, &vecMin, &vecMax);
+  laststore = _mm_set1_epi16(-1);
+  output += store_unique(laststore, vecMin, output);
+  laststore = vecMin;
+  if ((pos1 < len1) && (pos2 < len2)) {
+    uint16_t curA, curB;
+    curA = array1[8 * pos1];
+    curB = array2[8 * pos2];
+    while (true) {
+      if (curA <= curB) {
+        V = _mm_lddqu_si128((const __m128i *)array1 + pos1);
+        pos1++;
+        if (pos1 < len1) {
+          curA = array1[8 * pos1];
+        } else {
+          break;
+        }
+      } else {
+        V = _mm_lddqu_si128((const __m128i *)array2 + pos2);
+        pos2++;
+        if (pos2 < len2) {
+          curB = array2[8 * pos2];
+        } else {
+          break;
+        }
+      }
+      sse_merge(&V, &vecMax, &vecMin, &vecMax);
+      output += store_unique(laststore, vecMin, output);
+      laststore = vecMin;
     }
-    __m128i vA, vB, V, vecMin, vecMax;
-    __m128i laststore;
-    uint16_t *initoutput = output;
-    uint32_t len1 = length1 / 8;
-    uint32_t len2 = length2 / 8;
-    uint32_t pos1 = 0;
-    uint32_t pos2 = 0;
-    // we start the machine
-    vA = _mm_lddqu_si128((const __m128i *)array1 + pos1);
-    pos1++;
-    vB = _mm_lddqu_si128((const __m128i *)array2 + pos2);
-    pos2++;
-    sse_merge(&vA, &vB, &vecMin, &vecMax);
-    laststore = _mm_set1_epi16(-1);
+    sse_merge(&V, &vecMax, &vecMin, &vecMax);
     output += store_unique(laststore, vecMin, output);
     laststore = vecMin;
-    if ((pos1 < len1) && (pos2 < len2)) {
-        uint16_t curA, curB;
-        curA = array1[8 * pos1];
-        curB = array2[8 * pos2];
-        while (true) {
-            if (curA <= curB) {
-                V = _mm_lddqu_si128((const __m128i *)array1 + pos1);
-                pos1++;
-                if (pos1 < len1) {
-                    curA = array1[8 * pos1];
-                } else {
-                    break;
-                }
-            } else {
-                V = _mm_lddqu_si128((const __m128i *)array2 + pos2);
-                pos2++;
-                if (pos2 < len2) {
-                    curB = array2[8 * pos2];
-                } else {
-                    break;
-                }
-            }
-            sse_merge(&V, &vecMax, &vecMin, &vecMax);
-            output += store_unique(laststore, vecMin, output);
-            laststore = vecMin;
-        }
-        sse_merge(&V, &vecMax, &vecMin, &vecMax);
-        output += store_unique(laststore, vecMin, output);
-        laststore = vecMin;
-    }
-    // we finish the rest off using a scalar algorithm
-    // could be improved?
-    //
-    // copy the small end on a tmp buffer
-    uint32_t len = (uint32_t)(output - initoutput);
-    uint16_t buffer[16];
-    uint32_t leftoversize = store_unique(laststore, vecMax, buffer);
-    if (pos1 == len1) {
-        memcpy(buffer + leftoversize, array1 + 8 * pos1,
-               (length1 - 8 * len1) * sizeof(uint16_t));
-        leftoversize += length1 - 8 * len1;
-        qsort(buffer, leftoversize, sizeof(uint16_t), uint16_compare);
+  }
+  // we finish the rest off using a scalar algorithm
+  // could be improved?
+  //
+  // copy the small end on a tmp buffer
+  uint32_t len = (uint32_t)(output - initoutput);
+  uint16_t buffer[16];
+  uint32_t leftoversize = store_unique(laststore, vecMax, buffer);
+  if (pos1 == len1) {
+    memcpy(buffer + leftoversize, array1 + 8 * pos1,
+           (length1 - 8 * len1) * sizeof(uint16_t));
+    leftoversize += length1 - 8 * len1;
+    qsort(buffer, leftoversize, sizeof(uint16_t), uint16_compare);
 
-        leftoversize = unique(buffer, leftoversize);
-        len += union_uint16(buffer, leftoversize, array2 + 8 * pos2,
-                            length2 - 8 * pos2, output);
-    } else {
-        memcpy(buffer + leftoversize, array2 + 8 * pos2,
-               (length2 - 8 * len2) * sizeof(uint16_t));
-        leftoversize += length2 - 8 * len2;
-        qsort(buffer, leftoversize, sizeof(uint16_t), uint16_compare);
-        leftoversize = unique(buffer, leftoversize);
-        len += union_uint16(buffer, leftoversize, array1 + 8 * pos1,
-                            length1 - 8 * pos1, output);
-    }
-    return len;
+    leftoversize = unique(buffer, leftoversize);
+    len += union_uint16(buffer, leftoversize, array2 + 8 * pos2,
+                        length2 - 8 * pos2, output);
+  } else {
+    memcpy(buffer + leftoversize, array2 + 8 * pos2,
+           (length2 - 8 * len2) * sizeof(uint16_t));
+    leftoversize += length2 - 8 * len2;
+    qsort(buffer, leftoversize, sizeof(uint16_t), uint16_compare);
+    leftoversize = unique(buffer, leftoversize);
+    len += union_uint16(buffer, leftoversize, array1 + 8 * pos1,
+                        length1 - 8 * pos1, output);
+  }
+  return len;
 }
 
 /**
@@ -1349,7 +1343,7 @@ static inline uint32_t unique_xor(uint16_t *out, uint32_t len) {
     if (out[i] != out[i - 1]) {
       out[pos++] = out[i];
     } else
-      pos--; // if it is identical to previous, delete it
+      pos--;  // if it is identical to previous, delete it
   }
   return pos;
 }
@@ -1423,19 +1417,16 @@ uint32_t xor_vector16(const uint16_t *__restrict__ array1, uint32_t length1,
   int leftoversize = store_unique_xor(laststore, vecMax, buffer);
   uint16_t vec7 = _mm_extract_epi16(vecMax, 7);
   uint16_t vec6 = _mm_extract_epi16(vecMax, 6);
-  if (vec7 != vec6)
-    buffer[leftoversize++] = vec7;
+  if (vec7 != vec6) buffer[leftoversize++] = vec7;
   if (pos1 == len1) {
-
     memcpy(buffer + leftoversize, array1 + 8 * pos1,
            (length1 - 8 * len1) * sizeof(uint16_t));
     leftoversize += length1 - 8 * len1;
-    if (leftoversize == 0) { // trivial case
+    if (leftoversize == 0) {  // trivial case
       memcpy(output, array2 + 8 * pos2,
              (length2 - 8 * pos2) * sizeof(uint16_t));
       len += (length2 - 8 * pos2);
     } else {
-
       qsort(buffer, leftoversize, sizeof(uint16_t), uint16_compare);
       leftoversize = unique_xor(buffer, leftoversize);
       len += xor_uint16(buffer, leftoversize, array2 + 8 * pos2,
@@ -1445,7 +1436,7 @@ uint32_t xor_vector16(const uint16_t *__restrict__ array1, uint32_t length1,
     memcpy(buffer + leftoversize, array2 + 8 * pos2,
            (length2 - 8 * len2) * sizeof(uint16_t));
     leftoversize += length2 - 8 * len2;
-    if (leftoversize == 0) { // trivial case
+    if (leftoversize == 0) {  // trivial case
       memcpy(output, array1 + 8 * pos1,
              (length1 - 8 * pos1) * sizeof(uint16_t));
       len += (length1 - 8 * pos1);
@@ -1463,100 +1454,99 @@ uint32_t xor_vector16(const uint16_t *__restrict__ array1, uint32_t length1,
  * End of SIMD 16-bit XOR code
  */
 
-
 #endif  // IS_X64
 
 size_t union_uint32(const uint32_t *set_1, size_t size_1, const uint32_t *set_2,
                     size_t size_2, uint32_t *buffer) {
-    size_t pos = 0, idx_1 = 0, idx_2 = 0;
+  size_t pos = 0, idx_1 = 0, idx_2 = 0;
 
-    if (0 == size_2) {
-        memcpy(buffer, set_1, size_1 * sizeof(uint32_t));
-        return size_1;
+  if (0 == size_2) {
+    memcpy(buffer, set_1, size_1 * sizeof(uint32_t));
+    return size_1;
+  }
+  if (0 == size_1) {
+    memcpy(buffer, set_2, size_2 * sizeof(uint32_t));
+    return size_2;
+  }
+
+  uint32_t val_1 = set_1[idx_1], val_2 = set_2[idx_2];
+
+  while (true) {
+    if (val_1 < val_2) {
+      buffer[pos++] = val_1;
+      ++idx_1;
+      if (idx_1 >= size_1) break;
+      val_1 = set_1[idx_1];
+    } else if (val_2 < val_1) {
+      buffer[pos++] = val_2;
+      ++idx_2;
+      if (idx_2 >= size_2) break;
+      val_2 = set_2[idx_2];
+    } else {
+      buffer[pos++] = val_1;
+      ++idx_1;
+      ++idx_2;
+      if (idx_1 >= size_1 || idx_2 >= size_2) break;
+      val_1 = set_1[idx_1];
+      val_2 = set_2[idx_2];
     }
-    if (0 == size_1) {
-        memcpy(buffer, set_2, size_2 * sizeof(uint32_t));
-        return size_2;
-    }
+  }
 
-    uint32_t val_1 = set_1[idx_1], val_2 = set_2[idx_2];
+  if (idx_1 < size_1) {
+    const size_t n_elems = size_1 - idx_1;
+    memcpy(buffer + pos, set_1 + idx_1, n_elems * sizeof(uint32_t));
+    pos += n_elems;
+  } else if (idx_2 < size_2) {
+    const size_t n_elems = size_2 - idx_2;
+    memcpy(buffer + pos, set_2 + idx_2, n_elems * sizeof(uint32_t));
+    pos += n_elems;
+  }
 
-    while (true) {
-        if (val_1 < val_2) {
-            buffer[pos++] = val_1;
-            ++idx_1;
-            if (idx_1 >= size_1) break;
-            val_1 = set_1[idx_1];
-        } else if (val_2 < val_1) {
-            buffer[pos++] = val_2;
-            ++idx_2;
-            if (idx_2 >= size_2) break;
-            val_2 = set_2[idx_2];
-        } else {
-            buffer[pos++] = val_1;
-            ++idx_1;
-            ++idx_2;
-            if (idx_1 >= size_1 || idx_2 >= size_2) break;
-            val_1 = set_1[idx_1];
-            val_2 = set_2[idx_2];
-        }
-    }
-
-    if (idx_1 < size_1) {
-        const size_t n_elems = size_1 - idx_1;
-        memcpy(buffer + pos, set_1 + idx_1, n_elems * sizeof(uint32_t));
-        pos += n_elems;
-    } else if (idx_2 < size_2) {
-        const size_t n_elems = size_2 - idx_2;
-        memcpy(buffer + pos, set_2 + idx_2, n_elems * sizeof(uint32_t));
-        pos += n_elems;
-    }
-
-    return pos;
+  return pos;
 }
 
 size_t union_uint32_card(const uint32_t *set_1, size_t size_1,
                          const uint32_t *set_2, size_t size_2) {
-    size_t pos = 0, idx_1 = 0, idx_2 = 0;
+  size_t pos = 0, idx_1 = 0, idx_2 = 0;
 
-    if (0 == size_2) {
-        return size_1;
-    }
-    if (0 == size_1) {
-        return size_2;
-    }
+  if (0 == size_2) {
+    return size_1;
+  }
+  if (0 == size_1) {
+    return size_2;
+  }
 
-    uint32_t val_1 = set_1[idx_1], val_2 = set_2[idx_2];
+  uint32_t val_1 = set_1[idx_1], val_2 = set_2[idx_2];
 
-    while (true) {
-        if (val_1 < val_2) {
-            ++idx_1;
-            ++pos;
-            if (idx_1 >= size_1) break;
-            val_1 = set_1[idx_1];
-        } else if (val_2 < val_1) {
-            ++idx_2;
-            ++pos;
-            if (idx_2 >= size_2) break;
-            val_2 = set_2[idx_2];
-        } else {
-            ++idx_1;
-            ++idx_2;
-            ++pos;
-            if (idx_1 >= size_1 || idx_2 >= size_2) break;
-            val_1 = set_1[idx_1];
-            val_2 = set_2[idx_2];
-        }
+  while (true) {
+    if (val_1 < val_2) {
+      ++idx_1;
+      ++pos;
+      if (idx_1 >= size_1) break;
+      val_1 = set_1[idx_1];
+    } else if (val_2 < val_1) {
+      ++idx_2;
+      ++pos;
+      if (idx_2 >= size_2) break;
+      val_2 = set_2[idx_2];
+    } else {
+      ++idx_1;
+      ++idx_2;
+      ++pos;
+      if (idx_1 >= size_1 || idx_2 >= size_2) break;
+      val_1 = set_1[idx_1];
+      val_2 = set_2[idx_2];
     }
+  }
 
-    if (idx_1 < size_1) {
-        const size_t n_elems = size_1 - idx_1;
-        pos += n_elems;
-    } else if (idx_2 < size_2) {
-        const size_t n_elems = size_2 - idx_2;
-        pos += n_elems;
-    }
-    return pos;
+  if (idx_1 < size_1) {
+    const size_t n_elems = size_1 - idx_1;
+    pos += n_elems;
+  } else if (idx_2 < size_2) {
+    const size_t n_elems = size_2 - idx_2;
+    pos += n_elems;
+  }
+  return pos;
 }
 /* end file src/array_util.c */
 /* begin file src/bitset_util.c */
@@ -1565,7 +1555,6 @@ size_t union_uint32_card(const uint32_t *set_1, size_t size_1,
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 
 #if defined(IS_X64) || defined(USEAVX)
 
@@ -1847,7 +1836,8 @@ static uint32_t vecDecodeTable[256][8] ALIGNED(32) = {
 
 #ifdef IS_X64
 // same as vecDecodeTable but in 16 bits
-ALIGNED(32) static uint16_t vecDecodeTable_uint16[256][8] = {
+ALIGNED(32)
+static uint16_t vecDecodeTable_uint16[256][8] = {
     {0, 0, 0, 0, 0, 0, 0, 0}, /* 0x00 (00000000) */
     {1, 0, 0, 0, 0, 0, 0, 0}, /* 0x01 (00000001) */
     {2, 0, 0, 0, 0, 0, 0, 0}, /* 0x02 (00000010) */
@@ -2110,94 +2100,95 @@ ALIGNED(32) static uint16_t vecDecodeTable_uint16[256][8] = {
 
 #ifdef USEAVX
 
-size_t bitset_extract_setbits_avx2(uint64_t *array, size_t length,
-                                   void *vout, size_t outcapacity,
-                                   uint32_t base) {
-    uint32_t *out = (uint32_t *) vout;
-    uint32_t *initout = out;
-    __m256i baseVec = _mm256_set1_epi32(base - 1);
-    __m256i incVec = _mm256_set1_epi32(64);
-    __m256i add8 = _mm256_set1_epi32(8);
-    uint32_t *safeout = out + outcapacity;
-    size_t i = 0;
-    for (; (i < length) && (out + 64 <= safeout); ++i) {
-        uint64_t w = array[i];
-        if (w == 0) {
-            baseVec = _mm256_add_epi32(baseVec, incVec);
-        } else {
-            for (int k = 0; k < 4; ++k) {
-                uint8_t byteA = (uint8_t)w;
-                uint8_t byteB = (uint8_t)(w >> 8);
-                w >>= 16;
-                __m256i vecA =
-                    _mm256_load_si256((const __m256i *)vecDecodeTable[byteA]);
-                __m256i vecB =
-                    _mm256_load_si256((const __m256i *)vecDecodeTable[byteB]);
-                uint8_t advanceA = lengthTable[byteA];
-                uint8_t advanceB = lengthTable[byteB];
-                vecA = _mm256_add_epi32(baseVec, vecA);
-                baseVec = _mm256_add_epi32(baseVec, add8);
-                vecB = _mm256_add_epi32(baseVec, vecB);
-                baseVec = _mm256_add_epi32(baseVec, add8);
-                _mm256_storeu_si256((__m256i *)out, vecA);
-                out += advanceA;
-                _mm256_storeu_si256((__m256i *)out, vecB);
-                out += advanceB;
-            }
-        }
+size_t bitset_extract_setbits_avx2(uint64_t *array, size_t length, void *vout,
+                                   size_t outcapacity, uint32_t base) {
+  uint32_t *out = (uint32_t *)vout;
+  uint32_t *initout = out;
+  __m256i baseVec = _mm256_set1_epi32(base - 1);
+  __m256i incVec = _mm256_set1_epi32(64);
+  __m256i add8 = _mm256_set1_epi32(8);
+  uint32_t *safeout = out + outcapacity;
+  size_t i = 0;
+  for (; (i < length) && (out + 64 <= safeout); ++i) {
+    uint64_t w = array[i];
+    if (w == 0) {
+      baseVec = _mm256_add_epi32(baseVec, incVec);
+    } else {
+      for (int k = 0; k < 4; ++k) {
+        uint8_t byteA = (uint8_t)w;
+        uint8_t byteB = (uint8_t)(w >> 8);
+        w >>= 16;
+        __m256i vecA =
+            _mm256_load_si256((const __m256i *)vecDecodeTable[byteA]);
+        __m256i vecB =
+            _mm256_load_si256((const __m256i *)vecDecodeTable[byteB]);
+        uint8_t advanceA = lengthTable[byteA];
+        uint8_t advanceB = lengthTable[byteB];
+        vecA = _mm256_add_epi32(baseVec, vecA);
+        baseVec = _mm256_add_epi32(baseVec, add8);
+        vecB = _mm256_add_epi32(baseVec, vecB);
+        baseVec = _mm256_add_epi32(baseVec, add8);
+        _mm256_storeu_si256((__m256i *)out, vecA);
+        out += advanceA;
+        _mm256_storeu_si256((__m256i *)out, vecB);
+        out += advanceB;
+      }
     }
-    base += i * 64;
-    for (; (i < length) && (out < safeout); ++i) {
-        uint64_t w = array[i];
-        while ((w != 0) && (out < safeout)) {
-            uint64_t t = w & (~w + 1);
-            int r = __builtin_ctzll(w);
-            uint32_t val = r + base;
-            memcpy(out, &val, sizeof(uint32_t)); // should be compiled as a MOV on x64
-            out++;
-            w ^= t;
-        }
-        base += 64;
+  }
+  base += i * 64;
+  for (; (i < length) && (out < safeout); ++i) {
+    uint64_t w = array[i];
+    while ((w != 0) && (out < safeout)) {
+      uint64_t t = w & (~w + 1);
+      int r = __builtin_ctzll(w);
+      uint32_t val = r + base;
+      memcpy(out, &val,
+             sizeof(uint32_t));  // should be compiled as a MOV on x64
+      out++;
+      w ^= t;
     }
-    return out - initout;
+    base += 64;
+  }
+  return out - initout;
 }
 #endif  // USEAVX
 
 size_t bitset_extract_setbits(uint64_t *bitset, size_t length, void *vout,
                               uint32_t base) {
-    int outpos = 0;
-    uint32_t * out = (uint32_t *) vout;
-    for (size_t i = 0; i < length; ++i) {
-        uint64_t w = bitset[i];
-        while (w != 0) {
-            uint64_t t = w & (~w + 1);
-            int r = __builtin_ctzll(w);
-            uint32_t val = r + base;
-            memcpy(out + outpos, &val, sizeof(uint32_t)); // should be compiled as a MOV on x64
-            outpos ++;
-            w ^= t;
-        }
-        base += 64;
+  int outpos = 0;
+  uint32_t *out = (uint32_t *)vout;
+  for (size_t i = 0; i < length; ++i) {
+    uint64_t w = bitset[i];
+    while (w != 0) {
+      uint64_t t = w & (~w + 1);
+      int r = __builtin_ctzll(w);
+      uint32_t val = r + base;
+      memcpy(out + outpos, &val,
+             sizeof(uint32_t));  // should be compiled as a MOV on x64
+      outpos++;
+      w ^= t;
     }
-    return outpos;
+    base += 64;
+  }
+  return outpos;
 }
 
 size_t bitset_extract_intersection_setbits_uint16(const uint64_t *bitset1,
                                                   const uint64_t *bitset2,
                                                   size_t length, uint16_t *out,
                                                   uint16_t base) {
-    int outpos = 0;
-    for (size_t i = 0; i < length; ++i) {
-        uint64_t w = bitset1[i] & bitset2[i];
-        while (w != 0) {
-            uint64_t t = w & (~w + 1);
-            int r = __builtin_ctzll(w);
-            out[outpos++] = r + base;
-            w ^= t;
-        }
-        base += 64;
+  int outpos = 0;
+  for (size_t i = 0; i < length; ++i) {
+    uint64_t w = bitset1[i] & bitset2[i];
+    while (w != 0) {
+      uint64_t t = w & (~w + 1);
+      int r = __builtin_ctzll(w);
+      out[outpos++] = r + base;
+      w ^= t;
     }
-    return outpos;
+    base += 64;
+  }
+  return outpos;
 }
 
 #ifdef IS_X64
@@ -2216,52 +2207,52 @@ size_t bitset_extract_intersection_setbits_uint16(const uint64_t *bitset1,
 size_t bitset_extract_setbits_sse_uint16(const uint64_t *bitset, size_t length,
                                          uint16_t *out, size_t outcapacity,
                                          uint16_t base) {
-    uint16_t *initout = out;
-    __m128i baseVec = _mm_set1_epi16(base - 1);
-    __m128i incVec = _mm_set1_epi16(64);
-    __m128i add8 = _mm_set1_epi16(8);
-    uint16_t *safeout = out + outcapacity;
-    const int numberofbytes = 2;  // process two bytes at a time
-    size_t i = 0;
-    for (; (i < length) && (out + numberofbytes * 8 <= safeout); ++i) {
-        uint64_t w = bitset[i];
-        if (w == 0) {
-            baseVec = _mm_add_epi16(baseVec, incVec);
-        } else {
-            for (int k = 0; k < 4; ++k) {
-                uint8_t byteA = (uint8_t)w;
-                uint8_t byteB = (uint8_t)(w >> 8);
-                w >>= 16;
-                __m128i vecA = _mm_load_si128(
-                    (const __m128i *)vecDecodeTable_uint16[byteA]);
-                __m128i vecB = _mm_load_si128(
-                    (const __m128i *)vecDecodeTable_uint16[byteB]);
-                uint8_t advanceA = lengthTable[byteA];
-                uint8_t advanceB = lengthTable[byteB];
-                vecA = _mm_add_epi16(baseVec, vecA);
-                baseVec = _mm_add_epi16(baseVec, add8);
-                vecB = _mm_add_epi16(baseVec, vecB);
-                baseVec = _mm_add_epi16(baseVec, add8);
-                _mm_storeu_si128((__m128i *)out, vecA);
-                out += advanceA;
-                _mm_storeu_si128((__m128i *)out, vecB);
-                out += advanceB;
-            }
-        }
+  uint16_t *initout = out;
+  __m128i baseVec = _mm_set1_epi16(base - 1);
+  __m128i incVec = _mm_set1_epi16(64);
+  __m128i add8 = _mm_set1_epi16(8);
+  uint16_t *safeout = out + outcapacity;
+  const int numberofbytes = 2;  // process two bytes at a time
+  size_t i = 0;
+  for (; (i < length) && (out + numberofbytes * 8 <= safeout); ++i) {
+    uint64_t w = bitset[i];
+    if (w == 0) {
+      baseVec = _mm_add_epi16(baseVec, incVec);
+    } else {
+      for (int k = 0; k < 4; ++k) {
+        uint8_t byteA = (uint8_t)w;
+        uint8_t byteB = (uint8_t)(w >> 8);
+        w >>= 16;
+        __m128i vecA =
+            _mm_load_si128((const __m128i *)vecDecodeTable_uint16[byteA]);
+        __m128i vecB =
+            _mm_load_si128((const __m128i *)vecDecodeTable_uint16[byteB]);
+        uint8_t advanceA = lengthTable[byteA];
+        uint8_t advanceB = lengthTable[byteB];
+        vecA = _mm_add_epi16(baseVec, vecA);
+        baseVec = _mm_add_epi16(baseVec, add8);
+        vecB = _mm_add_epi16(baseVec, vecB);
+        baseVec = _mm_add_epi16(baseVec, add8);
+        _mm_storeu_si128((__m128i *)out, vecA);
+        out += advanceA;
+        _mm_storeu_si128((__m128i *)out, vecB);
+        out += advanceB;
+      }
     }
-    base += i * 64;
-    for (; (i < length) && (out < safeout); ++i) {
-        uint64_t w = bitset[i];
-        while ((w != 0) && (out < safeout)) {
-            uint64_t t = w & -w;
-            int r = __builtin_ctzll(w);
-            *out = r + base;
-            out++;
-            w ^= t;
-        }
-        base += 64;
+  }
+  base += i * 64;
+  for (; (i < length) && (out < safeout); ++i) {
+    uint64_t w = bitset[i];
+    while ((w != 0) && (out < safeout)) {
+      uint64_t t = w & -w;
+      int r = __builtin_ctzll(w);
+      *out = r + base;
+      out++;
+      w ^= t;
     }
-    return out - initout;
+    base += 64;
+  }
+  return out - initout;
 }
 #endif
 
@@ -2276,56 +2267,56 @@ size_t bitset_extract_setbits_sse_uint16(const uint64_t *bitset, size_t length,
  */
 size_t bitset_extract_setbits_uint16(const uint64_t *bitset, size_t length,
                                      uint16_t *out, uint16_t base) {
-    int outpos = 0;
-    for (size_t i = 0; i < length; ++i) {
-        uint64_t w = bitset[i];
-        while (w != 0) {
-            uint64_t t = w & (~w + 1);
-            int r = __builtin_ctzll(w);
-            out[outpos++] = r + base;
-            w ^= t;
-        }
-        base += 64;
+  int outpos = 0;
+  for (size_t i = 0; i < length; ++i) {
+    uint64_t w = bitset[i];
+    while (w != 0) {
+      uint64_t t = w & (~w + 1);
+      int r = __builtin_ctzll(w);
+      out[outpos++] = r + base;
+      w ^= t;
     }
-    return outpos;
+    base += 64;
+  }
+  return outpos;
 }
 
 #if defined(ASMBITMANIPOPTIMIZATION)
 
 uint64_t bitset_set_list_withcard(void *bitset, uint64_t card,
                                   const uint16_t *list, uint64_t length) {
-    uint64_t offset, load, pos;
-    uint64_t shift = 6;
-    const uint16_t *end = list + length;
-    if (!length) return card;
-    // TODO: could unroll for performance, see bitset_set_list
-    // bts is not available as an intrinsic in GCC
-    __asm volatile(
-        "1:\n"
-        "movzwq (%[list]), %[pos]\n"
-        "shrx %[shift], %[pos], %[offset]\n"
-        "mov (%[bitset],%[offset],8), %[load]\n"
-        "bts %[pos], %[load]\n"
-        "mov %[load], (%[bitset],%[offset],8)\n"
-        "sbb $-1, %[card]\n"
-        "add $2, %[list]\n"
-        "cmp %[list], %[end]\n"
-        "jnz 1b"
-        : [card] "+&r"(card), [list] "+&r"(list), [load] "=&r"(load),
-          [pos] "=&r"(pos), [offset] "=&r"(offset)
-        : [end] "r"(end), [bitset] "r"(bitset), [shift] "r"(shift));
-    return card;
+  uint64_t offset, load, pos;
+  uint64_t shift = 6;
+  const uint16_t *end = list + length;
+  if (!length) return card;
+  // TODO: could unroll for performance, see bitset_set_list
+  // bts is not available as an intrinsic in GCC
+  __asm volatile(
+      "1:\n"
+      "movzwq (%[list]), %[pos]\n"
+      "shrx %[shift], %[pos], %[offset]\n"
+      "mov (%[bitset],%[offset],8), %[load]\n"
+      "bts %[pos], %[load]\n"
+      "mov %[load], (%[bitset],%[offset],8)\n"
+      "sbb $-1, %[card]\n"
+      "add $2, %[list]\n"
+      "cmp %[list], %[end]\n"
+      "jnz 1b"
+      : [card] "+&r"(card), [list] "+&r"(list), [load] "=&r"(load),
+        [pos] "=&r"(pos), [offset] "=&r"(offset)
+      : [end] "r"(end), [bitset] "r"(bitset), [shift] "r"(shift));
+  return card;
 }
 
 void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
-    uint64_t  pos;
-    const uint16_t *end = list + length;
+  uint64_t pos;
+  const uint16_t *end = list + length;
 
-    uint64_t shift = 6;
-    uint64_t offset;
-    uint64_t load;
-    for(;list + 3 < end; list += 4) {
-      pos =  list[0];
+  uint64_t shift = 6;
+  uint64_t offset;
+  uint64_t load;
+  for (; list + 3 < end; list += 4) {
+    pos = list[0];
     __asm volatile(
         "shrx %[shift], %[pos], %[offset]\n"
         "mov (%[bitset],%[offset],8), %[load]\n"
@@ -2333,7 +2324,7 @@ void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
         "mov %[load], (%[bitset],%[offset],8)"
         : [load] "=&r"(load), [offset] "=&r"(offset)
         : [bitset] "r"(bitset), [shift] "r"(shift), [pos] "r"(pos));
-      pos =  list[1];
+    pos = list[1];
     __asm volatile(
         "shrx %[shift], %[pos], %[offset]\n"
         "mov (%[bitset],%[offset],8), %[load]\n"
@@ -2341,7 +2332,7 @@ void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
         "mov %[load], (%[bitset],%[offset],8)"
         : [load] "=&r"(load), [offset] "=&r"(offset)
         : [bitset] "r"(bitset), [shift] "r"(shift), [pos] "r"(pos));
-      pos =  list[2];
+    pos = list[2];
     __asm volatile(
         "shrx %[shift], %[pos], %[offset]\n"
         "mov (%[bitset],%[offset],8), %[load]\n"
@@ -2349,7 +2340,7 @@ void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
         "mov %[load], (%[bitset],%[offset],8)"
         : [load] "=&r"(load), [offset] "=&r"(offset)
         : [bitset] "r"(bitset), [shift] "r"(shift), [pos] "r"(pos));
-      pos =  list[3];
+    pos = list[3];
     __asm volatile(
         "shrx %[shift], %[pos], %[offset]\n"
         "mov (%[bitset],%[offset],8), %[load]\n"
@@ -2357,10 +2348,10 @@ void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
         "mov %[load], (%[bitset],%[offset],8)"
         : [load] "=&r"(load), [offset] "=&r"(offset)
         : [bitset] "r"(bitset), [shift] "r"(shift), [pos] "r"(pos));
-    }
+  }
 
-    while(list != end) {
-      pos =  list[0];
+  while (list != end) {
+    pos = list[0];
     __asm volatile(
         "shrx %[shift], %[pos], %[offset]\n"
         "mov (%[bitset],%[offset],8), %[load]\n"
@@ -2368,84 +2359,83 @@ void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
         "mov %[load], (%[bitset],%[offset],8)"
         : [load] "=&r"(load), [offset] "=&r"(offset)
         : [bitset] "r"(bitset), [shift] "r"(shift), [pos] "r"(pos));
-      list ++;
-    }
-
+    list++;
+  }
 }
 
 uint64_t bitset_clear_list(void *bitset, uint64_t card, const uint16_t *list,
                            uint64_t length) {
-    uint64_t offset, load, pos;
-    uint64_t shift = 6;
-    const uint16_t *end = list + length;
-    if (!length) return card;
-    // btr is not available as an intrinsic in GCC
-    __asm volatile(
-        "1:\n"
-        "movzwq (%[list]), %[pos]\n"
-        "shrx %[shift], %[pos], %[offset]\n"
-        "mov (%[bitset],%[offset],8), %[load]\n"
-        "btr %[pos], %[load]\n"
-        "mov %[load], (%[bitset],%[offset],8)\n"
-        "sbb $0, %[card]\n"
-        "add $2, %[list]\n"
-        "cmp %[list], %[end]\n"
-        "jnz 1b"
-        : [card] "+&r"(card), [list] "+&r"(list), [load] "=&r"(load),
-          [pos] "=&r"(pos), [offset] "=&r"(offset)
-        : [end] "r"(end), [bitset] "r"(bitset), [shift] "r"(shift)
-        :
-        /* clobbers */ "memory");
-    return card;
+  uint64_t offset, load, pos;
+  uint64_t shift = 6;
+  const uint16_t *end = list + length;
+  if (!length) return card;
+  // btr is not available as an intrinsic in GCC
+  __asm volatile(
+      "1:\n"
+      "movzwq (%[list]), %[pos]\n"
+      "shrx %[shift], %[pos], %[offset]\n"
+      "mov (%[bitset],%[offset],8), %[load]\n"
+      "btr %[pos], %[load]\n"
+      "mov %[load], (%[bitset],%[offset],8)\n"
+      "sbb $0, %[card]\n"
+      "add $2, %[list]\n"
+      "cmp %[list], %[end]\n"
+      "jnz 1b"
+      : [card] "+&r"(card), [list] "+&r"(list), [load] "=&r"(load),
+        [pos] "=&r"(pos), [offset] "=&r"(offset)
+      : [end] "r"(end), [bitset] "r"(bitset), [shift] "r"(shift)
+      :
+      /* clobbers */ "memory");
+  return card;
 }
 
 #else
 uint64_t bitset_clear_list(void *bitset, uint64_t card, const uint16_t *list,
                            uint64_t length) {
-    uint64_t offset, load, newload, pos, index;
-    const uint16_t *end = list + length;
-    while (list != end) {
-        pos = *(const uint16_t *)list;
-        offset = pos >> 6;
-        index = pos % 64;
-        load = ((uint64_t *)bitset)[offset];
-        newload = load & ~(UINT64_C(1) << index);
-        card -= (load ^ newload) >> index;
-        ((uint64_t *)bitset)[offset] = newload;
-        list++;
-    }
-    return card;
+  uint64_t offset, load, newload, pos, index;
+  const uint16_t *end = list + length;
+  while (list != end) {
+    pos = *(const uint16_t *)list;
+    offset = pos >> 6;
+    index = pos % 64;
+    load = ((uint64_t *)bitset)[offset];
+    newload = load & ~(UINT64_C(1) << index);
+    card -= (load ^ newload) >> index;
+    ((uint64_t *)bitset)[offset] = newload;
+    list++;
+  }
+  return card;
 }
 
 uint64_t bitset_set_list_withcard(void *bitset, uint64_t card,
                                   const uint16_t *list, uint64_t length) {
-    uint64_t offset, load, newload, pos, index;
-    const uint16_t *end = list + length;
-    while (list != end) {
-        pos = *(const uint16_t *)list;
-        offset = pos >> 6;
-        index = pos % 64;
-        load = ((uint64_t *)bitset)[offset];
-        newload = load | (UINT64_C(1) << index);
-        card += (load ^ newload) >> index;
-        ((uint64_t *)bitset)[offset] = newload;
-        list++;
-    }
-    return card;
+  uint64_t offset, load, newload, pos, index;
+  const uint16_t *end = list + length;
+  while (list != end) {
+    pos = *(const uint16_t *)list;
+    offset = pos >> 6;
+    index = pos % 64;
+    load = ((uint64_t *)bitset)[offset];
+    newload = load | (UINT64_C(1) << index);
+    card += (load ^ newload) >> index;
+    ((uint64_t *)bitset)[offset] = newload;
+    list++;
+  }
+  return card;
 }
 
 void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
-    uint64_t offset, load, newload, pos, index;
-    const uint16_t *end = list + length;
-    while (list != end) {
-        pos = *(const uint16_t *)list;
-        offset = pos >> 6;
-        index = pos % 64;
-        load = ((uint64_t *)bitset)[offset];
-        newload = load | (UINT64_C(1) << index);
-        ((uint64_t *)bitset)[offset] = newload;
-        list++;
-    }
+  uint64_t offset, load, newload, pos, index;
+  const uint16_t *end = list + length;
+  while (list != end) {
+    pos = *(const uint16_t *)list;
+    offset = pos >> 6;
+    index = pos % 64;
+    load = ((uint64_t *)bitset)[offset];
+    newload = load | (UINT64_C(1) << index);
+    ((uint64_t *)bitset)[offset] = newload;
+    list++;
+  }
 }
 
 #endif
@@ -2455,35 +2445,34 @@ void bitset_set_list(void *bitset, const uint16_t *list, uint64_t length) {
 
 uint64_t bitset_flip_list_withcard(void *bitset, uint64_t card,
                                    const uint16_t *list, uint64_t length) {
-    uint64_t offset, load, newload, pos, index;
-    const uint16_t *end = list + length;
-    while (list != end) {
-        pos = *(const uint16_t *)list;
-        offset = pos >> 6;
-        index = pos % 64;
-        load = ((uint64_t *)bitset)[offset];
-        newload = load ^ (UINT64_C(1) << index);
-        // todo: is a branch here all that bad?
-        card +=
-            (1 - 2 * (((UINT64_C(1) << index) & load) >> index));  // +1 or -1
-        ((uint64_t *)bitset)[offset] = newload;
-        list++;
-    }
-    return card;
+  uint64_t offset, load, newload, pos, index;
+  const uint16_t *end = list + length;
+  while (list != end) {
+    pos = *(const uint16_t *)list;
+    offset = pos >> 6;
+    index = pos % 64;
+    load = ((uint64_t *)bitset)[offset];
+    newload = load ^ (UINT64_C(1) << index);
+    // todo: is a branch here all that bad?
+    card += (1 - 2 * (((UINT64_C(1) << index) & load) >> index));  // +1 or -1
+    ((uint64_t *)bitset)[offset] = newload;
+    list++;
+  }
+  return card;
 }
 
 void bitset_flip_list(void *bitset, const uint16_t *list, uint64_t length) {
-    uint64_t offset, load, newload, pos, index;
-    const uint16_t *end = list + length;
-    while (list != end) {
-        pos = *(const uint16_t *)list;
-        offset = pos >> 6;
-        index = pos % 64;
-        load = ((uint64_t *)bitset)[offset];
-        newload = load ^ (UINT64_C(1) << index);
-        ((uint64_t *)bitset)[offset] = newload;
-        list++;
-    }
+  uint64_t offset, load, newload, pos, index;
+  const uint16_t *end = list + length;
+  while (list != end) {
+    pos = *(const uint16_t *)list;
+    offset = pos >> 6;
+    index = pos % 64;
+    load = ((uint64_t *)bitset)[offset];
+    newload = load ^ (UINT64_C(1) << index);
+    ((uint64_t *)bitset)[offset] = newload;
+    list++;
+  }
 }
 /* end file src/bitset_util.c */
 /* begin file src/containers/array.c */
@@ -2496,11 +2485,12 @@ void bitset_flip_list(void *bitset, const uint16_t *list, uint64_t length) {
 #include <stdio.h>
 #include <stdlib.h>
 
-extern inline uint16_t array_container_minimum(const array_container_t *arr) ;
+extern inline uint16_t array_container_minimum(const array_container_t *arr);
 extern inline uint16_t array_container_maximum(const array_container_t *arr);
-extern inline int array_container_rank(const array_container_t *arr, uint16_t x) ;
+extern inline int array_container_rank(const array_container_t *arr,
+                                       uint16_t x);
 extern inline bool array_container_contains(const array_container_t *arr,
-                                             uint16_t pos);
+                                            uint16_t pos);
 extern int array_container_cardinality(const array_container_t *array);
 extern bool array_container_nonzero_cardinality(const array_container_t *array);
 extern void array_container_clear(array_container_t *array);
@@ -2510,72 +2500,69 @@ extern bool array_container_full(const array_container_t *array);
 
 /* Create a new array with capacity size. Return NULL in case of failure. */
 array_container_t *array_container_create_given_capacity(int32_t size) {
-    array_container_t *container;
+  array_container_t *container;
 
-    if ((container = (array_container_t *)malloc(sizeof(array_container_t))) ==
-        NULL) {
-        return NULL;
-    }
+  if ((container = (array_container_t *)malloc(sizeof(array_container_t))) ==
+      NULL) {
+    return NULL;
+  }
 
-    if ((container->array = (uint16_t *)malloc(sizeof(uint16_t) * size)) ==
-        NULL) {
-        free(container);
-        return NULL;
-    }
+  if ((container->array = (uint16_t *)malloc(sizeof(uint16_t) * size)) ==
+      NULL) {
+    free(container);
+    return NULL;
+  }
 
-    container->capacity = size;
-    container->cardinality = 0;
+  container->capacity = size;
+  container->cardinality = 0;
 
-    return container;
+  return container;
 }
 
 /* Create a new array. Return NULL in case of failure. */
 array_container_t *array_container_create() {
-    return array_container_create_given_capacity(ARRAY_DEFAULT_INIT_SIZE);
+  return array_container_create_given_capacity(ARRAY_DEFAULT_INIT_SIZE);
 }
 
 /* Duplicate container */
 array_container_t *array_container_clone(const array_container_t *src) {
-    array_container_t *newcontainer =
-        array_container_create_given_capacity(src->capacity);
-    if (newcontainer == NULL) return NULL;
+  array_container_t *newcontainer =
+      array_container_create_given_capacity(src->capacity);
+  if (newcontainer == NULL) return NULL;
 
-    newcontainer->cardinality = src->cardinality;
+  newcontainer->cardinality = src->cardinality;
 
-    memcpy(newcontainer->array, src->array,
-           src->cardinality * sizeof(uint16_t));
+  memcpy(newcontainer->array, src->array, src->cardinality * sizeof(uint16_t));
 
-    return newcontainer;
+  return newcontainer;
 }
 
 int array_container_shrink_to_fit(array_container_t *src) {
-	if(src->cardinality == src->capacity) return 0; // nothing to do
-	int savings = src->capacity -  src->cardinality;
-	src->capacity = src->cardinality;
-    uint16_t *oldarray = src->array;
-    src->array =
-        (uint16_t *)realloc(oldarray, src->capacity * sizeof(uint16_t));
-    if (src->array == NULL) free(oldarray); // should never happen?
-    return savings;
+  if (src->cardinality == src->capacity) return 0;  // nothing to do
+  int savings = src->capacity - src->cardinality;
+  src->capacity = src->cardinality;
+  uint16_t *oldarray = src->array;
+  src->array = (uint16_t *)realloc(oldarray, src->capacity * sizeof(uint16_t));
+  if (src->array == NULL) free(oldarray);  // should never happen?
+  return savings;
 }
-
 
 /* Free memory. */
 void array_container_free(array_container_t *arr) {
-    free(arr->array);
-    arr->array = NULL;
-    free(arr);
+  free(arr->array);
+  arr->array = NULL;
+  free(arr);
 }
 
 static inline int32_t grow_capacity(int32_t capacity) {
-    return (capacity <= 0) ? ARRAY_DEFAULT_INIT_SIZE
-                           : capacity < 64 ? capacity * 2
-                                           : capacity < 1024 ? capacity * 3 / 2
-                                                             : capacity * 5 / 4;
+  return (capacity <= 0) ? ARRAY_DEFAULT_INIT_SIZE
+                         : capacity < 64 ? capacity * 2
+                                         : capacity < 1024 ? capacity * 3 / 2
+                                                           : capacity * 5 / 4;
 }
 
 static inline int32_t clamp(int32_t val, int32_t min, int32_t max) {
-    return ((val < min) ? min : (val > max) ? max : val);
+  return ((val < min) ? min : (val > max) ? max : val);
 }
 
 /**
@@ -2587,46 +2574,46 @@ static inline int32_t clamp(int32_t val, int32_t min, int32_t max) {
  */
 void array_container_grow(array_container_t *container, int32_t min,
                           int32_t max, bool preserve) {
-    int32_t new_capacity = clamp(grow_capacity(container->capacity), min, max);
+  int32_t new_capacity = clamp(grow_capacity(container->capacity), min, max);
 
-    // currently uses set max to INT32_MAX.  The next statement is not so useful
-    // then.
-    // if we are within 1/16th of the max, go to max
-    if (new_capacity > max - max / 16) new_capacity = max;
+  // currently uses set max to INT32_MAX.  The next statement is not so useful
+  // then.
+  // if we are within 1/16th of the max, go to max
+  if (new_capacity > max - max / 16) new_capacity = max;
 
-    container->capacity = new_capacity;
-    uint16_t *array = container->array;
+  container->capacity = new_capacity;
+  uint16_t *array = container->array;
 
-    if (preserve) {
-        container->array =
-            (uint16_t *)realloc(array, new_capacity * sizeof(uint16_t));
-        if (container->array == NULL) free(array);
-    } else {
-        free(array);
-        container->array = (uint16_t *)malloc(new_capacity * sizeof(uint16_t));
-    }
+  if (preserve) {
+    container->array =
+        (uint16_t *)realloc(array, new_capacity * sizeof(uint16_t));
+    if (container->array == NULL) free(array);
+  } else {
+    free(array);
+    container->array = (uint16_t *)malloc(new_capacity * sizeof(uint16_t));
+  }
 
-    // TODO: handle the case where realloc fails
-    assert(container->array != NULL);
+  // TODO: handle the case where realloc fails
+  assert(container->array != NULL);
 }
 
 /* Copy one container into another. We assume that they are distinct. */
 void array_container_copy(const array_container_t *src,
                           array_container_t *dst) {
-    const int32_t cardinality = src->cardinality;
-    if (cardinality > dst->capacity) {
-        array_container_grow(dst, cardinality, INT32_MAX, false);
-    }
+  const int32_t cardinality = src->cardinality;
+  if (cardinality > dst->capacity) {
+    array_container_grow(dst, cardinality, INT32_MAX, false);
+  }
 
-    dst->cardinality = cardinality;
-    memcpy(dst->array, src->array, cardinality * sizeof(uint16_t));
+  dst->cardinality = cardinality;
+  memcpy(dst->array, src->array, cardinality * sizeof(uint16_t));
 }
 
 void array_container_add_from_range(array_container_t *arr, uint32_t min,
                                     uint32_t max, uint16_t step) {
-    for (uint32_t value = min; value < max; value += step) {
-        array_container_append(arr, value);
-    }
+  for (uint32_t value = min; value < max; value += step) {
+    array_container_append(arr, value);
+  }
 }
 
 /* Computes the union of array1 and array2 and write the result to arrayout.
@@ -2635,31 +2622,29 @@ void array_container_add_from_range(array_container_t *arr, uint32_t min,
 void array_container_union(const array_container_t *array_1,
                            const array_container_t *array_2,
                            array_container_t *out) {
-    const int32_t card_1 = array_1->cardinality, card_2 = array_2->cardinality;
-    const int32_t max_cardinality = card_1 + card_2;
+  const int32_t card_1 = array_1->cardinality, card_2 = array_2->cardinality;
+  const int32_t max_cardinality = card_1 + card_2;
 
-    if (out->capacity < max_cardinality)
-        array_container_grow(out, max_cardinality, INT32_MAX, false);
+  if (out->capacity < max_cardinality)
+    array_container_grow(out, max_cardinality, INT32_MAX, false);
 #ifdef ROARING_VECTOR_OPERATIONS_ENABLED
-    // compute union with smallest array first
-    if (card_1 < card_2) {
-        out->cardinality = union_vector16(array_1->array, card_1,
-                                          array_2->array, card_2, out->array);
-    } else {
-        out->cardinality = union_vector16(array_2->array, card_2,
-                                          array_1->array, card_1, out->array);
-    }
+  // compute union with smallest array first
+  if (card_1 < card_2) {
+    out->cardinality = union_vector16(array_1->array, card_1, array_2->array,
+                                      card_2, out->array);
+  } else {
+    out->cardinality = union_vector16(array_2->array, card_2, array_1->array,
+                                      card_1, out->array);
+  }
 #else
-    // compute union with smallest array first
-    if (card_1 < card_2) {
-        out->cardinality = (int32_t)union_uint16(array_1->array, card_1,
-                                                 array_2->array, (size_t)card_2,
-                                                 out->array);
-    } else {
-        out->cardinality = (int32_t)union_uint16(array_2->array, card_2,
-                                                 array_1->array, (size_t)card_1,
-                                                 out->array);
-    }
+  // compute union with smallest array first
+  if (card_1 < card_2) {
+    out->cardinality = (int32_t)union_uint16(
+        array_1->array, card_1, array_2->array, (size_t)card_2, out->array);
+  } else {
+    out->cardinality = (int32_t)union_uint16(
+        array_2->array, card_2, array_1->array, (size_t)card_1, out->array);
+  }
 #endif
 }
 
@@ -2670,12 +2655,16 @@ void array_container_union(const array_container_t *array_1,
 void array_container_andnot(const array_container_t *array_1,
                             const array_container_t *array_2,
                             array_container_t *out) {
-    if (out->capacity < array_1->cardinality)
-        array_container_grow(out, array_1->cardinality, INT32_MAX, false);
+  if (out->capacity < array_1->cardinality)
+    array_container_grow(out, array_1->cardinality, INT32_MAX, false);
 #ifdef ROARING_VECTOR_OPERATIONS_ENABLED
-    out->cardinality = difference_vector16(array_1->array, array_1->cardinality, array_2->array, array_2->cardinality, out->array);
+  out->cardinality =
+      difference_vector16(array_1->array, array_1->cardinality, array_2->array,
+                          array_2->cardinality, out->array);
 #else
-    out->cardinality = difference_uint16(array_1->array, array_1->cardinality, array_2->array, array_2->cardinality, out->array);
+  out->cardinality =
+      difference_uint16(array_1->array, array_1->cardinality, array_2->array,
+                        array_2->cardinality, out->array);
 #endif
 }
 
@@ -2687,20 +2676,24 @@ void array_container_andnot(const array_container_t *array_1,
 void array_container_xor(const array_container_t *array_1,
                          const array_container_t *array_2,
                          array_container_t *out) {
-    const int32_t card_1 = array_1->cardinality, card_2 = array_2->cardinality;
-    const int32_t max_cardinality = card_1 + card_2;
+  const int32_t card_1 = array_1->cardinality, card_2 = array_2->cardinality;
+  const int32_t max_cardinality = card_1 + card_2;
 
-    if (out->capacity < max_cardinality)
-        array_container_grow(out, max_cardinality, INT32_MAX, false);
+  if (out->capacity < max_cardinality)
+    array_container_grow(out, max_cardinality, INT32_MAX, false);
 #ifdef ROARING_VECTOR_OPERATIONS_ENABLED
-    out->cardinality = xor_vector16(array_1->array, array_1->cardinality, array_2->array, array_2->cardinality, out->array);
+  out->cardinality =
+      xor_vector16(array_1->array, array_1->cardinality, array_2->array,
+                   array_2->cardinality, out->array);
 #else
-    out->cardinality = xor_uint16(array_1->array, array_1->cardinality, array_2->array, array_2->cardinality, out->array);
+  out->cardinality =
+      xor_uint16(array_1->array, array_1->cardinality, array_2->array,
+                 array_2->cardinality, out->array);
 #endif
 }
 
 static inline int32_t minimum_int32(int32_t a, int32_t b) {
-    return (a < b) ? a : b;
+  return (a < b) ? a : b;
 }
 
 /* computes the intersection of array1 and array2 and write the result to
@@ -2710,29 +2703,29 @@ static inline int32_t minimum_int32(int32_t a, int32_t b) {
 void array_container_intersection(const array_container_t *array1,
                                   const array_container_t *array2,
                                   array_container_t *out) {
-    int32_t card_1 = array1->cardinality, card_2 = array2->cardinality,
-            min_card = minimum_int32(card_1, card_2);
-    const int threshold = 64;  // subject to tuning
+  int32_t card_1 = array1->cardinality, card_2 = array2->cardinality,
+          min_card = minimum_int32(card_1, card_2);
+  const int threshold = 64;  // subject to tuning
 #ifdef USEAVX
-    min_card += sizeof(__m128i) / sizeof(uint16_t);
+  min_card += sizeof(__m128i) / sizeof(uint16_t);
 #endif
-    if (out->capacity < min_card)
-        array_container_grow(out, min_card, INT32_MAX, false);
-    if (card_1 * threshold < card_2) {
-        out->cardinality = intersect_skewed_uint16(
-            array1->array, card_1, array2->array, card_2, out->array);
-    } else if (card_2 * threshold < card_1) {
-        out->cardinality = intersect_skewed_uint16(
-            array2->array, card_2, array1->array, card_1, out->array);
-    } else {
+  if (out->capacity < min_card)
+    array_container_grow(out, min_card, INT32_MAX, false);
+  if (card_1 * threshold < card_2) {
+    out->cardinality = intersect_skewed_uint16(
+        array1->array, card_1, array2->array, card_2, out->array);
+  } else if (card_2 * threshold < card_1) {
+    out->cardinality = intersect_skewed_uint16(
+        array2->array, card_2, array1->array, card_1, out->array);
+  } else {
 #ifdef USEAVX
-        out->cardinality = intersect_vector16(
-            array1->array, card_1, array2->array, card_2, out->array);
+    out->cardinality = intersect_vector16(array1->array, card_1, array2->array,
+                                          card_2, out->array);
 #else
-        out->cardinality = intersect_uint16(array1->array, card_1,
-                                            array2->array, card_2, out->array);
+    out->cardinality = intersect_uint16(array1->array, card_1, array2->array,
+                                        card_2, out->array);
 #endif
-    }
+  }
 }
 
 /* computes the intersection of array1 and array2 and write the result to
@@ -2740,79 +2733,79 @@ void array_container_intersection(const array_container_t *array1,
  * */
 void array_container_intersection_inplace(array_container_t *src_1,
                                           const array_container_t *src_2) {
-    // todo: can any of this be vectorized?
-    int32_t card_1 = src_1->cardinality, card_2 = src_2->cardinality;
-    const int threshold = 64;  // subject to tuning
-    if (card_1 * threshold < card_2) {
-        src_1->cardinality = intersect_skewed_uint16(
-            src_1->array, card_1, src_2->array, card_2, src_1->array);
-    } else if (card_2 * threshold < card_1) {
-        src_1->cardinality = intersect_skewed_uint16(
-            src_2->array, card_2, src_1->array, card_1, src_1->array);
-    } else {
-        src_1->cardinality = intersect_uint16(
-            src_1->array, card_1, src_2->array, card_2, src_1->array);
-    }
+  // todo: can any of this be vectorized?
+  int32_t card_1 = src_1->cardinality, card_2 = src_2->cardinality;
+  const int threshold = 64;  // subject to tuning
+  if (card_1 * threshold < card_2) {
+    src_1->cardinality = intersect_skewed_uint16(
+        src_1->array, card_1, src_2->array, card_2, src_1->array);
+  } else if (card_2 * threshold < card_1) {
+    src_1->cardinality = intersect_skewed_uint16(
+        src_2->array, card_2, src_1->array, card_1, src_1->array);
+  } else {
+    src_1->cardinality = intersect_uint16(src_1->array, card_1, src_2->array,
+                                          card_2, src_1->array);
+  }
 }
 
-int array_container_to_uint32_array(void *vout,
-                                    const array_container_t *cont,
+int array_container_to_uint32_array(void *vout, const array_container_t *cont,
                                     uint32_t base) {
-    int outpos = 0;
-    uint32_t * out = (uint32_t *) vout;
-    for (int i = 0; i < cont->cardinality; ++i) {
-        const uint32_t val = base + cont->array[i];
-        memcpy(out + outpos, &val, sizeof(uint32_t)); // should be compiled as a MOV on x64
-        outpos ++;
-    }
-    return outpos;
+  int outpos = 0;
+  uint32_t *out = (uint32_t *)vout;
+  for (int i = 0; i < cont->cardinality; ++i) {
+    const uint32_t val = base + cont->array[i];
+    memcpy(out + outpos, &val,
+           sizeof(uint32_t));  // should be compiled as a MOV on x64
+    outpos++;
+  }
+  return outpos;
 }
 
 void array_container_printf(const array_container_t *v) {
-    if (v->cardinality == 0) {
-        printf("{}");
-        return;
-    }
-    printf("{");
-    printf("%d", v->array[0]);
-    for (int i = 1; i < v->cardinality; ++i) {
-        printf(",%d", v->array[i]);
-    }
-    printf("}");
+  if (v->cardinality == 0) {
+    printf("{}");
+    return;
+  }
+  printf("{");
+  printf("%d", v->array[0]);
+  for (int i = 1; i < v->cardinality; ++i) {
+    printf(",%d", v->array[i]);
+  }
+  printf("}");
 }
 
 void array_container_printf_as_uint32_array(const array_container_t *v,
                                             uint32_t base) {
-    if (v->cardinality == 0) {
-        return;
-    }
-    printf("%u", v->array[0] + base);
-    for (int i = 1; i < v->cardinality; ++i) {
-        printf(",%u", v->array[i] + base);
-    }
+  if (v->cardinality == 0) {
+    return;
+  }
+  printf("%u", v->array[0] + base);
+  for (int i = 1; i < v->cardinality; ++i) {
+    printf(",%u", v->array[i] + base);
+  }
 }
 
 /* Compute the number of runs */
 int32_t array_container_number_of_runs(const array_container_t *a) {
-    // Can SIMD work here?
-    int32_t nr_runs = 0;
-    int32_t prev = -2;
-    for (const uint16_t *p = a->array; p != a->array + a->cardinality; ++p) {
-        if (*p != prev + 1) nr_runs++;
-        prev = *p;
-    }
-    return nr_runs;
+  // Can SIMD work here?
+  int32_t nr_runs = 0;
+  int32_t prev = -2;
+  for (const uint16_t *p = a->array; p != a->array + a->cardinality; ++p) {
+    if (*p != prev + 1) nr_runs++;
+    prev = *p;
+  }
+  return nr_runs;
 }
 
 int32_t array_container_serialize(array_container_t *container, char *buf) {
-    int32_t l, off;
-    uint16_t cardinality = (uint16_t)container->cardinality;
+  int32_t l, off;
+  uint16_t cardinality = (uint16_t)container->cardinality;
 
-    memcpy(buf, &cardinality, off = sizeof(cardinality));
-    l = sizeof(uint16_t) * container->cardinality;
-    if (l) memcpy(&buf[off], container->array, l);
+  memcpy(buf, &cardinality, off = sizeof(cardinality));
+  l = sizeof(uint16_t) * container->cardinality;
+  if (l) memcpy(&buf[off], container->array, l);
 
-    return (off + l);
+  return (off + l);
 }
 
 /**
@@ -2822,124 +2815,120 @@ int32_t array_container_serialize(array_container_t *container, char *buf) {
  *
  */
 int32_t array_container_write(const array_container_t *container, char *buf) {
-    memcpy(buf, container->array,
-               container->cardinality * sizeof(uint16_t));
-    return array_container_size_in_bytes(container);
+  memcpy(buf, container->array, container->cardinality * sizeof(uint16_t));
+  return array_container_size_in_bytes(container);
 }
 
 bool array_container_equals(array_container_t *container1,
                             array_container_t *container2) {
-    if (container1->cardinality != container2->cardinality) {
-        return false;
-    }
-    // could be vectorized:
-    for (int32_t i = 0; i < container1->cardinality; ++i) {
-        if (container1->array[i] != container2->array[i]) return false;
-    }
-    return true;
+  if (container1->cardinality != container2->cardinality) {
+    return false;
+  }
+  // could be vectorized:
+  for (int32_t i = 0; i < container1->cardinality; ++i) {
+    if (container1->array[i] != container2->array[i]) return false;
+  }
+  return true;
 }
 
 bool array_container_is_subset(array_container_t *container1,
-                            array_container_t *container2) {
-    if (container1->cardinality > container2->cardinality) {
-        return false;
+                               array_container_t *container2) {
+  if (container1->cardinality > container2->cardinality) {
+    return false;
+  }
+  int i1 = 0, i2 = 0;
+  while (i1 < container1->cardinality && i2 < container2->cardinality) {
+    if (container1->array[i1] == container2->array[i2]) {
+      i1++;
+      i2++;
+    } else if (container1->array[i1] > container2->array[i2]) {
+      i2++;
+    } else {  // container1->array[i1] < container2->array[i2]
+      return false;
     }
-    int i1 = 0, i2 = 0;
-    while(i1 < container1->cardinality && i2 < container2->cardinality) {
-        if(container1->array[i1] == container2->array[i2]) {
-            i1++;
-            i2++;
-        }
-        else if(container1->array[i1] > container2->array[i2]) {
-            i2++;
-        }
-        else { // container1->array[i1] < container2->array[i2]
-            return false;
-        }
-    }
-    if(i1 == container1->cardinality) {
-        return true;
-    }
-    else {
-        return false;
-    }
+  }
+  if (i1 == container1->cardinality) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 int32_t array_container_read(int32_t cardinality, array_container_t *container,
                              const char *buf) {
-    if (container->capacity < cardinality) {
-        array_container_grow(container, cardinality, DEFAULT_MAX_SIZE, false);
-    }
-    container->cardinality = cardinality;
-    memcpy(container->array, buf, container->cardinality * sizeof(uint16_t));
+  if (container->capacity < cardinality) {
+    array_container_grow(container, cardinality, DEFAULT_MAX_SIZE, false);
+  }
+  container->cardinality = cardinality;
+  memcpy(container->array, buf, container->cardinality * sizeof(uint16_t));
 
-    return array_container_size_in_bytes(container);
+  return array_container_size_in_bytes(container);
 }
 
 uint32_t array_container_serialization_len(array_container_t *container) {
-    return (sizeof(uint16_t) /* container->cardinality converted to 16 bit */ +
-            (sizeof(uint16_t) * container->cardinality));
+  return (sizeof(uint16_t) /* container->cardinality converted to 16 bit */ +
+          (sizeof(uint16_t) * container->cardinality));
 }
 
 void *array_container_deserialize(const char *buf, size_t buf_len) {
-    array_container_t *ptr;
+  array_container_t *ptr;
 
-    if (buf_len < 2) /* capacity converted to 16 bit */
-        return (NULL);
-    else
-        buf_len -= 2;
+  if (buf_len < 2) /* capacity converted to 16 bit */
+    return (NULL);
+  else
+    buf_len -= 2;
 
-    if ((ptr = (array_container_t *)malloc(sizeof(array_container_t))) !=
-        NULL) {
-        size_t len;
-        int32_t off;
-        uint16_t cardinality;
+  if ((ptr = (array_container_t *)malloc(sizeof(array_container_t))) != NULL) {
+    size_t len;
+    int32_t off;
+    uint16_t cardinality;
 
-        memcpy(&cardinality, buf, off = sizeof(cardinality));
+    memcpy(&cardinality, buf, off = sizeof(cardinality));
 
-        ptr->capacity = ptr->cardinality = (uint32_t)cardinality;
-        len = sizeof(uint16_t) * ptr->cardinality;
+    ptr->capacity = ptr->cardinality = (uint32_t)cardinality;
+    len = sizeof(uint16_t) * ptr->cardinality;
 
-        if (len != buf_len) {
-            free(ptr);
-            return (NULL);
-        }
-
-        if ((ptr->array = (uint16_t *)malloc(sizeof(uint16_t) *
-                                             ptr->capacity)) == NULL) {
-            free(ptr);
-            return (NULL);
-        }
-
-        if (len) memcpy(ptr->array, &buf[off], len);
-
-        /* Check if returned values are monotonically increasing */
-        for (int32_t i = 0, j = 0; i < ptr->cardinality; i++) {
-            if (ptr->array[i] < j) {
-                free(ptr->array);
-                free(ptr);
-                return (NULL);
-            } else
-                j = ptr->array[i];
-        }
+    if (len != buf_len) {
+      free(ptr);
+      return (NULL);
     }
 
-    return (ptr);
+    if ((ptr->array = (uint16_t *)malloc(sizeof(uint16_t) * ptr->capacity)) ==
+        NULL) {
+      free(ptr);
+      return (NULL);
+    }
+
+    if (len) memcpy(ptr->array, &buf[off], len);
+
+    /* Check if returned values are monotonically increasing */
+    for (int32_t i = 0, j = 0; i < ptr->cardinality; i++) {
+      if (ptr->array[i] < j) {
+        free(ptr->array);
+        free(ptr);
+        return (NULL);
+      } else
+        j = ptr->array[i];
+    }
+  }
+
+  return (ptr);
 }
 
 bool array_container_iterate(const array_container_t *cont, uint32_t base,
                              roaring_iterator iterator, void *ptr) {
-    for (int i = 0; i < cont->cardinality; i++)
-        if (!iterator(cont->array[i] + base, ptr)) return false;
-    return true;
+  for (int i = 0; i < cont->cardinality; i++)
+    if (!iterator(cont->array[i] + base, ptr)) return false;
+  return true;
 }
 
 bool array_container_iterate64(const array_container_t *cont, uint32_t base,
-                               roaring_iterator64 iterator,
-                               uint64_t high_bits, void *ptr) {
-    for (int i = 0; i < cont->cardinality; i++)
-        if (!iterator(high_bits | (uint64_t)(cont->array[i] + base), ptr)) return false;
-    return true;
+                               roaring_iterator64 iterator, uint64_t high_bits,
+                               void *ptr) {
+  for (int i = 0; i < cont->cardinality; i++)
+    if (!iterator(high_bits | (uint64_t)(cont->array[i] + base), ptr))
+      return false;
+  return true;
 }
 /* end file src/containers/array.c */
 /* begin file src/containers/bitset.c */
@@ -2955,116 +2944,116 @@ bool array_container_iterate64(const array_container_t *cont, uint32_t base,
 #include <stdlib.h>
 #include <string.h>
 
-
 extern int bitset_container_cardinality(const bitset_container_t *bitset);
 extern bool bitset_container_nonzero_cardinality(bitset_container_t *bitset);
 extern void bitset_container_set(bitset_container_t *bitset, uint16_t pos);
 extern void bitset_container_unset(bitset_container_t *bitset, uint16_t pos);
 extern inline bool bitset_container_get(const bitset_container_t *bitset,
-                                 uint16_t pos);
+                                        uint16_t pos);
 extern int32_t bitset_container_serialized_size_in_bytes();
 extern bool bitset_container_add(bitset_container_t *bitset, uint16_t pos);
 extern bool bitset_container_remove(bitset_container_t *bitset, uint16_t pos);
-extern inline  bool bitset_container_contains(const bitset_container_t *bitset,
-                                      uint16_t pos);
+extern inline bool bitset_container_contains(const bitset_container_t *bitset,
+                                             uint16_t pos);
 
 void bitset_container_clear(bitset_container_t *bitset) {
-    memset(bitset->array, 0, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
-    bitset->cardinality = 0;
+  memset(bitset->array, 0, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+  bitset->cardinality = 0;
 }
 
 void bitset_container_set_all(bitset_container_t *bitset) {
-    memset(bitset->array, INT64_C(-1),
-           sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
-    bitset->cardinality = (1 << 16);
+  memset(bitset->array, INT64_C(-1),
+         sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+  bitset->cardinality = (1 << 16);
 }
 
 /* Create a new bitset. Return NULL in case of failure. */
 bitset_container_t *bitset_container_create(void) {
-    bitset_container_t *bitset =
-        (bitset_container_t *)calloc(1, sizeof(bitset_container_t));
+  bitset_container_t *bitset =
+      (bitset_container_t *)calloc(1, sizeof(bitset_container_t));
 
-    if (!bitset) {
-        return NULL;
-    }
-    // sizeof(__m256i) == 32
-    bitset->array = (uint64_t *) aligned_malloc(32, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
-    if (! bitset->array) {
-        free(bitset);
-        return NULL;
-    }
-    bitset_container_clear(bitset);
-    return bitset;
+  if (!bitset) {
+    return NULL;
+  }
+  // sizeof(__m256i) == 32
+  bitset->array = (uint64_t *)aligned_malloc(
+      32, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+  if (!bitset->array) {
+    free(bitset);
+    return NULL;
+  }
+  bitset_container_clear(bitset);
+  return bitset;
 }
 
 /* Copy one container into another. We assume that they are distinct. */
 void bitset_container_copy(const bitset_container_t *source,
                            bitset_container_t *dest) {
-    dest->cardinality = source->cardinality;
-    memcpy(dest->array, source->array,
-           sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+  dest->cardinality = source->cardinality;
+  memcpy(dest->array, source->array,
+         sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
 }
 
 void bitset_container_add_from_range(bitset_container_t *bitset, uint32_t min,
                                      uint32_t max, uint16_t step) {
-    if (step == 0) return;   // refuse to crash
-    if ((64 % step) == 0) {  // step divides 64
-        uint64_t mask = 0;   // construct the repeated mask
-        for (uint32_t value = (min % step); value < 64; value += step) {
-            mask |= ((uint64_t)1 << value);
-        }
-        uint32_t firstword = min / 64;
-        uint32_t endword = (max - 1) / 64;
-        bitset->cardinality = (max - min + step - 1) / step;
-        if (firstword == endword) {
-            bitset->array[firstword] |=
-                mask & (((~UINT64_C(0)) << (min % 64)) &
-                        ((~UINT64_C(0)) >> ((~max + 1) % 64)));
-            return;
-        }
-        bitset->array[firstword] = mask & ((~UINT64_C(0)) << (min % 64));
-        for (uint32_t i = firstword + 1; i < endword; i++)
-            bitset->array[i] = mask;
-        bitset->array[endword] = mask & ((~UINT64_C(0)) >> ((~max + 1) % 64));
-    } else {
-        for (uint32_t value = min; value < max; value += step) {
-            bitset_container_add(bitset, value);
-        }
+  if (step == 0) return;   // refuse to crash
+  if ((64 % step) == 0) {  // step divides 64
+    uint64_t mask = 0;     // construct the repeated mask
+    for (uint32_t value = (min % step); value < 64; value += step) {
+      mask |= ((uint64_t)1 << value);
     }
+    uint32_t firstword = min / 64;
+    uint32_t endword = (max - 1) / 64;
+    bitset->cardinality = (max - min + step - 1) / step;
+    if (firstword == endword) {
+      bitset->array[firstword] |=
+          mask & (((~UINT64_C(0)) << (min % 64)) &
+                  ((~UINT64_C(0)) >> ((~max + 1) % 64)));
+      return;
+    }
+    bitset->array[firstword] = mask & ((~UINT64_C(0)) << (min % 64));
+    for (uint32_t i = firstword + 1; i < endword; i++) bitset->array[i] = mask;
+    bitset->array[endword] = mask & ((~UINT64_C(0)) >> ((~max + 1) % 64));
+  } else {
+    for (uint32_t value = min; value < max; value += step) {
+      bitset_container_add(bitset, value);
+    }
+  }
 }
 
 /* Free memory. */
 void bitset_container_free(bitset_container_t *bitset) {
-    aligned_free(bitset->array);
-    bitset->array = NULL;
-    free(bitset);
+  aligned_free(bitset->array);
+  bitset->array = NULL;
+  free(bitset);
 }
 
 /* duplicate container. */
 bitset_container_t *bitset_container_clone(const bitset_container_t *src) {
-    bitset_container_t *bitset =
-        (bitset_container_t *)calloc(1, sizeof(bitset_container_t));
+  bitset_container_t *bitset =
+      (bitset_container_t *)calloc(1, sizeof(bitset_container_t));
 
-    if (!bitset) {
-        return NULL;
-    }
-    // sizeof(__m256i) == 32
-    bitset->array = (uint64_t *) aligned_malloc(32, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
-    if (! bitset->array) {
-        free(bitset);
-        return NULL;
-    }
-    bitset->cardinality = src->cardinality;
-    memcpy(bitset->array, src->array,
-           sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
-    return bitset;
+  if (!bitset) {
+    return NULL;
+  }
+  // sizeof(__m256i) == 32
+  bitset->array = (uint64_t *)aligned_malloc(
+      32, sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+  if (!bitset->array) {
+    free(bitset);
+    return NULL;
+  }
+  bitset->cardinality = src->cardinality;
+  memcpy(bitset->array, src->array,
+         sizeof(uint64_t) * BITSET_CONTAINER_SIZE_IN_WORDS);
+  return bitset;
 }
 
 void bitset_container_set_range(bitset_container_t *bitset, uint32_t begin,
                                 uint32_t end) {
-    bitset_set_range(bitset->array, begin, end);
-    bitset->cardinality =
-        bitset_container_compute_cardinality(bitset);  // could be smarter
+  bitset_set_range(bitset->array, begin, end);
+  bitset->cardinality =
+      bitset_container_compute_cardinality(bitset);  // could be smarter
 }
 
 //#define USEPOPCNT // when this is disabled
@@ -3076,23 +3065,23 @@ void bitset_container_set_range(bitset_container_t *bitset, uint32_t begin,
 #endif
 /* Get the number of bits set (force computation) */
 int bitset_container_compute_cardinality(const bitset_container_t *bitset) {
-    return avx2_harley_seal_popcount256(
-        (const __m256i *)bitset->array,
-        BITSET_CONTAINER_SIZE_IN_WORDS / (WORDS_IN_AVX2_REG));
+  return avx2_harley_seal_popcount256(
+      (const __m256i *)bitset->array,
+      BITSET_CONTAINER_SIZE_IN_WORDS / (WORDS_IN_AVX2_REG));
 }
 #else
 
 /* Get the number of bits set (force computation) */
 int bitset_container_compute_cardinality(const bitset_container_t *bitset) {
-    const uint64_t *array = bitset->array;
-    int32_t sum = 0;
-    for (int i = 0; i < BITSET_CONTAINER_SIZE_IN_WORDS; i += 4) {
-        sum += hamming(array[i]);
-        sum += hamming(array[i + 1]);
-        sum += hamming(array[i + 2]);
-        sum += hamming(array[i + 3]);
-    }
-    return sum;
+  const uint64_t *array = bitset->array;
+  int32_t sum = 0;
+  for (int i = 0; i < BITSET_CONTAINER_SIZE_IN_WORDS; i += 4) {
+    sum += hamming(array[i]);
+    sum += hamming(array[i + 1]);
+    sum += hamming(array[i + 2]);
+    sum += hamming(array[i + 3]);
+  }
+  return sum;
 }
 
 #endif
@@ -3103,9 +3092,9 @@ int bitset_container_compute_cardinality(const bitset_container_t *bitset) {
 #ifndef WORDS_IN_AVX2_REG
 #define WORDS_IN_AVX2_REG sizeof(__m256i) / sizeof(uint64_t)
 #endif
-#define LOOP_SIZE                    \
-    BITSET_CONTAINER_SIZE_IN_WORDS / \
-        ((WORDS_IN_AVX2_REG)*BITSET_CONTAINER_FN_REPEAT)
+#define LOOP_SIZE                  \
+  BITSET_CONTAINER_SIZE_IN_WORDS / \
+      ((WORDS_IN_AVX2_REG)*BITSET_CONTAINER_FN_REPEAT)
 
 /* Computes a binary operation (eg union) on bitset1 and bitset2 and write the
    result to bitsetout */

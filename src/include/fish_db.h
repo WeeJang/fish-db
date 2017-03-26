@@ -1,32 +1,29 @@
 #ifndef FISHDB_H_
 #define FISHDB_H_
 
+namespace fishdb {
 
-namespace fishdb{
+class DB {
+ public:
+  DB() {}
+  virtual DB();
 
+  virtual int open_db(const std::string& db_name);
+  virtual int close_db();
 
-class DB{
+  virtual int load_data(const std::string& triple_file_path);
 
-public:
-	DB() { }
-	virtual DB();
+  /**
+   *	get_triple("df:96666","df:type.object.name","?",query_result);
+   *	get_triple("?","df:type.object.name","?",query_result);
+   */
+  virtual int get_triple(
+      const std::string& sub_str, const std::string& pre_str,
+      const std::string& obj_str,
+      std::shared_ptr<std::vector<core::TripleSpec>> query_result);
 
-	virtual int open_db(const std::string& db_name);
-	virtual int close_db();
-	
-	virtual int load_data(const std::string& triple_file_path);
+};  // class DB
 
-	/**
-	*	get_triple("df:96666","df:type.object.name","?",query_result);
-	*	get_triple("?","df:type.object.name","?",query_result);
-	*/	
-	virtual int get_triple(const std::string& sub_str,\
-				const std::string& pre_str,\
-				const std::string& obj_str,\
-				std::shared_ptr<std::vector<core::TripleSpec>> query_result);
+}  // namespace fishdb
 
-};//class DB
-
-}//namespace fishdb
-
-#endif // FISH_DB_H
+#endif  // FISH_DB_H

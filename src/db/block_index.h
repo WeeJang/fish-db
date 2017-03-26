@@ -7,34 +7,38 @@
 #include <string>
 #include <vector>
 
-#include <cstddef>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <cstddef>
 
-namespace test{  class BlockIndexTest; }
+namespace test {
+class BlockIndexTest;
+}
 
-namespace db{
+namespace db {
 
-class BlockIndex{
-	friend class test::BlockIndexTest;
-	using IndexType = Block::row_data_offset_type;
-public:
-	explicit BlockIndex(const Block&);
-	explicit BlockIndex(Block*);
-	explicit BlockIndex(const std::string& blockfile_name);
+class BlockIndex {
+  friend class test::BlockIndexTest;
+  using IndexType = Block::row_data_offset_type;
 
-	const uint64_t block_id() const { return block_id_; }
-	const uint64_t row_start_index() const { return row_start_index_; }
-	const uint64_t row_count() const { return row_count_; }	
-	IndexType at(size_t row_num) { return index_[row_num]; }
-private:
-	uint64_t block_id_;
-	uint64_t row_start_index_;
-	uint64_t row_count_;	
-	std::vector<IndexType> index_;			
-};//class BlockIndex
+ public:
+  explicit BlockIndex(const Block&);
+  explicit BlockIndex(Block*);
+  explicit BlockIndex(const std::string& blockfile_name);
 
-}//namespace db	
+  const uint64_t block_id() const { return block_id_; }
+  const uint64_t row_start_index() const { return row_start_index_; }
+  const uint64_t row_count() const { return row_count_; }
+  IndexType at(size_t row_num) { return index_[row_num]; }
 
-#endif //DB_BLOCK_INDEX_H_
+ private:
+  uint64_t block_id_;
+  uint64_t row_start_index_;
+  uint64_t row_count_;
+  std::vector<IndexType> index_;
+};  // class BlockIndex
+
+}  // namespace db
+
+#endif  // DB_BLOCK_INDEX_H_
