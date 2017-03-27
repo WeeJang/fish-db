@@ -3,7 +3,7 @@
 namespace fishdb {
 
 void FishDBImpl::init() {
-  db_dir_path_ = std::string("/Users/jiangwei/Workspace/cayley-backend/data/");
+  db_dir_path_ = std::string("/Users/jiangwei/Workspace/fish-db/data/");
   db_dir_path_ += db_name_;
 
   db_block_dir_path_ = db_dir_path_;

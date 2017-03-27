@@ -85,7 +85,7 @@ class IRIIndex {
 
  private:
   bool dump_to_file(BitMap_T& bit_map, std::string dump_file_path) {
-    auto expected_size = bit_map.getSizeInBytes() + 4;
+    auto expected_size = bit_map.getSizeInBytes();
     char* serialized_bytes = new char[expected_size];
     auto write_ret = bit_map.write(serialized_bytes);
     LOG("expected_size : %llu, write_re : %llu", expected_size, write_ret);

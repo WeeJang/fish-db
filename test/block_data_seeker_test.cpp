@@ -7,7 +7,7 @@ class BlockDataSeekerTest {
  public:
   void test() {
     std::string dump_file(
-        "/Users/jiangwei/Workspace/cayley-backend/data/block_test.dump");
+        "/Users/jiangwei/Workspace/fish-db/data/block_test.dump");
     db::BlockDataSeeker seeker(dump_file);
     auto triple = std::make_shared<core::TripleSpec>();
     seeker.get_triple_by_index(9, triple);

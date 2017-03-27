@@ -30,7 +30,7 @@ void test_file(const std::string& dictionary_path) {
 
 int main(int argc, char** argv) {
   std::string dir_path(
-      "/Users/jiangwei/Workspace/cayley-backend/data/test_db/");
+      "/Users/jiangwei/Workspace/fish-db/data/test_db/");
   std::string prefix("HV");
   // std::vector<std::string> files =
   // utils::get_file_list_with_prefix(dir_path,prefix); std::vector<std::string>
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
   }
 
   // std::string
-  // new_dir_path("/Users/jiangwei/Workspace/cayley-backend/test//hello");
+  // new_dir_path("/Users/jiangwei/Workspace/fish-db/test//hello");
   // std::cout << utils::mkdir(new_dir_path) << std::endl;
 
   // test_file(dir_path);

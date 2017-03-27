@@ -35,7 +35,7 @@ class BlockIndexTest {
 
 int main(int argc, char** argv) {
   std::string dump_str(
-      "/Users/jiangwei/Workspace/cayley-backend/data/block_test.dump");
+      "/Users/jiangwei/Workspace/fish-db/data/block_test.dump");
   test::BlockIndexTest index_test(dump_str);
   index_test.test();
   return 0;

@@ -10,7 +10,7 @@ class BlockTest {
     const char* test_data = "s1\tp1\to1\ns2\tp2\to2\n";
     auto p_block = db::create_block_by_raw_data(test_data, 18 * sizeof(char));
     std::string dump_str(
-        "/Users/jiangwei/Workspace/cayley-backend/data/block_test.dump");
+        "/Users/jiangwei/Workspace/fish-db/data/block_test.dump");
     p_block->dump(dump_str);
 
     auto p_block_2 = db::load_from_disk_by_mmap(dump_str);

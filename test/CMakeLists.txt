@@ -24,6 +24,10 @@ link_directories(
 file(GLOB_RECURSE src_cpp_files "${src_dir}/*/*.cpp")
 file(GLOB_RECURSE src_c_files "${src_dir}/*/*.c")
 
+file(GLOB_RECURSE src_core_cpp_files "${src_dir}/core/*.cpp")
+file(GLOB_RECURSE src_db_cpp_files "${src_dir}/db/*.cpp")
+file(GLOB_RECURSE src_utils_cpp_files "${src_dir}/utils/*.cpp")
+
 message(STATUS " the current source dir " ${src_dir})
 message(STATUS " the cpp files" ${src_cpp_files})
 message(STATUS " the boost files" ${Boost_LIBRARIES})
@@ -33,14 +37,15 @@ message(STATUS " the boost files" ${Boost_LIBRARIES})
 #add_executable(block_test block_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(boost_asio_test1 boost_asio_test1.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(file_util_test file_util_test.cpp ${src_cpp_files} ${src_c_files})
-#add_executable(file_db_test file_db_test.cpp ${src_cpp_files} ${src_c_files})
+add_executable(fish_db_test fish_db_test.cpp ${src_core_cpp_files} ${src_db_cpp_files} ${src_utils_cpp_files} ${src_c_files})
 #add_executable(iri_index_test iri_index_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(message_test message_test.cpp ${src_cpp_files} ${src_c_files})
-add_executable(query_client_test query_client.cpp)
 #add_executable(query_test query_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(roaring_test roaring_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(root_table_test root_table_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(sparql_test sparql_test.cpp ${src_cpp_files} ${src_c_files})
 
+
+add_executable(query_client_test query_client.cpp)
 target_link_libraries(query_client_test ${Boost_LIBRARIES})
 

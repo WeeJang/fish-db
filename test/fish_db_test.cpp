@@ -7,7 +7,7 @@ class FishDBTest {
   void test_create_db() {
     fishdb::FishDBImpl db;
     db.create_db("test_db");
-    db.load_data("/Users/jiangwei/Workspace/cayley-backend/test/data/test.spo");
+    db.load_data("/Users/jiangwei/Workspace/fish-db/test/data/test.spo");
     db.close_db();
   }
 

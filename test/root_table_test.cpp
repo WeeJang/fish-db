@@ -7,7 +7,7 @@ class RootTableTest {
  public:
   void test() {
     std::string rtable_file(
-        "/Users/jiangwei/Workspace/cayley-backend/data/rootable.dump");
+        "/Users/jiangwei/Workspace/fish-db/data/rootable.dump");
     db::RootTable rtable(rtable_file);
     for (size_t i = 0; i < 8; i++) {
       rtable.block_offset_list_.push_back(i);
