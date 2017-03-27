@@ -5,6 +5,13 @@
 
 
 
+## build
+	cd fish-db
+	mkdir build
+	cd build
+	cmake ..
+	make
+
 
 
 ## requirment
