@@ -1,6 +1,6 @@
 #include "../src/utils/tiny_log.hpp"
 
-#include <iostream>
+#include <iostream> 
 #include <memory>
 #include <vector>
 
@@ -16,8 +16,8 @@ void test_inter(int num, char ch) {
 
 class Demo {
  public:
-  Demo() { std::cout << "Demo init" << std::endl; }
-  ~Demo() { std::cout << "Demo des" << std::endl; }
+  Demo() { std::cout << "Demo init" << this << std::endl; }
+  ~Demo() { std::cout << "Demo des" << this << std::endl; }
 
   void print() { std::cout << b_ << std::endl; }
   void set_value(int a) { a_ = a; }
@@ -32,9 +32,10 @@ class Test {
  public:
   void test(int a) {
     LOG("==========================");
-    Demo demo;
-    demo.print();
-    // LOG("this : %p , demo is %p",this,&demo);
+    Demo* demo = new Demo;
+    demo->print();
+    LOG("this : %p , demo is %p",this,demo);
+    delete demo;
     // demo.set_b();
     // demo.print();
   }
@@ -58,9 +59,11 @@ int main() {
 
   std::cout << vec[0]->a <<std::endl;
   */
-  for (size_t i = 1; i < 1000; i++) {
+  {
     auto p_a = std::make_shared<Test>();
-    p_a->test(i);
+    auto p_b = std::make_shared<Test>();
+    p_a->test(1);
+    p_b->test(2);
   }
 
   return 0;

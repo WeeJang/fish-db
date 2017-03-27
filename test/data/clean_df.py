@@ -7,6 +7,12 @@ import sys
 def clean_elem(elem_str):
 	if elem_str.startswith("df:"):
 		elem_str = elem_str[3:]
+	if "^^" in elem_str:
+		elem_str =elem_str.split("^^")[0]
+	if "@" in elem_str:
+		elem_str =elem_str.split("@")[0]
+	if '"' in elem_str:
+		elem_str = elem_str.replace('"','')
 	return elem_str;	
 
 for line in sys.stdin:
