@@ -1,0 +1,16 @@
+# fish-db for kg 
+## function:
+### store
+### query
+
+
+
+
+
+## requirment
+	1. boost
+	2. roaring
+	3. cmake
+
+## NOTE:
+	name for my girlfriend
