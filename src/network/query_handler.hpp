@@ -68,10 +68,11 @@ class QueryHandler : public std::enable_shared_from_this<QueryHandler> {
   void read_body(size_t body_size) {
     auto self = shared_from_this();
     LOG("this %p", this);
-    char* query_str = new char[body_size];
-    LOG("this %p | malloc query_str %p", this, query_str);
+    //char* query_str = new char[body_size];
+    auto query_str = std::make_shared<std::vector<char>>(body_size,0);
+    LOG("this %p | malloc query_str %p", this, query_str.get());
     boost::asio::async_read(
-        socket_, boost::asio::buffer(query_str, body_size),
+        socket_, boost::asio::buffer(*query_str, body_size),
         [=](const boost::system::error_code& ec, size_t size) {
           if (ec) {
             fprintf(stderr, "read body of packet error!\n");
@@ -80,9 +81,9 @@ class QueryHandler : public std::enable_shared_from_this<QueryHandler> {
           }
           // handle query str
           std::cout << "get query str : " << body_size << std::endl;
-          std::cout.write(query_str, body_size) << "\n";
-          std::string query(query_str, body_size);
-          delete[] query_str;
+          std::cout.write(query_str->data(), body_size) << "\n";
+          std::string query(query_str->data(), body_size);
+          //delete[] query_str;
           std::string ret_str = self->get_query_result(query);
           auto query_ret = std::make_shared<network::Message>(ret_str);
           self->write_packet(query_ret);
