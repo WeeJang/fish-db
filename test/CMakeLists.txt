@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -g")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
 
 set(src_dir "../src/")
@@ -37,7 +37,7 @@ message(STATUS " the boost files" ${Boost_LIBRARIES})
 #add_executable(block_test block_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(boost_asio_test1 boost_asio_test1.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(file_util_test file_util_test.cpp ${src_cpp_files} ${src_c_files})
-add_executable(fish_db_test fish_db_test.cpp ${src_core_cpp_files} ${src_db_cpp_files} ${src_utils_cpp_files} ${src_c_files})
+#add_executable(fish_db_test fish_db_test.cpp ${src_core_cpp_files} ${src_db_cpp_files} ${src_utils_cpp_files} ${src_c_files})
 #add_executable(iri_index_test iri_index_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(message_test message_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(query_test query_test.cpp ${src_cpp_files} ${src_c_files})
@@ -45,7 +45,8 @@ add_executable(fish_db_test fish_db_test.cpp ${src_core_cpp_files} ${src_db_cpp_
 #add_executable(root_table_test root_table_test.cpp ${src_cpp_files} ${src_c_files})
 #add_executable(sparql_test sparql_test.cpp ${src_cpp_files} ${src_c_files})
 
+#add_executable(query_client_test query_client.cpp)
+#target_link_libraries(query_client_test ${Boost_LIBRARIES})
 
-add_executable(query_client_test query_client.cpp)
-target_link_libraries(query_client_test ${Boost_LIBRARIES})
 
+add_subdirectory(load_test load_test_bin)
