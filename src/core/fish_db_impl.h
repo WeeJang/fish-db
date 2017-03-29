@@ -14,6 +14,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include <boost/thread.hpp>
+
 namespace test {
 class FishDBTest;
 }
@@ -55,6 +57,8 @@ class FishDBImpl {
  private:
   void init();
   std::shared_ptr<db::BlockDataSeeker> get_block_data_seeker(size_t block_id);
+  bool check_data_seeker(size_t block_id);
+  void load_data_seeker(size_t block_id);
 
  private:
   std::string db_dir_path_;
@@ -67,7 +71,7 @@ class FishDBImpl {
   core::MetaIRIIndex<core::IRIType::ShortString> ss_meta_iri_index_;
   std::unordered_map<size_t, std::shared_ptr<db::BlockDataSeeker>>
       block_data_seeker_map_;
-
+  boost::shared_mutex block_data_seeker_map_mutex_;
 };  // class DB
 
 }  // namespace fishdb

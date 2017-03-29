@@ -5,7 +5,7 @@ set(src_dir ".")
 set(boost_include_dir "/usr/local/include/")
 set(boost_libraries_dir "/usr/local/lib/")
 
-find_package(Boost COMPONENTS system REQUIRED)
+find_package(Boost COMPONENTS system thread REQUIRED)
 if(NOT Boost_FOUND)
 	message(FATAL_ERROR "not found boost lib")
 endif()
