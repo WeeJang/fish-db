@@ -18,6 +18,7 @@ int main(int argc, char** argv) {
     boost::asio::io_service io_service;
     boost::asio::io_service::work work(io_service);
     boost::asio::deadline_timer timer(io_service,boost::posix_time::seconds(20));
+    boost::asio::io_service::strand strand(io_service);
 
     std::string target_ip = "127.0.0.1";
     uint16_t target_port = 6666;
@@ -25,7 +26,7 @@ int main(int argc, char** argv) {
     std::vector<std::shared_ptr<test::Session>> test_vec;
     
     for(size_t i = 0 ; i < test_count ; i++){
-	test_vec.push_back(std::make_shared<test::Session>(io_service,target_ip,target_port));
+	test_vec.push_back(std::make_shared<test::Session>(io_service,strand,target_ip,target_port));
 	test_vec.back()->start();
     }
     

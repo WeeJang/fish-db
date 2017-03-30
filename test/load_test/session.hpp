@@ -12,9 +12,11 @@ namespace test {
 
 class Session : public std::enable_shared_from_this<Session> {
  public:
-  Session(boost::asio::io_service& io_service, std::string& target_ip,
+  Session(boost::asio::io_service& io_service,boost::asio::io_service::strand& strand,
+	  std::string& target_ip,
           uint16_t target_port)
       : io_service_(io_service),
+	strand_(strand),
         is_socket_closed_(false),
         is_correct_(false),
         socket_(io_service),
@@ -90,16 +92,16 @@ class Session : public std::enable_shared_from_this<Session> {
             return;
           }
 	  self->is_correct_=true;
-          std::cout.write(body->data(), body_size) << "\n";
+          io_service_.post(strand_.wrap([=](){ std::cout.write(body->data(), body_size) << "\n"; }));
         });
   }
 
   void handle_error(const boost::system::error_code& ec) {
-    std::cerr << ec << std::endl;
+    io_service_.post(strand_.wrap([=](){ std::cerr << "handle ec is : " <<  ec.message()  << std::endl; }));
     boost::system::error_code close_ec;
     socket_.shutdown(boost::asio::ip::tcp::socket::shutdown_both, close_ec);
     if (close_ec) {
-      std::cerr << "close ec is : " << close_ec << std::endl;
+      io_service_.post(strand_.wrap([=](){ std::cerr << "close ec is : " << close_ec << std::endl; }));
     }
     socket_.close();
     is_socket_closed_ = true;
@@ -107,6 +109,7 @@ class Session : public std::enable_shared_from_this<Session> {
 
  private:
   boost::asio::io_service& io_service_;
+  boost::asio::io_service::strand& strand_;
   boost::asio::ip::tcp::socket socket_;
   boost::asio::ip::tcp::endpoint endpoint_;
   bool is_socket_closed_;
