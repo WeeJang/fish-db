@@ -88,11 +88,15 @@ void QueryExecutor::run() {
 
 int QueryExecutor::get_min_growth_tree_by_kruskal() {
   std::vector<std::shared_ptr<TripleQuery>> sorted_triple_vec;
+  std::vector<std::string> cons_vars_vec;
   for (auto p_triple_query : triple_query_set_) {
     if (p_triple_query->var_vec_.size() < 2) {
       continue;
     }
     sorted_triple_vec.push_back(p_triple_query);
+    for(auto& elem : p_triple_query->var_vec_){
+    	cons_vars_vec.push_back(elem); 
+    }
   }
   // sorted
   std::sort(
@@ -101,18 +105,16 @@ int QueryExecutor::get_min_growth_tree_by_kruskal() {
         return p_a->cur_valid_row_bm_index_cardinality_ <
                p_b->cur_valid_row_bm_index_cardinality_;
       });
-  std::set<std::string> visited_var_node;
+  utils::UnionFind<std::string> uf(cons_vars_vec);
   for (auto p_triple_query : sorted_triple_vec) {
-    size_t find_count = 0;
-    for (auto& var_name : p_triple_query->var_vec_) {
-      if (visited_var_node.find(var_name) != visited_var_node.end()) {
-        find_count++;
-        visited_var_node.insert(var_name);  // trick
-      }
+    auto& var_1 = p_triple_query->var_vec_[0];
+    auto& var_2 = p_triple_query->var_vec_[1];
+    //check if will create cycle
+    if(uf.connected(var_1,var_2)){
+        continue;
     }
-    if (find_count < 2) {
-      min_growth_tree_.push_back(p_triple_query);
-    }
+    uf.union_set(var_1,var_2);
+    min_growth_tree_.push_back(p_triple_query);
   }
   return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef QUERY_QUERY_EXECUTOR_H_
 #define QUERY_QUERY_EXECUTOR_H_
 
+#include "../utils/union_find.hpp"
 #include "triple_query.h"
 
 #include <algorithm>
