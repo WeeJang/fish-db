@@ -4,7 +4,7 @@
 #include <vector>
 
 int main(int argc,char** argv){
-   std::vector<int> a = {1,2,3,4,5};
+   std::set<int> a = {1,2,3,4,5};
    utils::UnionFind<int> uf(a);
    uf.union_set(1,2);
    uf.union_set(1,4);

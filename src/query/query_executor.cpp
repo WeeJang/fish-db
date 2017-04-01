@@ -88,14 +88,14 @@ void QueryExecutor::run() {
 
 int QueryExecutor::get_min_growth_tree_by_kruskal() {
   std::vector<std::shared_ptr<TripleQuery>> sorted_triple_vec;
-  std::vector<std::string> cons_vars_vec;
+  std::set<std::string> cons_vars_set;
   for (auto p_triple_query : triple_query_set_) {
     if (p_triple_query->var_vec_.size() < 2) {
       continue;
     }
     sorted_triple_vec.push_back(p_triple_query);
     for(auto& elem : p_triple_query->var_vec_){
-    	cons_vars_vec.push_back(elem); 
+    	cons_vars_set.insert(elem); 
     }
   }
   // sorted
@@ -105,7 +105,7 @@ int QueryExecutor::get_min_growth_tree_by_kruskal() {
         return p_a->cur_valid_row_bm_index_cardinality_ <
                p_b->cur_valid_row_bm_index_cardinality_;
       });
-  utils::UnionFind<std::string> uf(cons_vars_vec);
+  utils::UnionFind<std::string> uf(cons_vars_set);
   for (auto p_triple_query : sorted_triple_vec) {
     auto& var_1 = p_triple_query->var_vec_[0];
     auto& var_2 = p_triple_query->var_vec_[1];
