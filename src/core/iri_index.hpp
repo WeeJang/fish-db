@@ -8,6 +8,9 @@
 #include "triple.h"
 
 #include <fstream>
+#include <sstream>
+#include <string>
+#include <iostream>
 
 namespace core {
 
@@ -68,6 +71,51 @@ class IRIIndex {
             obj_index_.runOptimize());
   }
 
+  int serialize(std::string* p_str_buf){
+    
+    auto serialize_bitmap_to_strbuf = [&](BitMap_T& bit_map){
+    	auto expected_size = bit_map.getSizeInBytes();
+    	char* serialized_bytes = new char[expected_size];
+    	size_t write_ret = bit_map.write(serialized_bytes); //FIXME:assert
+	p_str_buf->append(reinterpret_cast<char*>(&write_ret),sizeof(size_t));
+	p_str_buf->append(serialized_bytes,write_ret);
+    	delete[] serialized_bytes;
+	};
+
+    serialize_bitmap_to_strbuf(sub_index_);
+    serialize_bitmap_to_strbuf(pre_index_);
+    serialize_bitmap_to_strbuf(obj_index_);
+    
+    std::cout << "===========seril : "<< value_.value() << std::endl;  
+    sub_index_.printf();
+    pre_index_.printf();
+    obj_index_.printf();
+    std::cout << "===========seril : "<< value_.value() << std::endl;  
+
+    return 0;		
+  }
+
+  int deserialize(const char* p_serialized_data,int data_length){
+    
+    auto deserialize_strbuf_to_bitmap = [](BitMap_T& bit_map,const char* p_current_data) -> size_t{
+	size_t length = *(size_t*)p_current_data;	
+      	bit_map = BitMap_T::read(p_current_data + sizeof(size_t));
+	return sizeof(size_t) + length;
+   };
+
+    size_t offset  = 0;
+    offset += deserialize_strbuf_to_bitmap(sub_index_,p_serialized_data + offset);
+    offset += deserialize_strbuf_to_bitmap(pre_index_,p_serialized_data + offset);
+    offset += deserialize_strbuf_to_bitmap(obj_index_,p_serialized_data + offset);
+    
+    std::cout << "===========des seril : "<< value_.value() << std::endl;  
+    sub_index_.printf();
+    pre_index_.printf();
+    obj_index_.printf();
+    std::cout << "===========des seril : "<< value_.value() << std::endl;  
+    return offset;
+  }
+
   bool dump_to_files(const std::string dict_path) {
     // run_optimize();
     return (dump_to_file(sub_index_, dict_path + std::string("/sub.index"))) &&
@@ -84,6 +132,7 @@ class IRIIndex {
   }
 
  private:
+
   bool dump_to_file(BitMap_T& bit_map, std::string dump_file_path) {
     auto expected_size = bit_map.getSizeInBytes();
     char* serialized_bytes = new char[expected_size];

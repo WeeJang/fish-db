@@ -1,4 +1,4 @@
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -DDEBUG")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -march=native")
 
 set(src_dir ".")
