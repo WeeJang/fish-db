@@ -1,8 +1,9 @@
 
 # FishDB
 
- 这是为硕士毕业设计开发一个知识图库查询引擎（KG-Engine)。全部由C++实现，支持SPARQL语句的查询。索引的实现使用了[Roarning](https://github.com/RoaringBitmap/CRoaring)的压缩位图算法。数据底层存储，SPARQL语句解析，及查询算法均自己开发实现。
-  在此感谢DingfuData的工匠级工程师Chen Rushan给我毕业设计提供的指导和帮助，是他的技术热情和态度让我实习中看到了一位优秀的工程师应该具备怎样的素质，并一直是我工作上的榜样。感谢我的女朋友Fish，这段时间来给我学业上的鼓励和支持，引擎名字来自于她的英文名字，希望她能够在读博期间自由自在的享受科研。
+   这是为硕士毕业设计开发一个知识图库查询引擎（KG-Engine)。全部由C++11实现，支持SPARQL语句的查询。索引的实现使用了[Roarning](https://github.com/RoaringBitmap/CRoaring)的压缩位图算法。数据底层存储，SPARQL语句解析，及查询算法均自己开发实现。
+   
+   在此感谢DingfuData的工匠级工程师Chen Rushan给我毕业设计提供的指导和帮助，是他的技术热情和态度让我实习中看到了一位优秀的工程师应该具备怎样的素质，并一直是我工作上的榜样。感谢我的女朋友Fish，这段时间来给我学业上的鼓励和支持，引擎名字来自于她的英文名字，希望她能够在读博期间自由自在的享受科研。
 
 ## feature:
 
@@ -38,15 +39,12 @@ cmake
 make
 ```
 
-End with an example of getting some data out of the system or using it for a little demo
-
 ## Running the tests
 
 测试case没有形成体系，只有单个的功能测试，这一部分需要优化。
 
 ## Deployment
 
-Add additional notes about how to deploy this on a live system
 
 ## Built With
 
