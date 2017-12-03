@@ -1,14 +1,3 @@
-# 这是为毕业设计开发一个KG-engine
-
-
- 
-  
-
-
-## reference:
-  《基于压缩位图索引的RDF数据存储与管理》- 姜伟 北京交通大学
-
-
 
 # FishDB
 
@@ -25,6 +14,7 @@
 ## performance:
 
 1.在 no-cache 情况下， fishdb 相比较 Cayley 而言拥有 1.5 个数量级的响应性能提升，付出的代价是在初始化时需要多占用 0.9 个数量级的内存消耗
+
 2.在 cache 情况下，fishdb 查询计算时需要消耗 3%的增量内存空间，而 Cayley则需要多消耗 11%的增量内存空间。如果在不考虑初始内存占用的情况下，假设两者的响应速度相同，则 fishdb 系统的吞吐量将是 Cayley 的近 3倍；同时通过测试可以看到， fishdb 在 cache 情况下还具有 0.5 个数量级的响应速度优势，因此系统吞吐量的优势更为明显
 
 
@@ -76,5 +66,4 @@ Add additional notes about how to deploy this on a live system
 
 This project is licensed under the MIT License.
 
-## Acknowledgments
 
